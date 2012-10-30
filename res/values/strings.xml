@@ -3,6 +3,9 @@
     <string name="app_name">TerrainGIS</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">TerrainGIS</string>
+    <string-array name="item_coords">
+        <item>UTM-33</item>
+    </string-array>
 
 </resources>

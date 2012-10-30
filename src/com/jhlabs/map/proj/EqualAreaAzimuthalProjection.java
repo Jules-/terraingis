@@ -19,7 +19,6 @@ limitations under the License.
  */
 package com.jhlabs.map.proj;
 
-import java.awt.*;
 import cz.kalcik.vojta.geom.*;
 import com.jhlabs.map.*;
 
