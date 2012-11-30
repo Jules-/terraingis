@@ -3,8 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <cz.kalcik.vojta.view.MapView
+    <cz.kalcik.vojta.terraingis.view.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:overScrollMode="always" />
 </LinearLayout>
