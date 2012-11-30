@@ -9,5 +9,5 @@ public abstract class AbstarctLayer
     {
     }
     
-    public abstract void draw(final Canvas canvas, Rect screenRect);
+    public abstract void draw(final Canvas canvas, Rect screenRect, double zoom);
 }

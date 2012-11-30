@@ -13,12 +13,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
-public class TileLayer extends AbstarctLayer
+public class TilesLayer extends AbstarctLayer
 {
     /** Current tile source */
     protected final MapTileProviderBase mTileProvider;
@@ -30,7 +31,6 @@ public class TileLayer extends AbstarctLayer
 
     /* to avoid allocations during draw */
     private final Rect mTileRect = new Rect();
-    private final Rect mViewPort = new Rect();
     
     private int mWorldSize_2;
     
@@ -39,17 +39,18 @@ public class TileLayer extends AbstarctLayer
     protected final ResourceProxy mResourceProxy;
     protected final float mScale;
     
-    // my attributes
     private final Context aContext;
+    private LayerManager layerManager;
     
     /**
      * constructor
      * @param aTileProvider
      * @param aContext
      */
-    public TileLayer(final MapTileProviderBase aTileProvider, final Context aContext)
+    public TilesLayer(final MapTileProviderBase aTileProvider, final Context aContext, LayerManager layerManager)
     {       
         this.aContext = aContext;
+        this.layerManager = layerManager;
         
         mResourceProxy = new DefaultResourceProxyImpl(aContext);
         mScale = mResourceProxy.getDisplayMetricsDensity();
@@ -64,19 +65,14 @@ public class TileLayer extends AbstarctLayer
        
 
     @Override
-    public void draw(Canvas canvas, Rect screenRect)
+    public void draw(Canvas canvas, Rect screenRect, double zoom)
     {
-        int zoomLevel = 1;
-        
+        int zoomLevel = LayerManager.mpxToZoomLevel(zoom);
         mWorldSize_2 = TileSystem.MapSize(zoomLevel) >> 1;
         
-        // Get the area we are drawing to
-        mViewPort.set(screenRect);
-
-        // Translate the Canvas coordinates into Mercator coordinates
-        mViewPort.offset(mWorldSize_2, mWorldSize_2);
+        screenRect.offset(mWorldSize_2, mWorldSize_2);
         
-        drawTiles(canvas, zoomLevel, TileSystem.getTileSize(), mViewPort);      
+        drawTiles(canvas, zoomLevel, TileSystem.getTileSize(), screenRect);      
     }    
     
     // protected methods ============================================================================

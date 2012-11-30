@@ -1,13 +1,13 @@
 package cz.kalcik.vojta.terraingis.view;
 
 import org.osmdroid.tileprovider.MapTileProviderBase;
-import org.osmdroid.tileprovider.MapTileProviderBasic;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+
+import com.jhlabs.map.proj.Projection;
 
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.SurfaceView;
@@ -16,16 +16,38 @@ public class MapView extends SurfaceView
 {
     private LayerManager layerManager = new LayerManager(); 
     
+    // public methods ======================================================================
+    
     public MapView(Context context, final AttributeSet attrs)
     {
         super(context, attrs);
         
         this.setWillNotDraw(false);
-        
-        final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
-        MapTileProviderBase tileProvider = new MapTileProviderBasic(context, tileSource);
-        
+    }
+    
+    // layers
+    public void appendTileLayer(MapTileProviderBase tileProvider, Context context)
+    {
         layerManager.appendTileLayer(tileProvider, context);
+    }
+    
+    // attributes
+    
+    public void setZoomLevel(int zoomLevel)
+    {
+        layerManager.setZoomLevel(zoomLevel);
+        changeScroll();
+    }
+    
+    public void setLatLonPosition(double lon, double lat)
+    {
+        layerManager.setLatLonPosition(lon, lat);
+        changeScroll();
+    }
+    
+    public void setProjection(Projection projection)
+    {
+        layerManager.setProjection(projection);
     }
     
     // on methods ==========================================================================
@@ -38,6 +60,14 @@ public class MapView extends SurfaceView
         layerManager.redraw(canvas, getScreenRect(null));
     }
     
+    @Override
+    protected void onSizeChanged(int width, int height, int oldwidth, int oldheight)
+    {
+        super.onSizeChanged(width, height, oldwidth, oldheight);
+        
+        changeScroll();
+    }
+    
     // private methods =====================================================================
     
     /**
@@ -46,7 +76,14 @@ public class MapView extends SurfaceView
     private Rect getScreenRect(final Rect reuse)
     {
         final Rect out = reuse == null ? new Rect() : reuse;
-        out.set(getScrollX(), getScrollY(), getWidth(), getHeight());
+        out.set(getScrollX(), getScrollY(), getScrollX() + getWidth(), getScrollY() + getHeight());
         return out;
+    }
+    
+    private void changeScroll()
+    {
+        Point position = layerManager.getPositionPx(); 
+        scrollTo(position.x - getWidth()/2, -position.y - getHeight()/2);
+        this.invalidate();
     }
 }
