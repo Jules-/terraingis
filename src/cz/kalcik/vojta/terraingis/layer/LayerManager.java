@@ -81,11 +81,6 @@ public class LayerManager
     {
         this.zoom = zoom;
     }
-
-    public void setZoomLevel(int zoomLevel)
-    {
-        setZoom(zoomLevelToMpx(zoomLevel));
-    }
     
     public Point2D getLatLonPosition()
     {
@@ -115,7 +110,7 @@ public class LayerManager
     static public int mpxToZoomLevel(double zoom)
     {
         double doubleZoomLevel = -(Math.log(zoom/O_EARTH_ZOOM_LEVEL)+8*Math.log(2))/Math.log(2);
-        return (int)Math.round(doubleZoomLevel);
+        return (int)Math.ceil(doubleZoomLevel);
     }
     
     static public double zoomLevelToMpx(int zoomLevel)

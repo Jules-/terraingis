@@ -52,11 +52,10 @@ public class MapView extends SurfaceView
         layerManager.appendTileLayer(tileProvider, context);
     }
     
-    // attributes
-    
-    public void setZoomLevel(int zoomLevel)
+    // attributes    
+    public void setZoom(float zoom)
     {
-        layerManager.setZoomLevel(zoomLevel);
+        layerManager.setZoom(zoom);
         changeScroll();
     }
     

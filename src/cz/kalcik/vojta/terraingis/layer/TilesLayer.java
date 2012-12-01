@@ -41,6 +41,7 @@ public class TilesLayer implements ILayer
     
     private final Context aContext;
     private LayerManager layerManager;
+    private double scale;
     
     /**
      * constructor
@@ -68,8 +69,14 @@ public class TilesLayer implements ILayer
     public void draw(Canvas canvas, Rect screenRect)
     {
         int zoomLevel = LayerManager.mpxToZoomLevel(layerManager.getZoom());
+        double tilesZoom = LayerManager.zoomLevelToMpx(zoomLevel);
+        
+        scale = layerManager.getZoom() / tilesZoom;
+               
         mWorldSize_2 = TileSystem.MapSize(zoomLevel) >> 1;
         
+        rectRealToTiles(screenRect);
+
         screenRect.offset(mWorldSize_2, mWorldSize_2);
         
         drawTiles(canvas, zoomLevel, TileSystem.getTileSize(), screenRect);      
@@ -81,6 +88,9 @@ public class TilesLayer implements ILayer
                                      final Rect tileRect)
     {
         tileRect.offset(-mWorldSize_2, -mWorldSize_2);
+
+        rectTilesToReal(tileRect);
+        
         currentMapTile.setBounds(tileRect);
         currentMapTile.draw(c);
     }
@@ -155,5 +165,31 @@ public class TilesLayer implements ILayer
             }
         }
         return mLoadingTile;
+    }
+    
+    private void rectRealToTiles(Rect rect)
+    {
+        rect.set(coordRealToTiles(rect.left),
+                 coordRealToTiles(rect.top),
+                 coordRealToTiles(rect.right),
+                 coordRealToTiles(rect.bottom));        
+    }
+
+    private void rectTilesToReal(Rect rect)
+    {
+        rect.set(coordTilesRealTo(rect.left),
+                 coordTilesRealTo(rect.top),
+                 coordTilesRealTo(rect.right),
+                 coordTilesRealTo(rect.bottom));         
+    }
+    
+    private int coordRealToTiles(int coord)
+    {
+        return (int)Math.round(coord * scale);
+    }
+    
+    private int coordTilesRealTo(int coord)
+    {
+        return (int)Math.round(coord / scale);
     }
 }
