@@ -8,13 +8,26 @@ import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+/**
+ * main class for viewing map
+ * @author jules
+ *
+ */
 public class MapView extends SurfaceView
 {
-    private LayerManager layerManager = new LayerManager(); 
+    private LayerManager layerManager = new LayerManager();
+    private final String LOG_TAG = "TerrainGIS";
+    
+    // drawing
+    private PointF touchPoint = new PointF();
     
     // public methods ======================================================================
     
@@ -68,6 +81,35 @@ public class MapView extends SurfaceView
         changeScroll();
     }
     
+    @Override
+    public boolean onTouchEvent(MotionEvent e)
+    {      
+        float x = e.getX();
+        float y = e.getY();
+        
+        int action = e.getAction() & MotionEvent.ACTION_MASK;
+        
+        if(action == MotionEvent.ACTION_DOWN)
+        {
+            touchPoint.set(x, y);
+        }
+        else if(action == MotionEvent.ACTION_MOVE)
+        {
+            int diffX = (int)Math.round(x - touchPoint.x);
+            int diffY = (int)Math.round(y - touchPoint.y);
+            
+            if(Math.abs(diffX) > 1 || Math.abs(diffY) > 1)
+            {
+                layerManager.offsetPx(-diffX, diffY);
+                
+                changeScroll();
+                
+                touchPoint.set(x, y);
+            }
+        }
+
+        return true;
+    }
     // private methods =====================================================================
     
     /**
@@ -84,6 +126,6 @@ public class MapView extends SurfaceView
     {
         Point position = layerManager.getPositionPx(); 
         scrollTo(position.x - getWidth()/2, -position.y - getHeight()/2);
-        this.invalidate();
+        invalidate();
     }
 }

@@ -19,7 +19,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
-public class TilesLayer extends AbstarctLayer
+public class TilesLayer implements ILayer
 {
     /** Current tile source */
     protected final MapTileProviderBase mTileProvider;
@@ -65,9 +65,9 @@ public class TilesLayer extends AbstarctLayer
        
 
     @Override
-    public void draw(Canvas canvas, Rect screenRect, double zoom)
+    public void draw(Canvas canvas, Rect screenRect)
     {
-        int zoomLevel = LayerManager.mpxToZoomLevel(zoom);
+        int zoomLevel = LayerManager.mpxToZoomLevel(layerManager.getZoom());
         mWorldSize_2 = TileSystem.MapSize(zoomLevel) >> 1;
         
         screenRect.offset(mWorldSize_2, mWorldSize_2);
