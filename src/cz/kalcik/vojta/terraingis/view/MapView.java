@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis.view;
 
 import org.osmdroid.tileprovider.MapTileProviderBase;
+import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 
 import com.jhlabs.map.proj.Projection;
 
@@ -11,6 +12,7 @@ import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.util.Log;
@@ -51,6 +53,9 @@ public class MapView extends SurfaceView
     public void appendTileLayer(MapTileProviderBase tileProvider, Context context)
     {
         layerManager.appendTileLayer(tileProvider, context);
+        
+        Handler mTileRequestCompleteHandler = new SimpleInvalidationHandler(this);
+        tileProvider.setTileRequestCompleteHandler(mTileRequestCompleteHandler);
     }
     
     // attributes    
