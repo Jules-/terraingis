@@ -105,7 +105,7 @@ public class LayerManager
     
     public Point getPositionPx()
     {
-        Point2D.Double position = getMeteresPosition();
+        Point2D.Double position = getMeteresPosition(null);
         
         return new Point(meteresToPixels(position.x), meteresToPixels(position.y));
     }
@@ -125,14 +125,17 @@ public class LayerManager
     
     // private methods =====================================================================
     
-    private Point2D.Double getMeteresPosition()
+    private Point2D.Double getMeteresPosition(Point2D.Double output)
     {
         if(projection == null)
         {
             throw new TerrainGISException("Projection is not set!");
         }
         
-        Point2D.Double output = new Point2D.Double();
+        if(output == null)
+        {
+            output = new Point2D.Double();
+        }
         return projection.transform(latLonPosition, output);
     }
     

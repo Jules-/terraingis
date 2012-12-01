@@ -11,9 +11,9 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 /**
@@ -23,11 +23,19 @@ import android.view.SurfaceView;
  */
 public class MapView extends SurfaceView
 {
-    private LayerManager layerManager = new LayerManager();
+    // constants ==========================================================================
     private final String LOG_TAG = "TerrainGIS";
     
-    // drawing
+    // attributes =========================================================================
+    private LayerManager layerManager = new LayerManager();
+    
+    // touch attributes
+    enum TouchStatus {IDLE, TOUCH, PINCH};
     private PointF touchPoint = new PointF();
+    private PinchDistance pinchDistance = new PinchDistance();
+    private TouchStatus touchStatus = TouchStatus.IDLE;
+    private float scale;
+    private PointF pivot = new PointF();
     
     // public methods ======================================================================
     
@@ -70,6 +78,11 @@ public class MapView extends SurfaceView
     {
         super.onDraw(canvas);
         
+        if(touchStatus == TouchStatus.PINCH)
+        {            
+            canvas.scale(scale, scale, getScrollX() + pivot.x, getScrollY() + pivot.y);
+        }
+        
         layerManager.redraw(canvas, getScreenRect(null));
     }
     
@@ -84,28 +97,62 @@ public class MapView extends SurfaceView
     @Override
     public boolean onTouchEvent(MotionEvent e)
     {      
-        float x = e.getX();
-        float y = e.getY();
-        
         int action = e.getAction() & MotionEvent.ACTION_MASK;
         
+        // touch down
         if(action == MotionEvent.ACTION_DOWN)
         {
-            touchPoint.set(x, y);
+            touchStatus = TouchStatus.TOUCH;
+            
+            touchPoint.set(e.getX(), e.getY());
         }
+        // pinch down
+        else if(action == MotionEvent.ACTION_POINTER_DOWN)
+        {
+            touchStatus = TouchStatus.PINCH;
+            
+            pinchDistance.setStart(e.getX(0), e.getY(0), e.getX(1), e.getY(1));
+            pivot = pinchDistance.getMiddle();
+        }
+        // moving fingers
         else if(action == MotionEvent.ACTION_MOVE)
         {
-            int diffX = (int)Math.round(x - touchPoint.x);
-            int diffY = (int)Math.round(y - touchPoint.y);
-            
-            if(Math.abs(diffX) > 1 || Math.abs(diffY) > 1)
+            // moving map
+            if(touchStatus == TouchStatus.TOUCH)
             {
-                layerManager.offsetPx(-diffX, diffY);
+                float x = e.getX();
+                float y = e.getY();
                 
-                changeScroll();
+                int diffX = (int)Math.round(x - touchPoint.x);
+                int diffY = (int)Math.round(y - touchPoint.y);
                 
-                touchPoint.set(x, y);
+                if(Math.abs(diffX) > 1 || Math.abs(diffY) > 1)
+                {
+                    layerManager.offsetPx(-diffX, diffY);
+                    
+                    changeScroll();
+                    
+                    touchPoint.set(x, y);
+                }
             }
+            //zooming map
+            else if(touchStatus == TouchStatus.PINCH)
+            {
+                pinchDistance.set(e.getX(0) - e.getX(1), e.getY(0) - e.getY(1));
+                scale = pinchDistance.getRateDistance();
+                
+                invalidate();
+            }
+        }
+        // pinch up
+        else if(action == MotionEvent.ACTION_POINTER_UP)
+        {
+            touchStatus = TouchStatus.TOUCH;
+        }
+        // touch up
+        else if(action == MotionEvent.ACTION_UP)
+        {
+            touchStatus = TouchStatus.IDLE;
         }
 
         return true;
@@ -126,6 +173,42 @@ public class MapView extends SurfaceView
     {
         Point position = layerManager.getPositionPx(); 
         scrollTo(position.x - getWidth()/2, -position.y - getHeight()/2);
+        
         invalidate();
+    }
+    
+    // classes =============================================================================
+    /**
+     * class compute distance for zoom
+     * @author jules
+     *
+     */
+    private class PinchDistance
+    {
+        private float distance;
+        private float startDistance;
+        private PointF middle = new PointF();
+
+        public PointF getMiddle()
+        {
+            return middle;
+        }
+        
+        public void set(float distanceX, float distanceY)
+        {            
+            distance = FloatMath.sqrt(distanceX * distanceX + distanceY * distanceY);
+        }
+        
+        public void setStart(float x0, float y0, float x1, float y1)
+        {
+            middle.set((x0+x1)/2, (y0+y1)/2);
+            set(x1 - x0, y1 - y0);
+            startDistance = distance;
+        }
+        
+        public float getRateDistance()
+        {
+            return distance/startDistance;
+        }
     }
 }
