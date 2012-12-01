@@ -4,6 +4,7 @@ import org.osmdroid.tileprovider.MapTileProviderBase;
 
 import com.jhlabs.map.proj.Projection;
 
+import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -79,7 +80,7 @@ public class MapView extends SurfaceView
         
         if(touchStatus == TouchStatus.PINCH)
         {            
-            canvas.scale(scale, scale, getScrollX() + pivot.x, getScrollY() + pivot.y);
+            canvas.scale(scale, scale, pivot.x, pivot.y);
         }
         
         layerManager.redraw(canvas, getScreenRect(null));
@@ -146,7 +147,9 @@ public class MapView extends SurfaceView
         // pinch up
         else if(action == MotionEvent.ACTION_POINTER_UP)
         {
-            touchStatus = TouchStatus.TOUCH;
+            touchStatus = TouchStatus.IDLE;
+                
+            changeZoomByScale();
         }
         // touch up
         else if(action == MotionEvent.ACTION_UP)
@@ -175,6 +178,36 @@ public class MapView extends SurfaceView
         
         invalidate();
     }
+
+    /**
+     * change zoom by scale
+     */
+    private void changeZoomByScale()
+    {
+        if(scale != 1)
+        {
+            Point center = getCenter();
+            
+            float pivotCenterDistanceX = (center.x - pivot.x);
+            float pivotCenterDistanceY = (center.y - pivot.y);
+            
+            Point2D.Double pivotLatLon = layerManager.pxToLatLon(pivot, null);
+            
+            layerManager.setZoom(layerManager.getZoom()/scale);
+            
+            PointF localPivot = layerManager.latLonToPx(pivotLatLon, (PointF)null);
+            localPivot.set(localPivot.x + pivotCenterDistanceX,
+                           -(localPivot.y + pivotCenterDistanceY));
+            layerManager.setPositionPx(localPivot);
+            
+            changeScroll();
+        }
+    }
+    
+    private Point getCenter()
+    {
+        return new Point(getScrollX() + getWidth()/2, getScrollY() + getHeight()/2);
+    }
     
     // classes =============================================================================
     /**
@@ -200,7 +233,7 @@ public class MapView extends SurfaceView
         
         public void setStart(float x0, float y0, float x1, float y1)
         {
-            middle.set((x0+x1)/2, (y0+y1)/2);
+            middle.set(getScrollX() + (x0+x1)/2, getScrollY() + (y0+y1)/2);
             set(x1 - x0, y1 - y0);
             startDistance = distance;
         }

@@ -12,6 +12,7 @@ import cz.kalcik.vojta.terraingis.exception.TerrainGISException;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.Rect;
 
 /**
@@ -82,7 +83,7 @@ public class LayerManager
         this.zoom = zoom;
     }
     
-    public Point2D getLatLonPosition()
+    public Point2D.Double getLatLonPosition()
     {
         return latLonPosition;
     }
@@ -97,14 +98,50 @@ public class LayerManager
         latLonPosition.x = lon;
         latLonPosition.y = lat;
     } 
-    
+        
     public Point getPositionPx()
     {
-        Point2D.Double position = getMeteresPosition(null);
-        
-        return new Point(meteresToPixels(position.x), meteresToPixels(position.y));
+        return latLonToPx(latLonPosition, (Point)null);
     }
+
+    public void setPositionPx(Point pxPosition)
+    {               
+        pxToLatLon(pxPosition, latLonPosition);
+    }
+    
+    public void setPositionPx(PointF pxPosition)
+    {               
+        pxToLatLon(pxPosition, latLonPosition);
+    }
+    
+    public Point2D.Double pxToLatLon(Point input, Point2D.Double output)
+    {
+        Point2D.Double meters = pxToM(input, null);
         
+        return mToLatLon(meters, output);
+    }
+
+    public Point2D.Double pxToLatLon(PointF input, Point2D.Double output)
+    {
+        Point2D.Double meters = pxToM(input, null);
+        
+        return mToLatLon(meters, output);
+    }
+
+    public Point latLonToPx(Point2D.Double input, Point output)
+    {
+        Point2D.Double meters = latLonToM(input, null);
+        
+        return mToPx(meters, output);
+    }
+    
+    public PointF latLonToPx(Point2D.Double input, PointF output)
+    {
+        Point2D.Double meters = latLonToM(input, null);
+        
+        return mToPx(meters, output);
+    }
+    
     // static public methods ===============================================================
     
     static public int mpxToZoomLevel(double zoom)
@@ -117,10 +154,61 @@ public class LayerManager
     {
         return O_EARTH_ZOOM_LEVEL/Math.pow(2, (zoomLevel+8));
     }
-    
+   
     // private methods =====================================================================
     
-    private Point2D.Double getMeteresPosition(Point2D.Double output)
+    private Point mToPx(Point2D.Double input, Point output)
+    {
+        if(output == null)
+        {
+            output = new Point();
+        }
+        
+        output.set((int)Math.round(input.x/zoom),
+                  (int)Math.round(input.y/zoom));
+        
+        return output;
+    }
+    
+    private PointF mToPx(Point2D.Double input, PointF output)
+    {
+        if(output == null)
+        {
+            output = new PointF();
+        }
+        
+        output.set((float)(input.x/zoom), (float)(input.y/zoom));
+        
+        return output;
+    }
+
+    private Point2D.Double pxToM(Point input, Point2D.Double output)
+    {
+        if(output == null)
+        {
+            output = new Point2D.Double();
+        }
+        
+        output.x = input.x * zoom;
+        output.y = input.y * zoom;
+        
+        return output;
+    }
+    
+    private Point2D.Double pxToM(PointF input, Point2D.Double output)
+    {
+        if(output == null)
+        {
+            output = new Point2D.Double();
+        }
+        
+        output.x = input.x * zoom;
+        output.y = input.y * zoom;
+        
+        return output;
+    }
+
+    private Point2D.Double latLonToM(Point2D.Double input, Point2D.Double output)
     {
         if(projection == null)
         {
@@ -131,32 +219,22 @@ public class LayerManager
         {
             output = new Point2D.Double();
         }
-        return projection.transform(latLonPosition, output);
+        
+        return projection.transform(input, output);
     }
     
-    private void setMeteresPosition(Point2D.Double input)
+    private Point2D.Double mToLatLon(Point2D.Double input, Point2D.Double output)
     {
         if(projection == null)
         {
             throw new TerrainGISException("Projection is not set!");
         }
         
-        projection.inverseTransform(input, latLonPosition);
-    }
-    
-    private int meteresToPixels(double meters)
-    {
-        return (int)Math.round(meters/zoom);
-    }
-    
-    private double pixelsToMeters(int pixels)
-    {
-        return zoom * pixels;
-    }
-    
-    private void setPositionPx(Point pxPosition)
-    {               
-        Point2D.Double mPosition = new Point2D.Double(pixelsToMeters(pxPosition.x), pixelsToMeters(pxPosition.y));
-        setMeteresPosition(mPosition);
+        if(output == null)
+        {
+            output = new Point2D.Double();
+        }
+        
+        return projection.inverseTransform(input, output);
     }
 }

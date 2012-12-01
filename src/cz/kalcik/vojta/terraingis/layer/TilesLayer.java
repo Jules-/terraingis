@@ -69,6 +69,7 @@ public class TilesLayer implements ILayer
     public void draw(Canvas canvas, Rect screenRect)
     {
         int zoomLevel = LayerManager.mpxToZoomLevel(layerManager.getZoom());
+        zoomLevel = Math.max(Math.min(zoomLevel, mTileProvider.getMaximumZoomLevel()), mTileProvider.getMinimumZoomLevel());
         double tilesZoom = LayerManager.zoomLevelToMpx(zoomLevel);
         
         scale = layerManager.getZoom() / tilesZoom;
