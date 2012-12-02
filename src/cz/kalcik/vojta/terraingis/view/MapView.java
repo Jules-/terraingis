@@ -6,9 +6,11 @@ import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 import com.jhlabs.map.proj.Projection;
 
 import cz.kalcik.vojta.geom.Point2D;
+import cz.kalcik.vojta.terraingis.layer.ILayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -28,9 +30,10 @@ public class MapView extends SurfaceView
 {
     // constants ==========================================================================
     private final String LOG_TAG = "TerrainGIS";
+    private int WHITE = Color.rgb(255, 255, 255);
     
     // attributes =========================================================================
-    private LayerManager layerManager = new LayerManager();
+    private LayerManager layerManager = LayerManager.getInstance();
     
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -50,12 +53,26 @@ public class MapView extends SurfaceView
     }
     
     // layers
-    public void appendTileLayer(MapTileProviderBase tileProvider, Context context)
+    /**
+     * add tiles layer to layerManager
+     * @param tileProvider
+     * @param context
+     */
+    public void addTilesLayer(MapTileProviderBase tileProvider, Context context)
     {
-        layerManager.appendTileLayer(tileProvider, context);
+        layerManager.addTilesLayer(tileProvider, context);
         
         Handler mTileRequestCompleteHandler = new SimpleInvalidationHandler(this);
         tileProvider.setTileRequestCompleteHandler(mTileRequestCompleteHandler);
+    }
+    
+    /**
+     * add layer to layer manager
+     * @param layer
+     */
+    public void addLayer(ILayer layer)
+    {
+        layerManager.addLayer(layer);
     }
     
     // attributes    
@@ -67,7 +84,7 @@ public class MapView extends SurfaceView
     
     public void setLatLonPosition(double lon, double lat)
     {
-        layerManager.setLatLonPosition(lon, lat);
+        layerManager.setLonLatPosition(lon, lat);
         changeScroll();
     }
     
@@ -82,6 +99,8 @@ public class MapView extends SurfaceView
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
+        
+        canvas.drawColor(WHITE);
         
         if(touchStatus == TouchStatus.PINCH)
         {            
@@ -196,11 +215,11 @@ public class MapView extends SurfaceView
             float pivotCenterDistanceX = (center.x - pivot.x);
             float pivotCenterDistanceY = (center.y - pivot.y);
             
-            Point2D.Double pivotLatLon = layerManager.pxToLatLon(pivot, null);
+            Point2D.Double pivotLatLon = layerManager.pxToLonLat(pivot, null);
             
             layerManager.setZoom(layerManager.getZoom()/scale);
             
-            PointF localPivot = layerManager.latLonToPx(pivotLatLon, (PointF)null);
+            PointF localPivot = layerManager.lonLatToPx(pivotLatLon, (PointF)null);
             localPivot.set(localPivot.x + pivotCenterDistanceX,
                            -(localPivot.y + pivotCenterDistanceY));
             layerManager.setPositionPx(localPivot);

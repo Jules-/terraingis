@@ -4,6 +4,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 
 public interface ILayer
-{   
-    public abstract void draw(final Canvas canvas, Rect screenRect);
+{
+    public void draw(final Canvas canvas, Rect screenRect);
 }

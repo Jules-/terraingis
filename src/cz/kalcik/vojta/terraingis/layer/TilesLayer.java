@@ -40,18 +40,17 @@ public class TilesLayer implements ILayer
     protected final float mScale;
     
     private final Context aContext;
-    private LayerManager layerManager;
     private double scale;
+    private Rect currentRect = new Rect();
     
     /**
      * constructor
      * @param aTileProvider
      * @param aContext
      */
-    public TilesLayer(final MapTileProviderBase aTileProvider, final Context aContext, LayerManager layerManager)
+    public TilesLayer(final MapTileProviderBase aTileProvider, final Context aContext)
     {       
         this.aContext = aContext;
-        this.layerManager = layerManager;
         
         mResourceProxy = new DefaultResourceProxyImpl(aContext);
         mScale = mResourceProxy.getDisplayMetricsDensity();
@@ -68,6 +67,8 @@ public class TilesLayer implements ILayer
     @Override
     public void draw(Canvas canvas, Rect screenRect)
     {
+        LayerManager layerManager = LayerManager.getInstance();
+        
         int zoomLevel = LayerManager.mpxToZoomLevel(layerManager.getZoom());
         zoomLevel = Math.max(Math.min(zoomLevel, mTileProvider.getMaximumZoomLevel()), mTileProvider.getMinimumZoomLevel());
         double tilesZoom = LayerManager.zoomLevelToMpx(zoomLevel);
@@ -76,11 +77,12 @@ public class TilesLayer implements ILayer
                
         mWorldSize_2 = TileSystem.MapSize(zoomLevel) >> 1;
         
-        rectRealToTiles(screenRect);
+        currentRect.set(screenRect);
+        rectRealToTiles(currentRect);
 
-        screenRect.offset(mWorldSize_2, mWorldSize_2);
+        currentRect.offset(mWorldSize_2, mWorldSize_2);
         
-        drawTiles(canvas, zoomLevel, TileSystem.getTileSize(), screenRect);      
+        drawTiles(canvas, zoomLevel, TileSystem.getTileSize(), currentRect);      
     }    
     
     // protected methods ============================================================================
