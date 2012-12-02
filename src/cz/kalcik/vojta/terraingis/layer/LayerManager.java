@@ -42,7 +42,7 @@ public class LayerManager
     
     private Projection projection;
     
-    private ArrayList<ILayer> layers = new ArrayList<ILayer>();
+    private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
     private double zoom;
     private Point2D.Double lonLatPosition = new Point2D.Double(0,0);
     
@@ -61,14 +61,14 @@ public class LayerManager
      * add layer in layers
      * @param layer
      */
-    public void addLayer(ILayer layer)
+    public void addLayer(AbstractLayer layer)
     {
         layers.add(layer);
     }
     
     public void redraw(Canvas canvas, Rect screenRect)
     {
-        for(ILayer layer: layers)
+        for(AbstractLayer layer: layers)
         {
             layer.draw(canvas, screenRect);
         }

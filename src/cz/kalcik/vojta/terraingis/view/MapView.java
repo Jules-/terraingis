@@ -6,7 +6,7 @@ import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 import com.jhlabs.map.proj.Projection;
 
 import cz.kalcik.vojta.geom.Point2D;
-import cz.kalcik.vojta.terraingis.layer.ILayer;
+import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -70,7 +70,7 @@ public class MapView extends SurfaceView
      * add layer to layer manager
      * @param layer
      */
-    public void addLayer(ILayer layer)
+    public void addLayer(AbstractLayer layer)
     {
         layerManager.addLayer(layer);
     }

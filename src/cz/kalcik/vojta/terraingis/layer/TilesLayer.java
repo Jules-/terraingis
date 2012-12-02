@@ -19,7 +19,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
-public class TilesLayer implements ILayer
+public class TilesLayer extends AbstractLayer
 {
     /** Current tile source */
     protected final MapTileProviderBase mTileProvider;

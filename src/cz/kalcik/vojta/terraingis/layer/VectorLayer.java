@@ -13,7 +13,7 @@ import android.graphics.Rect;
  * @author jules
  *
  */
-public class VectorLayer implements ILayer
+public class VectorLayer extends AbstractLayer
 {
     // enum ===================================================================
     public enum LayerType {POINT, LINE, POLYGON};
