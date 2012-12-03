@@ -1,9 +1,14 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import cz.kalcik.vojta.geom.Rectangle2D;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 
+/**
+ * parent of all layers
+ * @author jules
+ *
+ */
 public abstract class AbstractLayer
 {
-    public abstract void draw(final Canvas canvas, Rect screenRect);
+    public abstract void draw(final Canvas canvas, Rectangle2D.Double rect);
 }

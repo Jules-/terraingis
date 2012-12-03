@@ -49,7 +49,7 @@ public class MainActivity extends FragmentActivity
         Projection projection = ProjectionFactory.fromPROJ4Specification(params.toArray(new String[params.size()]));
         map.setProjection(projection);
         map.setLatLonPosition(15.67322, 49.27138);
-        map.setZoom((float)1);
+        map.setZoom(1.195);
         
         final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
         MapTileProviderBase tileProvider = new MapTileProviderBasic((Context)this, tileSource);

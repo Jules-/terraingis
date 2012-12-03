@@ -34,6 +34,7 @@ public class MapView extends SurfaceView
     
     // attributes =========================================================================
     private LayerManager layerManager = LayerManager.getInstance();
+    private Navigator navigator = Navigator.getInstance();
     
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -42,6 +43,8 @@ public class MapView extends SurfaceView
     private TouchStatus touchStatus = TouchStatus.IDLE;
     private float scale;
     private PointF pivot = new PointF();
+    
+    // static attributes
     
     // public methods ======================================================================
     
@@ -76,16 +79,16 @@ public class MapView extends SurfaceView
     }
     
     // attributes    
-    public void setZoom(float zoom)
+    public void setZoom(double zoom)
     {
-        layerManager.setZoom(zoom);
-        changeScroll();
+        navigator.setZoom(zoom);
+        invalidate();
     }
     
     public void setLatLonPosition(double lon, double lat)
     {
-        layerManager.setLonLatPosition(lon, lat);
-        changeScroll();
+        navigator.setLonLatPosition(lon, lat);
+        invalidate();
     }
     
     public void setProjection(Projection projection)
@@ -107,15 +110,7 @@ public class MapView extends SurfaceView
             canvas.scale(scale, scale, pivot.x, pivot.y);
         }
         
-        layerManager.redraw(canvas, getScreenRect(null));
-    }
-    
-    @Override
-    protected void onSizeChanged(int width, int height, int oldwidth, int oldheight)
-    {
-        super.onSizeChanged(width, height, oldwidth, oldheight);
-        
-        changeScroll();
+        navigator.draw(canvas, getWidth(), getHeight());
     }
     
     @Override
@@ -152,9 +147,9 @@ public class MapView extends SurfaceView
                 
                 if(Math.abs(diffX) > 1 || Math.abs(diffY) > 1)
                 {
-                    layerManager.offsetPx(-diffX, diffY);
+                    navigator.offsetSurfacePx(-diffX, -diffY);
                     
-                    changeScroll();
+                    invalidate();
                     
                     touchPoint.set(x, y);
                 }
@@ -183,25 +178,8 @@ public class MapView extends SurfaceView
 
         return true;
     }
+    
     // private methods =====================================================================
-    
-    /**
-     * Gets the current bounds of the screen in <I>screen coordinates</I>.
-     */
-    private Rect getScreenRect(final Rect reuse)
-    {
-        final Rect out = reuse == null ? new Rect() : reuse;
-        out.set(getScrollX(), getScrollY(), getScrollX() + getWidth(), getScrollY() + getHeight());
-        return out;
-    }
-    
-    private void changeScroll()
-    {
-        Point position = layerManager.getPositionPx(); 
-        scrollTo(position.x - getWidth()/2, -position.y - getHeight()/2);
-        
-        invalidate();
-    }
 
     /**
      * change zoom by scale
@@ -210,27 +188,10 @@ public class MapView extends SurfaceView
     {
         if(scale != 1)
         {
-            Point center = getCenter();
+            navigator.zoomByScale(scale, pivot);
             
-            float pivotCenterDistanceX = (center.x - pivot.x);
-            float pivotCenterDistanceY = (center.y - pivot.y);
-            
-            Point2D.Double pivotLatLon = layerManager.pxToLonLat(pivot, null);
-            
-            layerManager.setZoom(layerManager.getZoom()/scale);
-            
-            PointF localPivot = layerManager.lonLatToPx(pivotLatLon, (PointF)null);
-            localPivot.set(localPivot.x + pivotCenterDistanceX,
-                           -(localPivot.y + pivotCenterDistanceY));
-            layerManager.setPositionPx(localPivot);
-            
-            changeScroll();
+            invalidate();
         }
-    }
-    
-    private Point getCenter()
-    {
-        return new Point(getScrollX() + getWidth()/2, getScrollY() + getHeight()/2);
     }
     
     // classes =============================================================================

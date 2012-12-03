@@ -57,15 +57,11 @@ public class VectorLayer extends AbstractLayer
      * draw objects to canvas
      */
     @Override
-    public void draw(Canvas canvas, Rect screenRect)
+    public void draw(Canvas canvas, Rectangle2D.Double rect)
     {
-        LayerManager layerManager = LayerManager.getInstance();
-        layerManager.pxToM(screenRect, currentRect);
-        currentRect.y = -currentRect.y-currentRect.height; 
-        
         for(VectorObject object: objects)
         {
-            object.draw(canvas, currentRect, paint);
+            object.draw(canvas, rect, paint);
         }
     }
     

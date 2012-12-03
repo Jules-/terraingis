@@ -8,6 +8,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.geom.Rectangle2D;
+import cz.kalcik.vojta.terraingis.view.Navigator;
 
 /**
  * class for objects in vector line layer
@@ -44,9 +45,9 @@ public class VectorPolyPoints extends VectorObject
     @Override
     public void draw(Canvas canvas, Rectangle2D.Double rect, Paint paint)
     {
-        if((bound != null) &&  bound.intersects(rect.x, rect.y, rect.height, rect.width))
+        if((bound != null) &&  bound.intersects(rect.x, rect.y, rect.width, rect.height))
         {
-            canvas.drawPath(getPathPx(), paint);
+            Navigator.getInstance().drawCanvasPathM(canvas, points, paint);
         }
     }
     
@@ -93,32 +94,5 @@ public class VectorPolyPoints extends VectorObject
                 bound.add(points.get(i));
             }
         }
-    }
-    
-    /**
-     * create array of floats coordinates for canvas.drawLines
-     * @param mPoints
-     * @return
-     */
-    private Path getPathPx()
-    {
-        Path result = new Path();
-        int size = points.size();
-        if(size < 2)
-        {
-            return result;
-        }
-        
-        LayerManager layerManager = LayerManager.getInstance();
-        PointF tempPoint = layerManager.mToPx(points.get(0), (PointF)null);
-        result.moveTo(tempPoint.x, -tempPoint.y);
-        
-        for(int i = 1; i < size; i++)
-        {
-            layerManager.mToPx(points.get(i), tempPoint);
-            result.lineTo(tempPoint.x, -tempPoint.y);
-        }
-        
-        return result;
     }
 }

@@ -8,6 +8,9 @@ import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.util.TileLooper;
 
+import cz.kalcik.vojta.geom.Rectangle2D;
+import cz.kalcik.vojta.terraingis.view.Navigator;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -42,6 +45,8 @@ public class TilesLayer extends AbstractLayer
     private final Context aContext;
     private double scale;
     private Rect currentRect = new Rect();
+    private Rectangle2D.Double currentRealRect = new Rectangle2D.Double();
+    private Navigator navigator = Navigator.getInstance();
     
     /**
      * constructor
@@ -65,20 +70,19 @@ public class TilesLayer extends AbstractLayer
        
 
     @Override
-    public void draw(Canvas canvas, Rect screenRect)
+    public void draw(Canvas canvas, Rectangle2D.Double rect)
     {
-        LayerManager layerManager = LayerManager.getInstance();
-        
-        int zoomLevel = LayerManager.mpxToZoomLevel(layerManager.getZoom());
+        int zoomLevel = Navigator.mpxToZoomLevel(navigator.getZoom());
         zoomLevel = Math.max(Math.min(zoomLevel, mTileProvider.getMaximumZoomLevel()), mTileProvider.getMinimumZoomLevel());
-        double tilesZoom = LayerManager.zoomLevelToMpx(zoomLevel);
+        double tilesZoom = Navigator.zoomLevelToMpx(zoomLevel);
         
-        scale = layerManager.getZoom() / tilesZoom;
+        scale = navigator.getZoom() / tilesZoom;
                
         mWorldSize_2 = TileSystem.MapSize(zoomLevel) >> 1;
         
-        currentRect.set(screenRect);
-        rectRealToTiles(currentRect);
+        navigator.getPxRectangle(currentRealRect);
+        
+        rectRealToTiles(currentRealRect, currentRect);
 
         currentRect.offset(mWorldSize_2, mWorldSize_2);
         
@@ -92,10 +96,9 @@ public class TilesLayer extends AbstractLayer
     {
         tileRect.offset(-mWorldSize_2, -mWorldSize_2);
 
-        rectTilesToReal(tileRect);
+        rectTilesToReal(tileRect, currentRealRect);
         
-        currentMapTile.setBounds(tileRect);
-        currentMapTile.draw(c);
+        navigator.drawCanvasDraweblePx(c, currentMapTile, currentRealRect);
     }
     
     // private methods ==============================================================================
@@ -170,29 +173,29 @@ public class TilesLayer extends AbstractLayer
         return mLoadingTile;
     }
     
-    private void rectRealToTiles(Rect rect)
+    private void rectRealToTiles(Rectangle2D.Double input, Rect output)
     {
-        rect.set(coordRealToTiles(rect.left),
-                 coordRealToTiles(rect.top),
-                 coordRealToTiles(rect.right),
-                 coordRealToTiles(rect.bottom));        
+        output.set(coordRealToTiles(input.x),
+                   coordRealToTiles(-(input.y+input.height)),
+                   coordRealToTiles(input.x+input.width),
+                   coordRealToTiles(-input.y));        
     }
 
-    private void rectTilesToReal(Rect rect)
+    private void rectTilesToReal(Rect input, Rectangle2D.Double output)
     {
-        rect.set(coordTilesRealTo(rect.left),
-                 coordTilesRealTo(rect.top),
-                 coordTilesRealTo(rect.right),
-                 coordTilesRealTo(rect.bottom));         
+        output.setRect(coordTilesToReal(input.left),
+                       coordTilesToReal(-input.bottom),
+                       coordTilesToReal(input.right-input.left),
+                       coordTilesToReal(input.bottom-input.top));         
     }
     
-    private int coordRealToTiles(int coord)
+    private int coordRealToTiles(double coord)
     {
         return (int)Math.round(coord * scale);
     }
     
-    private int coordTilesRealTo(int coord)
+    private double coordTilesToReal(double coord)
     {
-        return (int)Math.round(coord / scale);
+        return coord / scale;
     }
 }
