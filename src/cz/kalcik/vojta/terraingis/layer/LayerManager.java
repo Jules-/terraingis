@@ -68,6 +68,14 @@ public class LayerManager
         }
     }
    
+    public void onDetach()
+    {
+        for(AbstractLayer layer: layers)
+        {
+            layer.onDetach();
+        }
+    }
+    
     // getter setter =======================================================================
     
     public Projection getProjection()

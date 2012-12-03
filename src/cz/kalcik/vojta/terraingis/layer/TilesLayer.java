@@ -7,6 +7,7 @@ import org.osmdroid.ResourceProxy;
 import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.util.TileLooper;
+import org.osmdroid.views.MapView;
 
 import cz.kalcik.vojta.geom.Rectangle2D;
 import cz.kalcik.vojta.terraingis.view.Navigator;
@@ -87,7 +88,13 @@ public class TilesLayer extends AbstractLayer
         currentRect.offset(mWorldSize_2, mWorldSize_2);
         
         drawTiles(canvas, zoomLevel, TileSystem.getTileSize(), currentRect);      
-    }    
+    }
+    
+    @Override
+    public void onDetach()
+    {
+        mTileProvider.detach();
+    }
     
     // protected methods ============================================================================
     

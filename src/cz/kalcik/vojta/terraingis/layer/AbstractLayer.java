@@ -11,4 +11,5 @@ import android.graphics.Canvas;
 public abstract class AbstractLayer
 {
     public abstract void draw(final Canvas canvas, Rectangle2D.Double rect);
+    public abstract void onDetach();
 }

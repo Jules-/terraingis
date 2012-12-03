@@ -15,6 +15,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.util.Log;
@@ -177,6 +178,14 @@ public class MapView extends SurfaceView
         }
 
         return true;
+    }
+    
+    @Override
+    public Parcelable onSaveInstanceState()
+    {
+        layerManager.onDetach();
+        
+        return super.onSaveInstanceState();
     }
     
     // private methods =====================================================================

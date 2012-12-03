@@ -76,6 +76,13 @@ public class VectorLayer extends AbstractLayer
         objects.add(object);
     }
     
+    @Override
+    public void onDetach()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+    
     // private methods ========================================================
     private void setStyleByType()
     {
