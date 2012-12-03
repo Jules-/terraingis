@@ -15,7 +15,7 @@ import cz.kalcik.vojta.terraingis.view.Navigator;
  * @author jules
  *
  */
-public class VectorPolyPoints extends VectorObject
+public abstract class VectorPolyPoints extends VectorObject
 {
     // attributes ==================================================================
     ArrayList<Point2D.Double> points;
@@ -42,14 +42,11 @@ public class VectorPolyPoints extends VectorObject
     }
     
     // public methods ===============================================================
+    /**
+     * draw object
+     */
     @Override
-    public void draw(Canvas canvas, Rectangle2D.Double rect, Paint paint)
-    {
-        if((bound != null) &&  bound.intersects(rect.x, rect.y, rect.width, rect.height))
-        {
-            Navigator.getInstance().drawCanvasPathM(canvas, points, paint);
-        }
-    }
+    abstract public void draw(Canvas canvas, Rectangle2D.Double rect, Paint paint);
     
     /**
      * add latlon points
@@ -94,5 +91,10 @@ public class VectorPolyPoints extends VectorObject
                 bound.add(points.get(i));
             }
         }
+    }
+    
+    protected boolean isObjectInRect(Rectangle2D.Double rect)
+    {
+        return (bound != null) &&  bound.intersects(rect.x, rect.y, rect.width, rect.height);
     }
 }

@@ -2,7 +2,12 @@ package cz.kalcik.vojta.terraingis.layer;
 
 import java.util.ArrayList;
 
+import android.graphics.Canvas;
+import android.graphics.Paint;
+
 import cz.kalcik.vojta.geom.Point2D;
+import cz.kalcik.vojta.geom.Rectangle2D.Double;
+import cz.kalcik.vojta.terraingis.view.Navigator;
 
 public class VectorPolygon extends VectorPolyPoints
 {
@@ -22,5 +27,16 @@ public class VectorPolygon extends VectorPolyPoints
     public VectorPolygon(ArrayList<Point2D.Double> points)
     {
         super(points);
+    }
+    
+    // public methods ===============================================
+
+    @Override
+    public void draw(Canvas canvas, Double rect, Paint paint)
+    {
+        if(isObjectInRect(rect))
+        {
+            Navigator.getInstance().drawCanvasPathM(canvas, points, paint);
+        }
     }
 }

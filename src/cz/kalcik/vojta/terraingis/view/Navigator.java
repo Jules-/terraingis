@@ -182,6 +182,29 @@ public class Navigator
         canvas.drawPath(path, paint);
     }
     
+    public void drawLinesM(Canvas canvas, ArrayList<Point2D.Double> points, Paint paint)
+    {
+        int size = points.size();
+        if(size < 2)
+        {
+            return;
+        }      
+        
+        Point2D.Double pointPx = mToPx(points.get(0), null);
+        PointF previousSurfacePoint = pxToSurfacePx(pointPx, null);
+        PointF currentSurfacePoint = new PointF();
+        
+        for(int i = 1; i < size; i++)
+        {
+            mToPx(points.get(i), pointPx);
+            pxToSurfacePx(pointPx, currentSurfacePoint);
+            
+            canvas.drawLine(previousSurfacePoint.x, previousSurfacePoint.y,
+                            currentSurfacePoint.x, currentSurfacePoint.y, paint);
+            previousSurfacePoint.set(currentSurfacePoint);
+        }
+    }
+    
     /**
      * change zoom by scale and position by pivot
      * @param scale
