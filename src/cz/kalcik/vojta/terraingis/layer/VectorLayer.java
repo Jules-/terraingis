@@ -16,14 +16,14 @@ import android.graphics.Rect;
 public class VectorLayer extends AbstractLayer
 {
     // enum ===================================================================
-    public enum LayerType {POINT, LINE, POLYGON};
+    public enum VectorLayerType {POINT, LINE, POLYGON};
     
     // attributes ==============================================================
     private ArrayList<VectorObject> objects = new ArrayList<VectorObject>();
     Rectangle2D.Double currentRect = new Rectangle2D.Double();
     Paint paint;
     AttributesTable attributes;
-    LayerType type;
+    VectorLayerType type;
     
     // constructors ============================================================
 
@@ -31,7 +31,7 @@ public class VectorLayer extends AbstractLayer
      * constructor
      * @param type
      */
-    public VectorLayer(LayerType type)
+    public VectorLayer(VectorLayerType type)
     {
         this(type, null);
     }
@@ -41,7 +41,7 @@ public class VectorLayer extends AbstractLayer
      * @param type
      * @param paint
      */
-    public VectorLayer(LayerType type, Paint paint)
+    public VectorLayer(VectorLayerType type, Paint paint)
     {
         this.type = type;
         if(paint == null)
@@ -50,6 +50,8 @@ public class VectorLayer extends AbstractLayer
         }
         
         this.paint = paint;
+        
+        setStyleByType();
     }
     
     // public methods =========================================================
@@ -72,5 +74,18 @@ public class VectorLayer extends AbstractLayer
     public void addObject(VectorObject object)
     {
         objects.add(object);
+    }
+    
+    // private methods ========================================================
+    private void setStyleByType()
+    {
+        if(type == VectorLayerType.POLYGON)
+        {
+            paint.setStyle(Paint.Style.FILL);
+        }
+        else if(type == VectorLayerType.LINE)
+        {
+            paint.setStyle(Paint.Style.STROKE);
+        }
     }
 }
