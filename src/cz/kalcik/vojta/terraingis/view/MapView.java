@@ -6,19 +6,17 @@ import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 import com.jhlabs.map.proj.Projection;
 
 import cz.kalcik.vojta.geom.Point2D;
+import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.FloatMath;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 
@@ -36,6 +34,11 @@ public class MapView extends SurfaceView
     // attributes =========================================================================
     private LayerManager layerManager = LayerManager.getInstance();
     private Navigator navigator = Navigator.getInstance();
+    private Settings settings;
+    
+    private boolean runLocation = false;
+    private Point2D.Double locationM = new Point2D.Double(0,0); // location from GPS or Wi-Fi
+    private boolean freezLocation = true;
     
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -54,6 +57,7 @@ public class MapView extends SurfaceView
         super(context, attrs);
         
         this.setWillNotDraw(false);
+        settings = new Settings(context);
     }
     
     // layers
@@ -86,15 +90,54 @@ public class MapView extends SurfaceView
         invalidate();
     }
     
-    public void setLatLonPosition(double lon, double lat)
+    /**
+     * set center of view
+     * @param lon
+     * @param lat
+     */
+    public synchronized void setLonLatPosition(double lon, double lat)
     {
         navigator.setLonLatPosition(lon, lat);
         invalidate();
     }
     
+    /**
+     * set location
+     * @param location
+     */
+    public synchronized void setLonLatLocation(Point2D.Double location)
+    {
+        if(freezLocation)
+        {
+            navigator.setLonLatPosition(location);
+        }
+        layerManager.lonLatToM(location, locationM);
+        invalidate();
+    }
+
+    /**
+     * set projection of layers
+     * @param projection
+     */
     public void setProjection(Projection projection)
     {
         layerManager.setProjection(projection);
+    }
+    
+    /**
+     * start location service
+     */
+    public void startLocation()
+    {
+        runLocation = true;
+    }
+
+    /**
+     * stop location service
+     */
+    public void stopLocation()
+    {
+        runLocation = false;
     }
     
     // on methods ==========================================================================
@@ -112,6 +155,11 @@ public class MapView extends SurfaceView
         }
         
         navigator.draw(canvas, getWidth(), getHeight());
+        
+        if(runLocation)
+        {
+            showLocation(canvas);
+        }
     }
     
     @Override
@@ -201,6 +249,11 @@ public class MapView extends SurfaceView
             
             invalidate();
         }
+    }
+    
+    private void showLocation(Canvas canvas)
+    {
+        navigator.drawIconM(canvas, locationM, settings.getLocationIcon());
     }
     
     // classes =============================================================================

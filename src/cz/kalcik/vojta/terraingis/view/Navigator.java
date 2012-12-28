@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.geom.Rectangle2D;
@@ -39,10 +40,9 @@ public class Navigator
     
     private double zoom = DEFAULT_ZOOM;
     private Point2D.Double positionM = new Point2D.Double(0,0);
-    private Point2D.Double tempPoint = new Point2D.Double(0,0);
     private LayerManager layerManager = LayerManager.getInstance();
-    Rect screen = new Rect();
-    Rectangle2D.Double pxScreen = new Rectangle2D.Double(); // area showed in screen in pixels
+    private Rect screen = new Rect();
+    private Rectangle2D.Double pxScreen = new Rectangle2D.Double(); // area showed in screen in pixels
     
     // getter setter ======================================================================
     
@@ -92,7 +92,7 @@ public class Navigator
      */
     public Rectangle2D.Double getPxRectangle(Rectangle2D.Double output)
     {
-        mToPx(positionM, tempPoint);
+        Point2D.Double tempPoint = mToPx(positionM, null);
         int width = screen.width();
         int height = screen.height();
         
@@ -206,6 +206,30 @@ public class Navigator
     }
     
     /**
+     * draw icon to position
+     * @param canvas
+     * @param point
+     * @param icon
+     */
+    public synchronized void drawIconM(Canvas canvas, Point2D.Double point, Drawable icon)
+    {
+        Point2D.Double pointPx = mToPx(point, null);
+
+        if(pxScreen.contains(pointPx.x, pointPx.y))
+        {
+            PointF pointSurface = pxToSurfacePx(pointPx, null);
+            float iconWidthHalf = (float)icon.getIntrinsicWidth() / 2;
+            float iconHeightHalf = (float)icon.getIntrinsicHeight() / 2;
+            Rect bounds = new Rect((int)Math.round(pointSurface.x-iconWidthHalf),
+                                   (int)Math.round(pointSurface.y-iconHeightHalf),
+                                   (int)Math.round(pointSurface.x+iconWidthHalf),
+                                   (int)Math.round(pointSurface.y+iconHeightHalf));
+            icon.setBounds(bounds);
+            icon.draw(canvas);
+        }
+    }
+    
+    /**
      * change zoom by scale and position by pivot
      * @param scale
      * @param pivot
@@ -214,7 +238,7 @@ public class Navigator
     {
         Point2D.Double tempPivot = surfacePxToPx(pivot, null);
         
-        mToPx(positionM, tempPoint);
+        Point2D.Double tempPoint = mToPx(positionM, null);
         
         double pivotCenterDistanceX = (tempPoint.x - tempPivot.x);
         double pivotCenterDistanceY = (tempPoint.y - tempPivot.y);

@@ -14,26 +14,81 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.Window;
 
 import cz.kalcik.vojta.geom.Point2D;
+import cz.kalcik.vojta.terraingis.components.LocationWorker;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.layer.VectorLine;
 import cz.kalcik.vojta.terraingis.layer.VectorPolygon;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 public class MainActivity extends FragmentActivity
-{   
+{
+    // properties
+    private MenuItem menu_gps;
+    private MapView map;
+    private LocationWorker locationWorker;
+    
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         
-        MapView map = (MapView) findViewById(R.id.map);
+        //initLocation();
         
+        map = (MapView) findViewById(R.id.map);
+        locationWorker = new LocationWorker(this, map);
+        
+        createTestingMap();
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.activity_main, menu);
+        
+        menu_gps = menu.findItem(R.id.menu_gps);
+        
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        int id = item.getItemId();
+        if(menu_gps.getItemId() == id)
+        {
+            item.setChecked(!item.isChecked());
+            
+            if(item.isChecked())
+            {
+                locationWorker.start();
+            }
+            else
+            {
+                locationWorker.stop();
+            }
+        }
+     
+        return true;
+    }
+    
+    // private methods ========================================================
+    
+    private void createTestingMap()
+    {
         ArrayList<String> params = new ArrayList<String>();
         params.add("+proj=merc");
         params.add("+a=6378137");
@@ -49,7 +104,7 @@ public class MainActivity extends FragmentActivity
         // tiles layer
         Projection projection = ProjectionFactory.fromPROJ4Specification(params.toArray(new String[params.size()]));
         map.setProjection(projection);
-        map.setLatLonPosition(15.67322, 49.27138);
+        map.setLonLatPosition(15.67322, 49.27138);
         map.setZoom(1.195);
         
         final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
@@ -140,12 +195,5 @@ public class MainActivity extends FragmentActivity
         layer2.addObject(vectorPolygon2);
         
         map.addLayer(layer2);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
     }
 }
