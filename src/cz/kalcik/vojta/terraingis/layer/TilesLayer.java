@@ -91,7 +91,7 @@ public class TilesLayer extends AbstractLayer
     }
     
     @Override
-    public void onDetach()
+    public void detach()
     {
         mTileProvider.detach();
     }

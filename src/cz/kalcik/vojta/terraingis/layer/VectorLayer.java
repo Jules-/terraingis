@@ -77,7 +77,7 @@ public class VectorLayer extends AbstractLayer
     }
     
     @Override
-    public void onDetach()
+    public void detach()
     {
         // TODO Auto-generated method stub
         

@@ -9,6 +9,7 @@ import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import android.R.bool;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -19,6 +20,7 @@ import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 /**
  * main class for viewing map
@@ -38,7 +40,8 @@ public class MapView extends SurfaceView
     
     private boolean runLocation = false;
     private Point2D.Double locationM = new Point2D.Double(0,0); // location from GPS or Wi-Fi
-    private boolean freezLocation = true;
+    private boolean freezLocation = false;
+    private boolean locationValid = false;
     
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -112,6 +115,7 @@ public class MapView extends SurfaceView
             navigator.setLonLatPosition(location);
         }
         layerManager.lonLatToM(location, locationM);
+        locationValid = true;
         invalidate();
     }
 
@@ -138,8 +142,34 @@ public class MapView extends SurfaceView
     public void stopLocation()
     {
         runLocation = false;
+        setLocationValid(false);
+        invalidate();
     }
     
+    /**
+     * set if location is valid
+     * @param value
+     */
+    public void setLocationValid(boolean value)
+    {
+        locationValid = value;
+    }
+    
+    /**
+     * change position by location 
+     * @return true if success
+     */
+    public boolean showLocation()
+    {
+        if(locationValid)
+        {
+            navigator.setPositionM(locationM.x, locationM.y);
+            
+            invalidate();
+        }
+
+        return locationValid;
+    }
     // on methods ==========================================================================
     
     @Override
@@ -156,9 +186,9 @@ public class MapView extends SurfaceView
         
         navigator.draw(canvas, getWidth(), getHeight());
         
-        if(runLocation)
+        if(locationValid)
         {
-            showLocation(canvas);
+            drawLocation(canvas);
         }
     }
     
@@ -229,11 +259,9 @@ public class MapView extends SurfaceView
     }
     
     @Override
-    public Parcelable onSaveInstanceState()
+    public void onDetachedFromWindow()
     {
-        layerManager.onDetach();
-        
-        return super.onSaveInstanceState();
+        layerManager.detach();
     }
     
     // private methods =====================================================================
@@ -251,7 +279,7 @@ public class MapView extends SurfaceView
         }
     }
     
-    private void showLocation(Canvas canvas)
+    private void drawLocation(Canvas canvas)
     {
         navigator.drawIconM(canvas, locationM, settings.getLocationIcon());
     }

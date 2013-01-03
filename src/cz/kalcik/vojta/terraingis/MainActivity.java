@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.Toast;
 
 import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
@@ -34,7 +35,8 @@ import cz.kalcik.vojta.terraingis.view.MapView;
 public class MainActivity extends FragmentActivity
 {
     // properties
-    private MenuItem menu_gps;
+    private MenuItem menuGPS;
+    private MenuItem menuShowLocation;
     private MapView map;
     private LocationWorker locationWorker;
     
@@ -42,7 +44,6 @@ public class MainActivity extends FragmentActivity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         
         //initLocation();
@@ -59,7 +60,8 @@ public class MainActivity extends FragmentActivity
     {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         
-        menu_gps = menu.findItem(R.id.menu_gps);
+        menuGPS = menu.findItem(R.id.menu_gps);
+        menuShowLocation = menu.findItem(R.id.menu_show_location);
         
         return true;
     }
@@ -68,7 +70,7 @@ public class MainActivity extends FragmentActivity
     public boolean onOptionsItemSelected(MenuItem item)
     {
         int id = item.getItemId();
-        if(menu_gps.getItemId() == id)
+        if(menuGPS.getItemId() == id)
         {
             item.setChecked(!item.isChecked());
             
@@ -79,6 +81,13 @@ public class MainActivity extends FragmentActivity
             else
             {
                 locationWorker.stop();
+            }
+        }
+        else if(menuShowLocation.getItemId() == id)
+        {
+            if(!map.showLocation())
+            {
+                Toast.makeText(this, R.string.warning_location_fix, Toast.LENGTH_LONG).show();
             }
         }
      

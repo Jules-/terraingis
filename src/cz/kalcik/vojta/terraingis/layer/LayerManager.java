@@ -68,11 +68,11 @@ public class LayerManager
         }
     }
    
-    public void onDetach()
+    public void detach()
     {
         for(AbstractLayer layer: layers)
         {
-            layer.onDetach();
+            layer.detach();
         }
     }
     

@@ -253,6 +253,19 @@ public class Navigator
                      pxToM(tempPivot.y + pivotCenterDistanceY));
     }
     
+    /**
+     * set position in meters
+     * @param x
+     * @param y
+     */
+    public void setPositionM(double x, double y)
+    {
+        positionM.x = x;
+        positionM.y = y;
+        
+        updateDuplicateAttributes();
+    }
+    
     // static public methods ==============================================================
     
     static public int mpxToZoomLevel(double zoom)
@@ -439,18 +452,5 @@ public class Navigator
     private void updateDuplicateAttributes()
     {
         getPxRectangle(pxScreen);
-    }
-    
-    /**
-     * set position in meters
-     * @param x
-     * @param y
-     */
-    private void setPositionM(double x, double y)
-    {
-        positionM.x = x;
-        positionM.y = y;
-        
-        updateDuplicateAttributes();
     }
 }
