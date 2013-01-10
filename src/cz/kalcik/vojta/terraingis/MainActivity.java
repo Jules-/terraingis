@@ -34,12 +34,13 @@ import cz.kalcik.vojta.terraingis.view.MapView;
 
 public class MainActivity extends FragmentActivity
 {
-    // properties
+    // properties =========================================================
     private MenuItem menuGPS;
     private MenuItem menuShowLocation;
     private MapView map;
     private LocationWorker locationWorker;
     
+    // on methods =========================================================
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -60,7 +61,7 @@ public class MainActivity extends FragmentActivity
     {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         
-        menuGPS = menu.findItem(R.id.menu_gps);
+        menuGPS = menu.findItem(R.id.menu_location);
         menuShowLocation = menu.findItem(R.id.menu_show_location);
         
         return true;
@@ -94,6 +95,21 @@ public class MainActivity extends FragmentActivity
         return true;
     }
     
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        
+        locationWorker.pause();
+    }
+    
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        
+        locationWorker.resume();
+    }
     // private methods ========================================================
     
     private void createTestingMap()
