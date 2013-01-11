@@ -9,18 +9,15 @@ import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
-import android.R.bool;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
-import android.widget.Toast;
 
 /**
  * main class for viewing map

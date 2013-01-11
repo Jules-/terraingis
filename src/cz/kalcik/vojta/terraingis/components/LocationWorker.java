@@ -13,7 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.widget.Toast;
+import android.util.Log;
 
 /**
  * class for manage GPS and other location services
@@ -24,7 +24,7 @@ public class LocationWorker
 {
     // constants =====================================================================
     private final int MINTIME = 2000;
-    private final int MINDIST = 2;   
+    private final int MINDIST = 3;   
     private final FixReceiver FIX_RECEIVER = new FixReceiver();
     private final IntentFilter INTENT_FILTER = new IntentFilter("android.location.GPS_FIX_CHANGE");
     
@@ -38,6 +38,7 @@ public class LocationWorker
     private boolean runLocation = false;
     private Context context;
     private ProviderType currentProvider;
+    private int currentMindist = MINDIST;
         
     /**
      * constructor
@@ -48,7 +49,7 @@ public class LocationWorker
     {
         this.map = map;
         this.context = context;
-        hasGPS = hasGPSDevice(context);
+        hasGPS = hasGPSDevice();
         locationManager = 
                 (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         
@@ -62,8 +63,7 @@ public class LocationWorker
      */
     public void start()
     {
-        runGPS();
-        runNetwork();
+        startLocation();
         runLocation = true;
         
         map.startLocation();
@@ -87,8 +87,7 @@ public class LocationWorker
     {
         if(runLocation)
         {
-            runGPS();
-            runNetwork();
+            startLocation();
         }
     }   
  
@@ -109,7 +108,7 @@ public class LocationWorker
      * @param context
      * @return
      */
-    private boolean hasGPSDevice(Context context)
+    private boolean hasGPSDevice()
     {
         final LocationManager mgr = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
         if(mgr == null)
@@ -133,7 +132,7 @@ public class LocationWorker
     {
         if(hasGPS)
         {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MINTIME, MINDIST, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MINTIME, currentMindist, locationListener);
             
             context.registerReceiver(FIX_RECEIVER, INTENT_FILTER);
         }        
@@ -144,7 +143,17 @@ public class LocationWorker
      */
     private void runNetwork()
     {
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MINTIME, MINDIST, locationListener);       
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MINTIME, currentMindist, locationListener);       
+    }
+
+    /**
+     * stop location service
+     */
+    private void startLocation()
+    {
+        currentProvider = ProviderType.BOTH;
+        runGPS();
+        runNetwork();
     }
     
     /**
@@ -173,6 +182,8 @@ public class LocationWorker
         {
             runNetwork();
         }
+        
+        Log.d("TerrainGIS", "switched to "+currentProvider.toString());
     } 
     // classes =======================================================================
     
@@ -208,21 +219,33 @@ public class LocationWorker
             
             locationPoint.setLocation(location.getLongitude(), location.getLatitude());
             map.setLonLatLocation(locationPoint);
+            
+            float accuracy = location.getAccuracy();
+            
+            // change mindist by accuracy
+            if(accuracy < MINDIST * 2)
+            {
+                currentMindist = 0;
+            }
+            else
+            {
+                currentMindist = MINDIST;
+            }
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras)
         {
-            
+            Log.d("TerrainGIS", String.format("onStatusChanged %d", status));
         }
 
         public void onProviderEnabled(String provider)
         {
-
+            Log.d("TerrainGIS", "onProviderEnabled");
         }
 
         public void onProviderDisabled(String provider)
         {
-
+            Log.d("TerrainGIS", "onProviderDisabled");
         }
     }
     
@@ -236,7 +259,6 @@ public class LocationWorker
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            Toast.makeText(context, "fix change", Toast.LENGTH_LONG).show();
             Bundle b = intent.getExtras();
             boolean isFix = b.getBoolean("enabled");
             currentProvider = isFix ? ProviderType.GPS : ProviderType.BOTH;
