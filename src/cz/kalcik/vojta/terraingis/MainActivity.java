@@ -1,6 +1,8 @@
 package cz.kalcik.vojta.terraingis;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
@@ -13,20 +15,15 @@ import com.jhlabs.map.proj.ProjectionFactory;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Style;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.widget.Toast;
 
 import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
+import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.layer.VectorLine;
 import cz.kalcik.vojta.terraingis.layer.VectorPolygon;
@@ -43,6 +40,9 @@ public class MainActivity extends FragmentActivity
     private MenuItem menuShowLocation;
     private MapView map;
     private LocationWorker locationWorker;
+    private HideActionBarTask hideActionBarTask = new HideActionBarTask();
+    private Timer timer = new Timer();
+    private Settings settings = Settings.getInstance();
     
     // on methods =========================================================
     @Override
@@ -58,6 +58,7 @@ public class MainActivity extends FragmentActivity
         
         createTestingMap();
 
+        timer.schedule(hideActionBarTask, settings.getTimeHideActionBar());
     }
 
     @Override
@@ -251,4 +252,33 @@ public class MainActivity extends FragmentActivity
         
         map.addLayer(layer2);
     }
+    
+    // classes =================================================================
+    /**
+     * task for hidding action bar
+     * @author jules
+     *
+     */
+    class HideActionBarTask extends TimerTask
+    {
+        private HideActionBarRunnable hideActionBarRunnable = new HideActionBarRunnable();
+        
+        public void run()
+        {
+            MainActivity.this.runOnUiThread(hideActionBarRunnable);
+        }
+     }
+    
+    /**
+     * runnable hidding action bar
+     * @author jules
+     *
+     */
+    class HideActionBarRunnable implements Runnable
+    {
+        public void run()
+        {
+            getActionBar().hide();
+        }
+    };
 }

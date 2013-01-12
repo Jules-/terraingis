@@ -15,6 +15,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.FloatMath;
@@ -29,7 +30,6 @@ import android.view.SurfaceView;
 public class MapView extends SurfaceView
 {
     // constants ==========================================================================
-    private final String LOG_TAG = "TerrainGIS";
     private int WHITE = Color.rgb(255, 255, 255);
 
     // data =========================================================================
@@ -46,13 +46,15 @@ public class MapView extends SurfaceView
     // attributes =========================================================================
     private LayerManager layerManager = LayerManager.getInstance();
     private Navigator navigator = Navigator.getInstance();
-    private Settings settings;
+    private Settings settings = Settings.getInstance();
+    private Context context;
     
     private boolean runLocation = false;
     private Point2D.Double locationM = new Point2D.Double(0,0); // location from GPS or Wi-Fi
     private boolean freezLocation = false;
     private boolean locationValid = false;
     private MapViewData data = new MapViewData();
+    private Drawable locationIcon;
     
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -70,8 +72,9 @@ public class MapView extends SurfaceView
     {
         super(context, attrs);
         
+        this.context = context;
+        locationIcon = context.getResources().getDrawable(settings.getLocationIcon());
         this.setWillNotDraw(false);
-        settings = new Settings(context);
     }
     
     // layers
@@ -199,7 +202,7 @@ public class MapView extends SurfaceView
     {
         layerManager.setProjection(projection);
     }
-    
+     
     // on methods ==========================================================================
     
     @Override
@@ -311,7 +314,7 @@ public class MapView extends SurfaceView
     
     private void drawLocation(Canvas canvas)
     {
-        navigator.drawIconM(canvas, locationM, settings.getLocationIcon());
+        navigator.drawIconM(canvas, locationM, locationIcon);
     }
     
     // classes =============================================================================

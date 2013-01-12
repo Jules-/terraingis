@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis.components;
 
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.view.Navigator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
@@ -11,20 +12,21 @@ import android.graphics.drawable.Drawable;
  */
 public class Settings
 {
-    // attributes ===================================================================
-    private Context context;
-    private Drawable locationIcon;
-    private boolean hideActionBar = true;
+    // singleton code =====================================================================
     
-    /**
-     * constructor
-     * @param context
-     */
-    public Settings(Context context)
+    private static Settings instance = new Settings();
+    
+    private Settings() { }
+    
+    public static Settings getInstance()
     {
-        this.context = context;
-        locationIcon = context.getResources().getDrawable(R.drawable.location);
+        return instance;
     }
+    
+    // attributes ===================================================================
+    private int locationIcon = R.drawable.location;
+    private boolean hideActionBar = true;
+    private int timeHideActionBar = 3000;
     
     // getters, setters =============================================================
     
@@ -32,7 +34,7 @@ public class Settings
      * getter location icon
      * @return
      */
-    public Drawable getLocationIcon()
+    public int getLocationIcon()
     {
         return locationIcon;
     }
@@ -45,5 +47,15 @@ public class Settings
     public void setHideActionBar(boolean hideActionBar)
     {
         this.hideActionBar = hideActionBar;
+    }
+    
+    public int getTimeHideActionBar()
+    {
+        return timeHideActionBar;
+    }
+
+    public void setTimeHideActionBar(int timeHideActionBar)
+    {
+        this.timeHideActionBar = timeHideActionBar;
     }
 }
