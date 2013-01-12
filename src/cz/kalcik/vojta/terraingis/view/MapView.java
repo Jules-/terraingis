@@ -1,5 +1,7 @@
 package cz.kalcik.vojta.terraingis.view;
 
+import java.io.Serializable;
+
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 
@@ -29,6 +31,17 @@ public class MapView extends SurfaceView
     // constants ==========================================================================
     private final String LOG_TAG = "TerrainGIS";
     private int WHITE = Color.rgb(255, 255, 255);
+
+    // data =========================================================================
+    public static class MapViewData implements Serializable
+    {
+        private static final long serialVersionUID = -3597152260915322234L;
+        
+        // position only for save and restore (value in Navigator)
+        public Point2D.Double position = new Point2D.Double(0, 0);
+        // zoom only for save and restore (value in Navigator)
+        public double zoom;
+    }
     
     // attributes =========================================================================
     private LayerManager layerManager = LayerManager.getInstance();
@@ -39,6 +52,7 @@ public class MapView extends SurfaceView
     private Point2D.Double locationM = new Point2D.Double(0,0); // location from GPS or Wi-Fi
     private boolean freezLocation = false;
     private boolean locationValid = false;
+    private MapViewData data = new MapViewData();
     
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -82,8 +96,69 @@ public class MapView extends SurfaceView
     {
         layerManager.addLayer(layer);
     }
+       
+    /**
+     * start location service
+     */
+    public void startLocation()
+    {
+        runLocation = true;
+    }
+
+    /**
+     * stop location service
+     */
+    public void stopLocation()
+    {
+        runLocation = false;
+        setLocationValid(false);
+        invalidate();
+    }
+        
+    /**
+     * change position by location 
+     * @return true if success
+     */
+    public boolean showLocation()
+    {
+        if(locationValid)
+        {
+            navigator.setPositionM(locationM.x, locationM.y);
+            
+            invalidate();
+        }
+
+        return locationValid;
+    }
     
-    // attributes    
+    // getter setter =======================================================================
+    
+    public MapViewData getData()
+    {
+        Point2D.Double position = navigator.getPositionM();
+        data.position.setLocation(position.x, position.y);
+        data.zoom = navigator.getZoom();
+        return data;
+    }
+    
+    public void setData(Serializable data)
+    {
+        this.data = (MapViewData)data;
+        
+        Point2D.Double position = new Point2D.Double(this.data.position.x, this.data.position.y);
+        navigator.setPositionM(position);
+        navigator.setZoom(this.data.zoom);
+    }
+    
+    /**
+     * set if location is valid
+     * @param value
+     */
+    public void setLocationValid(boolean value)
+    {
+        locationValid = value;
+    }
+    
     public void setZoom(double zoom)
     {
         navigator.setZoom(zoom);
@@ -125,48 +200,6 @@ public class MapView extends SurfaceView
         layerManager.setProjection(projection);
     }
     
-    /**
-     * start location service
-     */
-    public void startLocation()
-    {
-        runLocation = true;
-    }
-
-    /**
-     * stop location service
-     */
-    public void stopLocation()
-    {
-        runLocation = false;
-        setLocationValid(false);
-        invalidate();
-    }
-    
-    /**
-     * set if location is valid
-     * @param value
-     */
-    public void setLocationValid(boolean value)
-    {
-        locationValid = value;
-    }
-    
-    /**
-     * change position by location 
-     * @return true if success
-     */
-    public boolean showLocation()
-    {
-        if(locationValid)
-        {
-            navigator.setPositionM(locationM.x, locationM.y);
-            
-            invalidate();
-        }
-
-        return locationValid;
-    }
     // on methods ==========================================================================
     
     @Override

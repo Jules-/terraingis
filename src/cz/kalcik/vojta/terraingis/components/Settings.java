@@ -14,6 +14,7 @@ public class Settings
     // attributes ===================================================================
     private Context context;
     private Drawable locationIcon;
+    private boolean hideActionBar = true;
     
     /**
      * constructor
@@ -34,5 +35,15 @@ public class Settings
     public Drawable getLocationIcon()
     {
         return locationIcon;
+    }
+    
+    public boolean isHideActionBar()
+    {
+        return hideActionBar;
+    }
+
+    public void setHideActionBar(boolean hideActionBar)
+    {
+        this.hideActionBar = hideActionBar;
     }
 }

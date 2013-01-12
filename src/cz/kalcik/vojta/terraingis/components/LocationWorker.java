@@ -1,5 +1,6 @@
 package cz.kalcik.vojta.terraingis.components;
 
+import java.io.Serializable;
 import java.util.List;
 
 import cz.kalcik.vojta.geom.Point2D;
@@ -30,16 +31,29 @@ public class LocationWorker
     
     private enum ProviderType {GPS, BOTH};
     
+    // data =========================================================================
+    public static class LocationWorkerData implements Serializable
+    {
+        private static final long serialVersionUID = -2490598884003552835L;
+        public boolean runLocation;
+        public int currentMindist;
+
+        public LocationWorkerData(boolean runLocation, int currentMindist)
+        {
+            this.runLocation = runLocation;
+            this.currentMindist = currentMindist;
+        }
+    }
+    
     // attributes ====================================================================
     private LocationManager locationManager;
     private LocationListener locationListener;
     private MapView map;
     private boolean hasGPS;
-    private boolean runLocation = false;
     private Context context;
     private ProviderType currentProvider;
-    private int currentMindist = MINDIST;
-        
+    private LocationWorkerData data = new LocationWorkerData(false, MINDIST);
+
     /**
      * constructor
      * @param context
@@ -64,7 +78,7 @@ public class LocationWorker
     public void start()
     {
         startLocation();
-        runLocation = true;
+        data.runLocation = true;
         
         map.startLocation();
     }
@@ -76,7 +90,7 @@ public class LocationWorker
     {
         map.stopLocation();
         
-        runLocation = false;
+        data.runLocation = false;
         stopLocation();
     }
     
@@ -85,7 +99,7 @@ public class LocationWorker
      */
     public void resume()
     {
-        if(runLocation)
+        if(data.runLocation)
         {
             startLocation();
         }
@@ -96,10 +110,27 @@ public class LocationWorker
      */
     public void pause()
     {
-        if(runLocation)
+        if(data.runLocation)
         {
             stopLocation();
         }        
+    }
+    
+    // getter setter =================================================================
+    
+    public LocationWorkerData getData()
+    {
+        return data;
+    }
+    
+    public void setData(Serializable data)
+    {
+        this.data = (LocationWorkerData)data;
+    }
+    
+    public boolean isRunLocation()
+    {
+        return data.runLocation;
     }
     
     // private methods ===============================================================
@@ -124,7 +155,7 @@ public class LocationWorker
         
         return providers.contains(LocationManager.GPS_PROVIDER);
     }
-    
+
     /**
      * start GPS listen
      */
@@ -132,7 +163,7 @@ public class LocationWorker
     {
         if(hasGPS)
         {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MINTIME, currentMindist, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MINTIME, data.currentMindist, locationListener);
             
             context.registerReceiver(FIX_RECEIVER, INTENT_FILTER);
         }        
@@ -143,7 +174,7 @@ public class LocationWorker
      */
     private void runNetwork()
     {
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MINTIME, currentMindist, locationListener);       
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MINTIME, data.currentMindist, locationListener);       
     }
 
     /**
@@ -225,11 +256,11 @@ public class LocationWorker
             // change mindist by accuracy
             if(accuracy < MINDIST * 2)
             {
-                currentMindist = 0;
+                data.currentMindist = 0;
             }
             else
             {
-                currentMindist = MINDIST;
+                data.currentMindist = MINDIST;
             }
         }
 

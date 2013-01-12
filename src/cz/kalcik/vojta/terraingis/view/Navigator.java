@@ -109,6 +109,17 @@ public class Navigator
         return output;
     }
     
+    public Point2D.Double getPositionM()
+    {
+        return positionM;
+    }
+    
+    public void setPositionM(Point2D.Double position)
+    {
+        positionM = position;
+        updateDuplicateAttributes();
+    }
+    
     // public methods =====================================================================
     
     /**
@@ -182,6 +193,12 @@ public class Navigator
         canvas.drawPath(path, paint);
     }
     
+    /**
+     * draw lines between points
+     * @param canvas
+     * @param points
+     * @param paint
+     */
     public void drawLinesM(Canvas canvas, ArrayList<Point2D.Double> points, Paint paint)
     {
         int size = points.size();

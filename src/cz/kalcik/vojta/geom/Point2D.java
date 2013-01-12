@@ -25,11 +25,14 @@
 
 package cz.kalcik.vojta.geom;
 
-public abstract class Point2D
-{
-    public static class Double extends Point2D
-    {
+import java.io.Serializable;
 
+public abstract class Point2D implements Cloneable
+{
+    public static class Double extends Point2D implements Serializable
+    {
+        private static final long serialVersionUID = -2717939656973033832L;
+     
         public double x;
         public double y;
 

@@ -34,8 +34,12 @@ import cz.kalcik.vojta.terraingis.view.MapView;
 
 public class MainActivity extends FragmentActivity
 {
+    // constants ==========================================================
+    private static String LOCATION_WORKER_DATA = "LocationWorkerData";
+    private static String MAP_VIEW_DATA = "MapViewData";
+    
     // properties =========================================================
-    private MenuItem menuGPS;
+    private MenuItem menuRunLocation;
     private MenuItem menuShowLocation;
     private MapView map;
     private LocationWorker locationWorker;
@@ -61,7 +65,7 @@ public class MainActivity extends FragmentActivity
     {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         
-        menuGPS = menu.findItem(R.id.menu_location);
+        menuRunLocation = menu.findItem(R.id.menu_location);
         menuShowLocation = menu.findItem(R.id.menu_show_location);
         
         return true;
@@ -71,7 +75,7 @@ public class MainActivity extends FragmentActivity
     public boolean onOptionsItemSelected(MenuItem item)
     {
         int id = item.getItemId();
-        if(menuGPS.getItemId() == id)
+        if(menuRunLocation.getItemId() == id)
         {
             item.setChecked(!item.isChecked());
             
@@ -110,6 +114,32 @@ public class MainActivity extends FragmentActivity
         
         locationWorker.resume();
     }
+    
+    @Override
+    public void onSaveInstanceState (Bundle outState)
+    {
+        // gps state
+        outState.putSerializable(LOCATION_WORKER_DATA, locationWorker.getData());
+        
+        // Map view state
+        outState.putSerializable(MAP_VIEW_DATA, map.getData());
+        
+        super.onSaveInstanceState(outState);
+    }
+    
+    @Override
+    public void onRestoreInstanceState (Bundle savedInstanceState)
+    {
+        super.onRestoreInstanceState(savedInstanceState);
+        
+        // GPS state
+        locationWorker.setData(savedInstanceState.getSerializable(LOCATION_WORKER_DATA));
+        menuRunLocation.setChecked(locationWorker.isRunLocation());
+        
+        // Map view state
+        map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
+    }
+    
     // private methods ========================================================
     
     private void createTestingMap()
