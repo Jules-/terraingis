@@ -44,6 +44,17 @@ public class MainActivity extends FragmentActivity
     private Timer timer = new Timer();
     private Settings settings = Settings.getInstance();
     
+    // public methods =====================================================
+    
+    /**
+     * show ActionBar
+     */
+    public void showActionBar()
+    {
+        getActionBar().show();
+        runTimerActionBar();
+    }
+    
     // on methods =========================================================
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -54,11 +65,12 @@ public class MainActivity extends FragmentActivity
         //initLocation();
         
         map = (MapView) findViewById(R.id.map);
+        map.setHeightActionBar(getActionBar().getHeight());
         locationWorker = new LocationWorker(this, map);
         
         createTestingMap();
 
-        timer.schedule(hideActionBarTask, settings.getTimeHideActionBar());
+        runTimerActionBar();
     }
 
     @Override
@@ -251,6 +263,11 @@ public class MainActivity extends FragmentActivity
         layer2.addObject(vectorPolygon2);
         
         map.addLayer(layer2);
+    }
+    
+    private void runTimerActionBar()
+    {
+        timer.schedule(hideActionBarTask, settings.getTimeHideActionBar());
     }
     
     // classes =================================================================

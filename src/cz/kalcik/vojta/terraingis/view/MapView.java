@@ -55,7 +55,8 @@ public class MapView extends SurfaceView
     private boolean locationValid = false;
     private MapViewData data = new MapViewData();
     private Drawable locationIcon;
-    
+    private int heightActionBar;
+
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
     private PointF touchPoint = new PointF();
@@ -201,6 +202,15 @@ public class MapView extends SurfaceView
     public void setProjection(Projection projection)
     {
         layerManager.setProjection(projection);
+    }
+    
+    /**
+     * set height of ActionBar
+     * @param heightActionBar
+     */
+    public void setHeightActionBar(int heightActionBar)
+    {
+        this.heightActionBar = heightActionBar;
     }
      
     // on methods ==========================================================================
