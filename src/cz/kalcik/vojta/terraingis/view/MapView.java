@@ -8,9 +8,11 @@ import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 import com.jhlabs.map.proj.Projection;
 
 import cz.kalcik.vojta.geom.Point2D;
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -19,6 +21,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.FloatMath;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 
@@ -48,6 +51,8 @@ public class MapView extends SurfaceView
     private Navigator navigator = Navigator.getInstance();
     private Settings settings = Settings.getInstance();
     private Context context;
+    private GestureDetector gestureDetector;
+    private MainActivity mainActivity;
     
     private boolean runLocation = false;
     private Point2D.Double locationM = new Point2D.Double(0,0); // location from GPS or Wi-Fi
@@ -55,7 +60,6 @@ public class MapView extends SurfaceView
     private boolean locationValid = false;
     private MapViewData data = new MapViewData();
     private Drawable locationIcon;
-    private int heightActionBar;
 
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -76,6 +80,8 @@ public class MapView extends SurfaceView
         this.context = context;
         locationIcon = context.getResources().getDrawable(settings.getLocationIcon());
         this.setWillNotDraw(false);
+        
+        gestureDetector =  new GestureDetector(context, new MySimpleOnGestureListener());
     }
     
     // layers
@@ -208,9 +214,9 @@ public class MapView extends SurfaceView
      * set height of ActionBar
      * @param heightActionBar
      */
-    public void setHeightActionBar(int heightActionBar)
+    public void setMainActivity(MainActivity mainActivity)
     {
-        this.heightActionBar = heightActionBar;
+        this.mainActivity = mainActivity;
     }
      
     // on methods ==========================================================================
@@ -238,6 +244,11 @@ public class MapView extends SurfaceView
     @Override
     public boolean onTouchEvent(MotionEvent e)
     {      
+        if(gestureDetector.onTouchEvent(e))
+        {
+            return true;
+        }
+        
         int action = e.getAction() & MotionEvent.ACTION_MASK;
         
         // touch down
@@ -360,5 +371,19 @@ public class MapView extends SurfaceView
         {
             return distance/startDistance;
         }
+    }
+    
+    private class MySimpleOnGestureListener extends GestureDetector.SimpleOnGestureListener
+    {
+        @Override
+        public boolean onSingleTapUp(MotionEvent arg0) 
+        {
+            if(touchPoint.y <= mainActivity.getActionBarHeight())
+            {
+                mainActivity.showActionBar();
+            }
+            
+            return true;
+        }        
     }
 }

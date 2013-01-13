@@ -41,7 +41,7 @@ public class MainActivity extends FragmentActivity
     private MapView map;
     private LocationWorker locationWorker;
     private HideActionBarTask hideActionBarTask = new HideActionBarTask();
-    private Timer timer = new Timer();
+    private Timer timer;
     private Settings settings = Settings.getInstance();
     
     // public methods =====================================================
@@ -55,6 +55,15 @@ public class MainActivity extends FragmentActivity
         runTimerActionBar();
     }
     
+    /**
+     * return height of ActionBar
+     * @return
+     */
+    public int getActionBarHeight()
+    {
+        return getActionBar().getHeight();
+    }
+    
     // on methods =========================================================
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -65,7 +74,7 @@ public class MainActivity extends FragmentActivity
         //initLocation();
         
         map = (MapView) findViewById(R.id.map);
-        map.setHeightActionBar(getActionBar().getHeight());
+        map.setMainActivity(this);
         locationWorker = new LocationWorker(this, map);
         
         createTestingMap();
@@ -267,6 +276,13 @@ public class MainActivity extends FragmentActivity
     
     private void runTimerActionBar()
     {
+        if(timer != null)
+        {
+            timer.cancel();
+            timer = null;
+        }
+        
+        timer = new Timer();
         timer.schedule(hideActionBarTask, settings.getTimeHideActionBar());
     }
     
