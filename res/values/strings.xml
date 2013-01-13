@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">TerrainGIS</string>
-    <string name="menu_location">Run location</string>
-    <string name="menu_show_location">Show location</string>
     <string name="warning_location_fix">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>
 </resources>

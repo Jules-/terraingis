@@ -40,7 +40,6 @@ public class MainActivity extends FragmentActivity
     private MenuItem menuShowLocation;
     private MapView map;
     private LocationWorker locationWorker;
-    private HideActionBarTask hideActionBarTask = new HideActionBarTask();
     private Timer timer;
     private Settings settings = Settings.getInstance();
     
@@ -52,7 +51,10 @@ public class MainActivity extends FragmentActivity
     public void showActionBar()
     {
         getActionBar().show();
-        runTimerActionBar();
+        if(settings.isHideActionBar())
+        {
+            runTimerActionBar();
+        }
     }
     
     /**
@@ -78,8 +80,10 @@ public class MainActivity extends FragmentActivity
         locationWorker = new LocationWorker(this, map);
         
         createTestingMap();
-
-        runTimerActionBar();
+        if(settings.isHideActionBar())
+        {
+            runTimerActionBar();
+        }
     }
 
     @Override
@@ -89,6 +93,7 @@ public class MainActivity extends FragmentActivity
         
         menuRunLocation = menu.findItem(R.id.menu_location);
         menuShowLocation = menu.findItem(R.id.menu_show_location);
+        setActionBarByLocation();
         
         return true;
     }
@@ -99,16 +104,15 @@ public class MainActivity extends FragmentActivity
         int id = item.getItemId();
         if(menuRunLocation.getItemId() == id)
         {
-            item.setChecked(!item.isChecked());
-            
-            if(item.isChecked())
-            {
-                locationWorker.start();
-            }
-            else
+            if(locationWorker.isRunLocation())
             {
                 locationWorker.stop();
             }
+            else
+            {
+                locationWorker.start();
+            }
+            setActionBarByLocation();
         }
         else if(menuShowLocation.getItemId() == id)
         {
@@ -274,16 +278,36 @@ public class MainActivity extends FragmentActivity
         map.addLayer(layer2);
     }
     
+    /**
+     * timer for hidding ActionBar
+     */
     private void runTimerActionBar()
     {
         if(timer != null)
         {
             timer.cancel();
-            timer = null;
+            timer.purge();
         }
         
         timer = new Timer();
-        timer.schedule(hideActionBarTask, settings.getTimeHideActionBar());
+        timer.schedule(new HideActionBarTask(), settings.getTimeHideActionBar());
+    }
+    
+    /**
+     * set icons in ActionBar by location
+     */
+    private void setActionBarByLocation()
+    {
+        if(locationWorker.isRunLocation())
+        {
+            menuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.gps_off));
+            menuShowLocation.setVisible(true);
+        }
+        else
+        {
+            menuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.gps_on));
+            menuShowLocation.setVisible(false);
+        }        
     }
     
     // classes =================================================================

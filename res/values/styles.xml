@@ -6,6 +6,7 @@
     </style>
     
     <style name="MyActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:displayOptions"></item>
         <item name="android:background">#40000000</item>
     </style>
 

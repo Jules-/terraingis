@@ -26,7 +26,7 @@ public class Settings
     // attributes ===================================================================
     private int locationIcon = R.drawable.location;
     private boolean hideActionBar = true;
-    private int timeHideActionBar = 3000;
+    private int timeHideActionBar = 5000;
     
     // getters, setters =============================================================
     
