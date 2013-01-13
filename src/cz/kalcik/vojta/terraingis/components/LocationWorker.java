@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -53,6 +54,7 @@ public class LocationWorker
     private Context context;
     private ProviderType currentProvider;
     private LocationWorkerData data = new LocationWorkerData(false, MINDIST);
+    private boolean validGPS = true; // for external bluetooth GPS
 
     /**
      * constructor
@@ -207,8 +209,9 @@ public class LocationWorker
     private void switchProvider()
     {
         stopLocation();
-        
+
         runGPS();
+        
         if(currentProvider == ProviderType.BOTH)
         {
             runNetwork();
@@ -242,10 +245,20 @@ public class LocationWorker
          */
         public void onLocationChanged(Location location)
         {
-            if(currentProvider == ProviderType.BOTH && location.getProvider().equals(LocationManager.GPS_PROVIDER))
+            // switch to GPS
+            if(currentProvider == ProviderType.BOTH &&
+               location.getProvider().equals(LocationManager.GPS_PROVIDER) &&
+               validGPS)
             {
                 currentProvider = ProviderType.GPS;
                 switchProvider();
+            }
+            
+            // not show not valid GPS
+            if(location.getProvider().equals(LocationManager.GPS_PROVIDER) && !validGPS)
+            {
+                map.setLocationValid(false);
+                return;
             }
             
             locationPoint.setLocation(location.getLongitude(), location.getLatitude());
@@ -266,17 +279,35 @@ public class LocationWorker
 
         public void onStatusChanged(String provider, int status, Bundle extras)
         {
-            Log.d("TerrainGIS", String.format("onStatusChanged %d", status));
+            Log.d("TerrainGIS", String.format("onStatusChanged %d %s", status, provider));
+            if(provider.equals(LocationManager.GPS_PROVIDER) && status != LocationProvider.AVAILABLE)
+            {
+                validGPS = false;
+                if(currentProvider != ProviderType.BOTH)
+                {
+                    currentProvider = ProviderType.BOTH;
+                    switchProvider();
+                }
+            }
+            else if(provider.equals(LocationManager.GPS_PROVIDER) && status == LocationProvider.AVAILABLE)
+            {
+                validGPS = true;
+            }
         }
 
         public void onProviderEnabled(String provider)
         {
-            Log.d("TerrainGIS", "onProviderEnabled");
+            Log.d("TerrainGIS", String.format("onProviderEnabled %s", provider));
+            if(provider.equals(LocationManager.GPS_PROVIDER))
+            {
+                currentProvider = ProviderType.BOTH;
+                switchProvider();
+            }
         }
 
         public void onProviderDisabled(String provider)
         {
-            Log.d("TerrainGIS", "onProviderDisabled");
+            Log.d("TerrainGIS", String.format("onProviderDisabled %s", provider));
         }
     }
     
@@ -293,6 +324,7 @@ public class LocationWorker
             Bundle b = intent.getExtras();
             boolean isFix = b.getBoolean("enabled");
             currentProvider = isFix ? ProviderType.GPS : ProviderType.BOTH;
+            Log.d("TerrainGIS", String.format("onReceive fix %s", currentProvider.toString()));
             
             switchProvider();
         }        

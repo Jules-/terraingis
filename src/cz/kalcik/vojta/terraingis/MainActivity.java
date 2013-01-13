@@ -160,7 +160,7 @@ public class MainActivity extends FragmentActivity
         
         // GPS state
         locationWorker.setData(savedInstanceState.getSerializable(LOCATION_WORKER_DATA));
-        menuRunLocation.setChecked(locationWorker.isRunLocation());
+        setActionBarByLocation();
         
         // Map view state
         map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
