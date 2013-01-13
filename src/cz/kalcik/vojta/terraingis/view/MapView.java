@@ -64,6 +64,7 @@ public class MapView extends SurfaceView
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
     private PointF touchPoint = new PointF();
+    private PointF touchDiff = new PointF(0, 0);
     private PinchDistance pinchDistance = new PinchDistance();
     private TouchStatus touchStatus = TouchStatus.IDLE;
     private float scale;
@@ -233,6 +234,11 @@ public class MapView extends SurfaceView
             canvas.scale(scale, scale, pivot.x, pivot.y);
         }
         
+        if(touchStatus == TouchStatus.TOUCH)
+        {            
+            canvas.translate(touchDiff.x, touchDiff.y);
+        }
+        
         navigator.draw(canvas, getWidth(), getHeight());
         
         if(locationValid)
@@ -257,10 +263,13 @@ public class MapView extends SurfaceView
             touchStatus = TouchStatus.TOUCH;
             
             touchPoint.set(e.getX(), e.getY());
+            touchDiff.set(0, 0);
         }
         // pinch down
         else if(action == MotionEvent.ACTION_POINTER_DOWN)
         {
+            changePositionByDiff();
+            
             touchStatus = TouchStatus.PINCH;
             
             pinchDistance.setStart(e.getX(0), e.getY(0), e.getX(1), e.getY(1));
@@ -275,16 +284,14 @@ public class MapView extends SurfaceView
                 float x = e.getX();
                 float y = e.getY();
                 
-                int diffX = (int)Math.round(x - touchPoint.x);
-                int diffY = (int)Math.round(y - touchPoint.y);
+                float diffX = x - touchPoint.x;
+                float diffY = y - touchPoint.y;
                 
-                if(Math.abs(diffX) > 1 || Math.abs(diffY) > 1)
+                if(Math.abs(diffX - touchDiff.x) > 1 || Math.abs(diffY - touchDiff.y) > 1)
                 {
-                    navigator.offsetSurfacePx(-diffX, -diffY);
+                    touchDiff.set(diffX, diffY);
                     
                     invalidate();
-                    
-                    touchPoint.set(x, y);
                 }
             }
             //zooming map
@@ -307,6 +314,8 @@ public class MapView extends SurfaceView
         else if(action == MotionEvent.ACTION_UP)
         {
             touchStatus = TouchStatus.IDLE;
+            
+            changePositionByDiff();
         }
 
         return true;
@@ -320,6 +329,20 @@ public class MapView extends SurfaceView
     
     // private methods =====================================================================
 
+    /**
+     * change position by diff of touch point
+     */
+    private void changePositionByDiff()
+    {
+        if(Math.abs(touchDiff.x) >= 0.5 || Math.abs(touchDiff.y) >= 0.5)
+        {
+            navigator.offsetSurfacePx(-touchDiff.x, -touchDiff.y);
+            touchDiff.set(0, 0);
+            
+            invalidate();
+        }
+    }
+    
     /**
      * change zoom by scale
      */
@@ -373,6 +396,11 @@ public class MapView extends SurfaceView
         }
     }
     
+    /**
+     * detector for gestures
+     * @author jules
+     *
+     */
     private class MySimpleOnGestureListener extends GestureDetector.SimpleOnGestureListener
     {
         @Override
