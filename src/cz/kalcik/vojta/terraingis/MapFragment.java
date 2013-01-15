@@ -26,6 +26,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+/**
+ * fragment with MapView
+ * @author jules
+ *
+ */
 public class MapFragment extends Fragment
 {
     // constants ==========================================================
@@ -140,7 +145,7 @@ public class MapFragment extends Fragment
         paint.setStrokeWidth(2);
         paint.setAntiAlias(true);
         
-        VectorLayer layer = new VectorLayer(VectorLayer.VectorLayerType.LINE, paint);
+        VectorLayer layer = new VectorLayer(VectorLayer.VectorLayerType.LINE, paint, "silnice");
         layer.addObject(vectorLine1);
         layer.addObject(vectorLine2);
         
@@ -189,7 +194,7 @@ public class MapFragment extends Fragment
         paint2.setColor(Color.rgb(0, 0, 255));
         paint2.setAntiAlias(true);
         
-        VectorLayer layer2 = new VectorLayer(VectorLayer.VectorLayerType.POLYGON, paint2);
+        VectorLayer layer2 = new VectorLayer(VectorLayer.VectorLayerType.POLYGON, paint2, "budovy");
         layer2.addObject(vectorPolygon1);
         layer2.addObject(vectorPolygon2);
         

@@ -17,6 +17,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.ListFragment;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -41,6 +42,7 @@ public class MainActivity extends FragmentActivity
     private LocationWorker locationWorker;
     private Settings settings = Settings.getInstance();
     private MapFragment mapFragment;
+    private LayersFragment layersFragment;
     
     // public methods =====================================================
     
@@ -55,6 +57,8 @@ public class MainActivity extends FragmentActivity
             runTimerActionBar();
         }
     }
+    
+    // getter, setter =====================================================
     
     /**
      * return height of ActionBar
@@ -72,7 +76,9 @@ public class MainActivity extends FragmentActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        layersFragment = (LayersFragment)getSupportFragmentManager().findFragmentById(R.id.layers_fragment);
         mapFragment = (MapFragment)getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+        
         MapView map = mapFragment.getMap();
         map.setMainActivity(this);
         
@@ -136,6 +142,8 @@ public class MainActivity extends FragmentActivity
         super.onResume();
         
         locationWorker.resume();
+        
+        layersFragment.reloadLayers();
     }
     
     @Override

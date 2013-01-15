@@ -31,9 +31,9 @@ public class VectorLayer extends AbstractLayer
      * constructor
      * @param type
      */
-    public VectorLayer(VectorLayerType type)
+    public VectorLayer(VectorLayerType type, String name)
     {
-        this(type, null);
+        this(type, null, name);
     }
     
     /**
@@ -41,7 +41,7 @@ public class VectorLayer extends AbstractLayer
      * @param type
      * @param paint
      */
-    public VectorLayer(VectorLayerType type, Paint paint)
+    public VectorLayer(VectorLayerType type, Paint paint, String name)
     {
         this.type = type;
         if(paint == null)
@@ -52,6 +52,8 @@ public class VectorLayer extends AbstractLayer
         this.paint = paint;
         
         setStyleByType();
+        
+        this.name = name;
     }
     
     // public methods =========================================================

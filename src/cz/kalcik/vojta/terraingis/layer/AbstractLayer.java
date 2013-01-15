@@ -10,6 +10,14 @@ import android.graphics.Canvas;
  */
 public abstract class AbstractLayer
 {
+    protected String name;
+    
     public abstract void draw(final Canvas canvas, Rectangle2D.Double rect);
     public abstract void detach();
+    
+    @Override
+    public String toString()
+    {
+        return name;
+    }
 }

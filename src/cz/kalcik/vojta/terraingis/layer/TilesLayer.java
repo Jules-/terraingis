@@ -1,5 +1,7 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import java.util.jar.Attributes.Name;
+
 import microsoft.mappoint.TileSystem;
 
 import org.osmdroid.DefaultResourceProxyImpl;
@@ -67,6 +69,8 @@ public class TilesLayer extends AbstractLayer
         }
         
         this.mTileProvider = aTileProvider;
+        
+        name = aTileProvider.getTileSource().name();
     }
        
 

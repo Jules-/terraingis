@@ -39,8 +39,7 @@ public class LayerManager
     
     // attributes =========================================================================
     
-    private Projection projection;
-    
+    private Projection projection;    
     private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
     
     // public methods ======================================================================
@@ -83,19 +82,31 @@ public class LayerManager
     }
     
     // getter setter =======================================================================
-    
+    /**
+     * @return the projection
+     */   
     public Projection getProjection()
     {
         return projection;
     }
 
+    /**
+     * set the projection
+     */
     public void setProjection(Projection projection)
     {
         this.projection = projection;
     }
     
-    // public methods =======================================================================
+    /**
+     * @return the layers
+     */
+    public ArrayList<AbstractLayer> getLayers()
+    {
+        return layers;
+    }
 
+    // public methods =======================================================================
     public Point2D.Double lonLatToM(Point2D.Double input, Point2D.Double output)
     {
         if(projection == null)
