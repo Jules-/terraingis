@@ -83,29 +83,6 @@ public class MapView extends SurfaceView
         
         gestureDetector =  new GestureDetector(context, new MySimpleOnGestureListener());
     }
-    
-    // layers
-    /**
-     * add tiles layer to layerManager
-     * @param tileProvider
-     * @param context
-     */
-    public void addTilesLayer(MapTileProviderBase tileProvider, Context context)
-    {
-        layerManager.addTilesLayer(tileProvider, context);
-        
-        Handler mTileRequestCompleteHandler = new SimpleInvalidationHandler(this);
-        tileProvider.setTileRequestCompleteHandler(mTileRequestCompleteHandler);
-    }
-    
-    /**
-     * add layer to layer manager
-     * @param layer
-     */
-    public void addLayer(AbstractLayer layer)
-    {
-        layerManager.addLayer(layer);
-    }
        
     /**
      * start location service
@@ -199,15 +176,6 @@ public class MapView extends SurfaceView
         layerManager.lonLatToM(location, locationM);
         locationValid = true;
         invalidate();
-    }
-
-    /**
-     * set projection of layers
-     * @param projection
-     */
-    public void setProjection(Projection projection)
-    {
-        layerManager.setProjection(projection);
     }
     
     /**

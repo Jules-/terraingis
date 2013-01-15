@@ -2,10 +2,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-
-    <cz.kalcik.vojta.terraingis.view.MapView
-        android:id="@+id/map"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:overScrollMode="always" />
+    
+    <fragment android:name="cz.kalcik.vojta.terraingis.MapFragment"
+              android:id="@+id/map_fragment"
+              android:layout_weight="1"
+              android:layout_width="0dp"
+              android:layout_height="match_parent" />
 </LinearLayout>
