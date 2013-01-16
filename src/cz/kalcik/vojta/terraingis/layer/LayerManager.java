@@ -67,9 +67,11 @@ public class LayerManager
     
     public void redraw(Canvas canvas, Rectangle2D.Double rect)
     {
-        for(AbstractLayer layer: layers)
+        int size = layers.size();
+        
+        for(int i=size-1; i >= 0; i--)
         {
-            layer.draw(canvas, rect);
+            layers.get(i).draw(canvas, rect);
         }
     }
    

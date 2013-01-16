@@ -73,7 +73,11 @@ public class MapView extends SurfaceView
     // static attributes
     
     // public methods ======================================================================
-    
+    /**
+     * constructor
+     * @param context
+     * @param attrs
+     */
     public MapView(Context context, final AttributeSet attrs)
     {
         super(context, attrs);
@@ -377,6 +381,10 @@ public class MapView extends SurfaceView
             if(touchPoint.y <= mainActivity.getActionBarHeight())
             {
                 mainActivity.showActionBar();
+            }
+            else if(touchPoint.x <= mainActivity.getActionBarHeight() && mainActivity.isHiddenLayersFragment())
+            {
+                mainActivity.showLayersFragment();
             }
             
             return true;

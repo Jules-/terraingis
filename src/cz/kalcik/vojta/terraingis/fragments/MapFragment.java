@@ -108,17 +108,11 @@ public class MapFragment extends Fragment
         params.add("+units=m");
         params.add("+no_defs");
 
-        // tiles layer
         Projection projection = ProjectionFactory.fromPROJ4Specification(params.toArray(new String[params.size()]));
         layerManager.setProjection(projection);
         map.setLonLatPosition(15.67322, 49.27138);
         map.setZoom(1.195);
-        
-        final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
-        MapTileProviderBase tileProvider = new MapTileProviderBasic((Context)attachActivity, tileSource);
-
-        layerManager.addTilesLayer(tileProvider, (Context)attachActivity, map);
-        
+               
         // line layer
         ArrayList<Point2D.Double> points = new ArrayList<Point2D.Double>();
         points.add(new Point2D.Double(15.672464039916989, 49.270704905801416));
@@ -202,5 +196,11 @@ public class MapFragment extends Fragment
         layer2.addObject(vectorPolygon2);
         
         layerManager.addLayer(layer2);
+        
+        // tiles layer        
+        final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
+        MapTileProviderBase tileProvider = new MapTileProviderBasic((Context)attachActivity, tileSource);
+
+        layerManager.addTilesLayer(tileProvider, (Context)attachActivity, map);
     }
 }

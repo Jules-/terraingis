@@ -4,11 +4,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <com.mobeta.android.dslv.DragSortListView
+    <cz.kalcik.vojta.terraingis.view.LayersView
         xmlns:dslv="http://schemas.android.com/apk/res/cz.kalcik.vojta.terraingis"
         android:id="@+id/list_layers"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         dslv:click_remove_id="@id/click_remove"
         dslv:collapsed_height="1px"
         dslv:drag_enabled="true"

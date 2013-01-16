@@ -5,6 +5,7 @@ import java.util.TimerTask;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -43,6 +44,42 @@ public class MainActivity extends FragmentActivity
         }
     }
     
+    /**
+     * hide layers fragment
+     */
+    public void hideLayersFragment()
+    {
+        if(layersFragment.isVisible())
+        {
+            FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+            tr.hide(layersFragment);
+            tr.commit();
+        }
+    }
+
+    /**
+     * show layers fragment
+     */
+    public void showLayersFragment()
+    {
+        if(layersFragment.isHidden())
+        {
+            FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+            tr.show(layersFragment);
+            tr.commit();
+        }
+    }
+    
+    /**
+     * convert value in dp to px
+     * @param dp
+     * @return
+     */
+    public int dp2px(float dp)
+    {
+        final float scale = getResources().getDisplayMetrics().density;
+        return (int) (dp * scale + 0.5f);
+    }
     // getter, setter =====================================================
     
     /**
@@ -61,6 +98,15 @@ public class MainActivity extends FragmentActivity
     public MapView getMap()
     {
         return mapFragment.getMap();
+    }
+    
+    /**
+     * check if LayersFragment is hidden
+     * @return
+     */
+    public boolean isHiddenLayersFragment()
+    {
+        return layersFragment.isHidden();
     }
     
     // on methods =========================================================
