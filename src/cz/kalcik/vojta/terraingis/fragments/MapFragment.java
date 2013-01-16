@@ -1,5 +1,6 @@
 package cz.kalcik.vojta.terraingis.fragments;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.osmdroid.tileprovider.MapTileProviderBase;
@@ -72,7 +73,10 @@ public class MapFragment extends Fragment
     {       
         super.onActivityCreated(savedInstanceState);
 
-        //map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
+        if(savedInstanceState != null)
+        {
+            map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
+        }
     }
 
     @Override

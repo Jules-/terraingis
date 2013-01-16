@@ -81,6 +81,8 @@ public class LayerManager
         {
             layer.detach();
         }
+        
+        layers.clear();
     }
     
     // getter setter =======================================================================

@@ -14,8 +14,8 @@ public class LayersView extends DragSortListView
 {
     // constants ==========================================================================
     private final float MEASURE_MAX_OFF_PATH = (float)0.25;
-    private final float MEASURE_PATH_MIN_DISTANCE = (float)0.5;
-    private final float SWIPE_THRESHOLD_VELOCITY = 500;
+    private final float MEASURE_PATH_MIN_DISTANCE = (float)0.3;
+    private final float SWIPE_THRESHOLD_VELOCITY = 100;
     
     // attributes =========================================================================
     private GestureDetector mGestureDetector;
