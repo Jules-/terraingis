@@ -54,6 +54,15 @@ public class MainActivity extends FragmentActivity
         return getActionBar().getHeight();
     }
     
+    /**
+     * return MapView
+     * @return
+     */
+    public MapView getMap()
+    {
+        return mapFragment.getMap();
+    }
+    
     // on methods =========================================================
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -127,8 +136,6 @@ public class MainActivity extends FragmentActivity
         super.onResume();
         
         locationWorker.resume();
-        
-        layersFragment.reloadLayers();
     }
     
     @Override

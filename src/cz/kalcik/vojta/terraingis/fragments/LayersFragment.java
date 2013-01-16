@@ -3,43 +3,70 @@ package cz.kalcik.vojta.terraingis.fragments;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import com.mobeta.android.dslv.DragSortListView;
+
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.R.id;
-import cz.kalcik.vojta.terraingis.R.layout;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
-import android.support.v4.app.ListFragment;
+import cz.kalcik.vojta.terraingis.view.MapView;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 /**
  * list with layers
  * @author jules
  *
  */
-public class LayersFragment extends ListFragment
+public class LayersFragment extends Fragment
 {
     // properties =========================================================
-    AbstractLayer[] layersArray;
-    ArrayAdapter<AbstractLayer> arrayAdapter;
+    private ArrayAdapter<AbstractLayer> arrayAdapter;
+    private DragSortListView listView;
+    
+    private DragSortListView.DropListener onDrop =
+            new DragSortListView.DropListener()
+            {
+                @Override
+                public void drop(int from, int to)
+                {
+                    if (from != to)
+                    {
+                        AbstractLayer item = arrayAdapter.getItem(from);
+                        arrayAdapter.remove(item);
+                        arrayAdapter.insert(item, to);
+                        listView.moveCheckState(from, to);
+                        
+                        ((MainActivity)getActivity()).getMap().invalidate();
+                    }
+                }
+            };
+
     
     // public methods =====================================================
-    /**
-     *  reload list of layers
-     */
-    public void reloadLayers()
-    {
-        ArrayList<AbstractLayer> layers = LayerManager.getInstance().getLayers();
-        Collections.reverse(layers);
-        layersArray = layers.toArray(new AbstractLayer[layers.size()]);
-        
-        setListAdapter(new ArrayAdapter<AbstractLayer>(getActivity(), R.layout.list_item_radio, R.id.text, layersArray));
-    }
     
     // on methods =========================================================
-    
-//    @Override
-//    public void onCreate(Bundle savedInstanceState)
-//    {
-//        super.onCreate(savedInstanceState);
-//    }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        // Inflate the layout for this fragment
+        View myView = inflater.inflate(R.layout.layers_layout, container, false);
+        
+        // listView
+        listView = (DragSortListView) myView.findViewById(R.id.list_layers);
+        listView.setDropListener(onDrop);
+        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        
+        ArrayList<AbstractLayer> layers = LayerManager.getInstance().getLayers();
+        
+        arrayAdapter = new ArrayAdapter<AbstractLayer>(getActivity(), R.layout.list_item_radio, R.id.text, layers);
+        listView.setAdapter(arrayAdapter);
+        
+        return myView;
+    }
 }
