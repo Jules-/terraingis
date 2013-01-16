@@ -9,6 +9,7 @@ import com.jhlabs.map.proj.Projection;
 
 import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;

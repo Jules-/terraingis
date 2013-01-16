@@ -1,33 +1,18 @@
 package cz.kalcik.vojta.terraingis;
 
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.osmdroid.tileprovider.MapTileProviderBase;
-import org.osmdroid.tileprovider.MapTileProviderBasic;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-
-import com.jhlabs.map.proj.Projection;
-import com.jhlabs.map.proj.ProjectionFactory;
-
-import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.ListFragment;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
 import cz.kalcik.vojta.terraingis.components.Settings;
-import cz.kalcik.vojta.terraingis.layer.VectorLayer;
-import cz.kalcik.vojta.terraingis.layer.VectorLine;
-import cz.kalcik.vojta.terraingis.layer.VectorPolygon;
+import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
+import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 public class MainActivity extends FragmentActivity

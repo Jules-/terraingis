@@ -7,7 +7,7 @@ import android.graphics.Paint;
 
 import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.geom.Rectangle2D.Double;
-import cz.kalcik.vojta.terraingis.view.Navigator;
+import cz.kalcik.vojta.terraingis.components.Navigator;
 
 /**
  * class for line vector object 

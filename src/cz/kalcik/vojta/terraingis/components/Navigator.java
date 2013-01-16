@@ -1,4 +1,4 @@
-package cz.kalcik.vojta.terraingis.view;
+package cz.kalcik.vojta.terraingis.components;
 
 import java.util.ArrayList;
 

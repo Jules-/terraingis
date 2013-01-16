@@ -1,4 +1,4 @@
-package cz.kalcik.vojta.terraingis;
+package cz.kalcik.vojta.terraingis.fragments;
 
 import java.util.ArrayList;
 
@@ -11,6 +11,9 @@ import com.jhlabs.map.proj.Projection;
 import com.jhlabs.map.proj.ProjectionFactory;
 
 import cz.kalcik.vojta.geom.Point2D;
+import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.R.id;
+import cz.kalcik.vojta.terraingis.R.layout;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.layer.VectorLine;

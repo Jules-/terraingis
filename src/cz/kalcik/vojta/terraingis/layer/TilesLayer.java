@@ -12,7 +12,7 @@ import org.osmdroid.util.TileLooper;
 import org.osmdroid.views.MapView;
 
 import cz.kalcik.vojta.geom.Rectangle2D;
-import cz.kalcik.vojta.terraingis.view.Navigator;
+import cz.kalcik.vojta.terraingis.components.Navigator;
 
 import android.content.Context;
 import android.graphics.Bitmap;

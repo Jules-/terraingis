@@ -1,7 +1,6 @@
 package cz.kalcik.vojta.terraingis.components;
 
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.view.Navigator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 

@@ -8,7 +8,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.geom.Rectangle2D;
-import cz.kalcik.vojta.terraingis.view.Navigator;
+import cz.kalcik.vojta.terraingis.components.Navigator;
 
 /**
  * class for objects in vector line layer
