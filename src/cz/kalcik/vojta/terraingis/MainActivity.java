@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
@@ -19,7 +20,8 @@ import cz.kalcik.vojta.terraingis.view.MapView;
 public class MainActivity extends FragmentActivity
 {
     // constants ==========================================================
-    private static String LOCATION_WORKER_DATA = "LocationWorkerData";
+    private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
+    private static final float MIN_WIDTH_PANEL_DP = 300;
     
     // properties =========================================================
     private MenuItem menuRunLocation;
@@ -29,6 +31,7 @@ public class MainActivity extends FragmentActivity
     private Settings settings = Settings.getInstance();
     private MapFragment mapFragment;
     private LayersFragment layersFragment;
+    private LinearLayout mMainLayout;
     
     // public methods =====================================================
     
@@ -64,7 +67,26 @@ public class MainActivity extends FragmentActivity
     {
         if(layersFragment.isHidden())
         {
+            float dp_width = px2dp(mMainLayout.getWidth());
             FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+            
+            boolean run = true;
+            int i = 3;
+            while(run)
+            {
+                if(i == 0)
+                {
+                    tr.hide(mapFragment);
+                    run = false;
+                }
+                else if(dp_width/(i+1) > MIN_WIDTH_PANEL_DP)
+                {
+                    run = false;
+                }
+                
+                i--;
+            }
+            
             tr.show(layersFragment);
             tr.commit();
         }
@@ -115,6 +137,8 @@ public class MainActivity extends FragmentActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        mMainLayout = (LinearLayout)findViewById(R.id.main_layout);
         
         layersFragment = (LayersFragment)getSupportFragmentManager().findFragmentById(R.id.layers_fragment);
         mapFragment = (MapFragment)getSupportFragmentManager().findFragmentById(R.id.map_fragment);
@@ -237,6 +261,16 @@ public class MainActivity extends FragmentActivity
         }        
     }
     
+    /**
+     * convert value in px to dp
+     * @param px
+     * @return dp
+     */
+    private float px2dp(int px)
+    {
+        final float scale = getResources().getDisplayMetrics().density;
+        return px/scale;
+    }    
     // classes =================================================================
     /**
      * task for hidding action bar
