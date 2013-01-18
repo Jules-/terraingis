@@ -4,6 +4,46 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <ImageButton
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/hide"
+            android:layout_gravity="center_vertical"
+            android:background="@android:color/transparent"
+            android:padding="12dp" />
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"/>
+        
+        <ImageButton
+            android:id="@+id/imageView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/add"
+            android:layout_gravity="center_vertical"
+            android:background="@android:color/transparent"
+            android:layout_weight="0"
+            android:padding="12dp" />
+
+        <ImageButton
+            android:id="@+id/imageView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/remove"
+            android:layout_gravity="center_vertical"
+            android:background="@android:color/transparent"
+            android:layout_weight="0"
+            android:padding="12dp" />
+
+    </LinearLayout>
+    
     <cz.kalcik.vojta.terraingis.view.LayersView
         xmlns:dslv="http://schemas.android.com/apk/res/cz.kalcik.vojta.terraingis"
         android:id="@+id/list_layers"

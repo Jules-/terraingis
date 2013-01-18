@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
 import cz.kalcik.vojta.terraingis.components.Settings;
-import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
@@ -22,7 +21,8 @@ public class MainActivity extends FragmentActivity
 {
     // constants ==========================================================
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
-    private static final float MIN_WIDTH_PANEL_DP = 300;
+    private static final String SHOWN_LAYERS = "ShownLayers";
+    private static final float MIN_WIDTH_PANEL_DP = 250;
     
     // properties =========================================================
     private MenuItem menuRunLocation;
@@ -31,8 +31,6 @@ public class MainActivity extends FragmentActivity
     private LocationWorker locationWorker;
     private Settings settings = Settings.getInstance();
     private MapFragment mapFragment;
-    private LayersFragment layersFragment;
-    private LinearLayout mMainLayout;
     private LinearLayout mMapLayout;
     private LinearLayout mLayersLayout;
     
@@ -72,7 +70,8 @@ public class MainActivity extends FragmentActivity
     {
         if(!mLayersLayout.isShown())
         {
-            float dp_width = px2dp(mMainLayout.getWidth());
+            Display display = getWindowManager().getDefaultDisplay();
+            float dp_width = px2dp(display.getWidth());
             
             boolean run = true;
             int i = 3;
@@ -143,11 +142,9 @@ public class MainActivity extends FragmentActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        mMainLayout = (LinearLayout)findViewById(R.id.main_layout);
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
         mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
         
-        layersFragment = (LayersFragment)getSupportFragmentManager().findFragmentById(R.id.layers_fragment);
         mapFragment = (MapFragment)getSupportFragmentManager().findFragmentById(R.id.map_fragment);
         
         MapView map = mapFragment.getMap();
@@ -218,6 +215,9 @@ public class MainActivity extends FragmentActivity
     @Override
     public void onSaveInstanceState (Bundle outState)
     {
+        // Shown layers
+        outState.putBoolean(SHOWN_LAYERS, mLayersLayout.isShown());
+        
         // gps state
         outState.putSerializable(LOCATION_WORKER_DATA, locationWorker.getData());
         
@@ -228,6 +228,12 @@ public class MainActivity extends FragmentActivity
     public void onRestoreInstanceState (Bundle savedInstanceState)
     {
         super.onRestoreInstanceState(savedInstanceState);
+        
+        // Shown layers
+        if(savedInstanceState.getBoolean(SHOWN_LAYERS))
+        {
+            showLayersFragment();
+        }
         
         // GPS state
         locationWorker.setData(savedInstanceState.getSerializable(LOCATION_WORKER_DATA));
