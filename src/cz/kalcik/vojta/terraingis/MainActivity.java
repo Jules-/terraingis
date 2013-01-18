@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -32,6 +33,8 @@ public class MainActivity extends FragmentActivity
     private MapFragment mapFragment;
     private LayersFragment layersFragment;
     private LinearLayout mMainLayout;
+    private LinearLayout mMapLayout;
+    private LinearLayout mLayersLayout;
     
     // public methods =====================================================
     
@@ -52,11 +55,13 @@ public class MainActivity extends FragmentActivity
      */
     public void hideLayersFragment()
     {
-        if(layersFragment.isVisible())
+        if(mLayersLayout.isShown())
         {
-            FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
-            tr.hide(layersFragment);
-            tr.commit();
+            mLayersLayout.setVisibility(View.GONE);
+            if(!mMapLayout.isShown())
+            {
+                mMapLayout.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -65,10 +70,9 @@ public class MainActivity extends FragmentActivity
      */
     public void showLayersFragment()
     {
-        if(layersFragment.isHidden())
+        if(!mLayersLayout.isShown())
         {
             float dp_width = px2dp(mMainLayout.getWidth());
-            FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
             
             boolean run = true;
             int i = 3;
@@ -76,19 +80,20 @@ public class MainActivity extends FragmentActivity
             {
                 if(i == 0)
                 {
-                    tr.hide(mapFragment);
+                    mMapLayout.setVisibility(View.GONE);
                     run = false;
                 }
                 else if(dp_width/(i+1) > MIN_WIDTH_PANEL_DP)
                 {
+                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)mLayersLayout.getLayoutParams();
+                    params.weight = i;
                     run = false;
                 }
                 
                 i--;
             }
             
-            tr.show(layersFragment);
-            tr.commit();
+            mLayersLayout.setVisibility(View.VISIBLE);
         }
     }
     
@@ -128,7 +133,7 @@ public class MainActivity extends FragmentActivity
      */
     public boolean isHiddenLayersFragment()
     {
-        return layersFragment.isHidden();
+        return !mLayersLayout.isShown();
     }
     
     // on methods =========================================================
@@ -139,6 +144,8 @@ public class MainActivity extends FragmentActivity
         setContentView(R.layout.activity_main);
         
         mMainLayout = (LinearLayout)findViewById(R.id.main_layout);
+        mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
+        mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
         
         layersFragment = (LayersFragment)getSupportFragmentManager().findFragmentById(R.id.layers_fragment);
         mapFragment = (MapFragment)getSupportFragmentManager().findFragmentById(R.id.map_fragment);
