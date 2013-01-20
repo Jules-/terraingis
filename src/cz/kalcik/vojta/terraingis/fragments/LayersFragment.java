@@ -3,14 +3,6 @@ package cz.kalcik.vojta.terraingis.fragments;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import com.mobeta.android.dslv.DragSortListView;
-
-import cz.kalcik.vojta.terraingis.MainActivity;
-import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
-import cz.kalcik.vojta.terraingis.layer.LayerManager;
-import cz.kalcik.vojta.terraingis.view.LayersView;
-import cz.kalcik.vojta.terraingis.view.MapView;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.GestureDetector;
@@ -21,6 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.mobeta.android.dslv.DragSortListView;
+
+import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
+import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import cz.kalcik.vojta.terraingis.view.LayersView;
+import cz.kalcik.vojta.terraingis.view.MapView;
+import cz.kalcik.vojta.terraingis.R;
 
 /**
  * list with layers

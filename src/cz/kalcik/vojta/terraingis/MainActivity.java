@@ -16,6 +16,7 @@ import cz.kalcik.vojta.terraingis.components.LocationWorker;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.view.MapView;
+import cz.kalcik.vojta.terraingis.R;
 
 public class MainActivity extends FragmentActivity
 {

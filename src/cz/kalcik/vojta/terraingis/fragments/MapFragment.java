@@ -3,6 +3,17 @@ package cz.kalcik.vojta.terraingis.fragments;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
@@ -12,23 +23,15 @@ import com.jhlabs.map.proj.Projection;
 import com.jhlabs.map.proj.ProjectionFactory;
 
 import cz.kalcik.vojta.geom.Point2D;
-import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.R.id;
-import cz.kalcik.vojta.terraingis.R.layout;
+import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.layer.VectorLine;
 import cz.kalcik.vojta.terraingis.layer.VectorPolygon;
 import cz.kalcik.vojta.terraingis.view.MapView;
-import android.app.Activity;
-import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.R.id;
+import cz.kalcik.vojta.terraingis.R.layout;
 
 /**
  * fragment with MapView
@@ -100,6 +103,9 @@ public class MapFragment extends Fragment
     
     private void createTestingMap()
     {
+        SpatiaLiteManager spatialite = SpatiaLiteManager.getInstance();
+        spatialite.open(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS/db.sqlite");
+        
         ArrayList<String> params = new ArrayList<String>();
         params.add("+proj=merc");
         params.add("+a=6378137");

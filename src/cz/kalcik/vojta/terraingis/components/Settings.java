@@ -1,8 +1,8 @@
 package cz.kalcik.vojta.terraingis.components;
 
-import cz.kalcik.vojta.terraingis.R;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import cz.kalcik.vojta.terraingis.R;
 
 /**
  * class for settings
