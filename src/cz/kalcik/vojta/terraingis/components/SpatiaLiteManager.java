@@ -1,10 +1,14 @@
 package cz.kalcik.vojta.terraingis.components;
 
 import java.io.File;
+import java.util.ArrayList;
+
+import android.util.Log;
 
 import jsqlite.Constants;
 import jsqlite.Database;
 import jsqlite.Exception;
+import jsqlite.Stmt;
 
 /**
  * class work with SpatiLite database
@@ -13,23 +17,57 @@ import jsqlite.Exception;
  */
 public class SpatiaLiteManager
 {    
-    // singleton code =====================================================================
-   
-    private static SpatiaLiteManager instance = new SpatiaLiteManager();
-    
-    private SpatiaLiteManager() { }
-    
-    public static SpatiaLiteManager getInstance()
-    {
-        return instance;
-    }
-    
     // attributes =========================================================================
     private Database db;
     
     // public methods ======================================================================
+    /**
+     * constructor
+     * @param path
+     */
+    public SpatiaLiteManager(String path)
+    {
+    	open(path);
+    }
 
-    public void open(String path)
+    /**
+     * get all layers in spatialite database
+     * @return [name, type, srid]
+     */
+    public ArrayList<String[]> getLayers()
+    {
+    	ArrayList<String[]> list = new ArrayList<String[]>();
+    	
+    	String query = "SELECT f_table_name, type, srid FROM geometry_columns";
+        try
+        {
+    		Stmt stmt = db.prepare(query);
+    		while(stmt.step())
+    		{
+    			String[] values = new String[3];
+    			values[0] = stmt.column_string(0);
+    			values[1] = stmt.column_string(1);
+    			values[2] = stmt.column_string(2);
+    			list.add(values);
+    		}
+    		stmt.close();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+    	
+    	return list;
+    }
+    // getter setter =======================================================================
+
+    
+    // private methods =======================================================================
+    /**
+     * open spatialite databse
+     * @param path
+     */
+    private void open(String path)
     {
         File spatialDbFile = new File(path);
         
@@ -40,14 +78,7 @@ public class SpatiaLiteManager
         }
         catch (Exception e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.e("TerrainGIS", e.getMessage());
         }
     }
-    
-    // getter setter =======================================================================
-
-
-    // public methods =======================================================================
-
 }

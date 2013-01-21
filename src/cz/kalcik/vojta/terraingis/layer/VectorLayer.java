@@ -13,35 +13,25 @@ import android.graphics.Rect;
  * @author jules
  *
  */
-public class VectorLayer extends AbstractLayer
+public abstract class VectorLayer extends AbstractLayer
 {
     // enum ===================================================================
     public enum VectorLayerType {POINT, LINE, POLYGON};
     
     // attributes ==============================================================
-    private ArrayList<VectorObject> objects = new ArrayList<VectorObject>();
     Rectangle2D.Double currentRect = new Rectangle2D.Double();
     Paint paint;
-    AttributesTable attributes;
     VectorLayerType type;
+    int srid;
     
     // constructors ============================================================
-
-    /**
-     * constructor
-     * @param type
-     */
-    public VectorLayer(VectorLayerType type, String name)
-    {
-        this(type, null, name);
-    }
     
     /**
      * constructor
      * @param type
      * @param paint
      */
-    public VectorLayer(VectorLayerType type, Paint paint, String name)
+    public VectorLayer(VectorLayerType type, Paint paint, String name, int srid)
     {
         this.type = type;
         if(paint == null)
@@ -49,11 +39,9 @@ public class VectorLayer extends AbstractLayer
             paint = new Paint();
         }
         
-        this.paint = paint;
-        
-        setStyleByType();
-        
+        this.paint = paint;        
         this.name = name;
+        this.srid = srid;
     }
     
     // public methods =========================================================
@@ -63,19 +51,7 @@ public class VectorLayer extends AbstractLayer
     @Override
     public void draw(Canvas canvas, Rectangle2D.Double rect)
     {
-        for(VectorObject object: objects)
-        {
-            object.draw(canvas, rect, paint);
-        }
-    }
-    
-    /**
-     * add object
-     * @param object
-     */
-    public void addObject(VectorObject object)
-    {
-        objects.add(object);
+
     }
     
     @Override
@@ -86,15 +62,5 @@ public class VectorLayer extends AbstractLayer
     }
     
     // private methods ========================================================
-    private void setStyleByType()
-    {
-        if(type == VectorLayerType.POLYGON)
-        {
-            paint.setStyle(Paint.Style.FILL);
-        }
-        else if(type == VectorLayerType.LINE)
-        {
-            paint.setStyle(Paint.Style.STROKE);
-        }
-    }
+
 }

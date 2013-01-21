@@ -9,6 +9,7 @@ import com.jhlabs.map.proj.Projection;
 
 import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.geom.Rectangle2D;
+import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.exception.TerrainGISException;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
@@ -41,6 +42,7 @@ public class LayerManager
     
     private Projection projection;    
     private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
+    private SpatiaLiteManager spatialiteManager;
     
     // public methods ======================================================================
     /**
@@ -83,6 +85,35 @@ public class LayerManager
         }
         
         layers.clear();
+    }
+    
+    /**
+     * load layers from spatialite database
+     * @param path
+     */
+    public void loadSpatialite(String path)
+    {
+    	spatialiteManager = new SpatiaLiteManager(path);
+    	for(String[] values: spatialiteManager.getLayers())
+    	{
+    	    int srid = Integer.parseInt(values[2]);
+    	    AbstractLayer newLayer = null;
+    	    
+    	    if(values[1].equals("POINT") || values[1].equals("MULTIPOINT"))
+    	    {
+    	        newLayer = new PointsLayer(values[0], srid);
+    	    }
+    	    else if(values[1].equals("LINESTRING") || values[1].equals("MULTILINESTRING"))
+    	    {
+    	        newLayer = new LinesLayer(values[0], srid);
+    	    }
+            else if(values[1].equals("POLYGON") || values[1].equals("MULTIPOLYGON"))
+            {
+                newLayer = new PolygonsLayer(values[0], srid);
+            }
+    	    
+    		layers.add(newLayer);
+    	}
     }
     
     // getter setter =======================================================================
