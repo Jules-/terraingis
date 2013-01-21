@@ -3,6 +3,7 @@ package cz.kalcik.vojta.terraingis.layer;
 import java.util.ArrayList;
 
 import cz.kalcik.vojta.geom.Rectangle2D;
+import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -19,10 +20,10 @@ public abstract class VectorLayer extends AbstractLayer
     public enum VectorLayerType {POINT, LINE, POLYGON};
     
     // attributes ==============================================================
-    Rectangle2D.Double currentRect = new Rectangle2D.Double();
     Paint paint;
     VectorLayerType type;
     int srid;
+    SpatiaLiteManager spatialite;
     
     // constructors ============================================================
     
@@ -31,7 +32,8 @@ public abstract class VectorLayer extends AbstractLayer
      * @param type
      * @param paint
      */
-    public VectorLayer(VectorLayerType type, Paint paint, String name, int srid)
+    public VectorLayer(VectorLayerType type, Paint paint, String name, int srid,
+                       SpatiaLiteManager spatialite)
     {
         this.type = type;
         if(paint == null)
@@ -42,6 +44,7 @@ public abstract class VectorLayer extends AbstractLayer
         this.paint = paint;        
         this.name = name;
         this.srid = srid;
+        this.spatialite = spatialite;
     }
     
     // public methods =========================================================
@@ -62,5 +65,5 @@ public abstract class VectorLayer extends AbstractLayer
     }
     
     // private methods ========================================================
-
+    
 }

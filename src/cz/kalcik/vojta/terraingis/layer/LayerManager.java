@@ -38,6 +38,10 @@ public class LayerManager
         return instance;
     }
     
+    // constants ==========================================================================
+    
+    private final int EPSG_SPHERICAL_MERCATOR = 3857;
+    
     // attributes =========================================================================
     
     private Projection projection;    
@@ -101,15 +105,15 @@ public class LayerManager
     	    
     	    if(values[1].equals("POINT") || values[1].equals("MULTIPOINT"))
     	    {
-    	        newLayer = new PointsLayer(values[0], srid);
+    	        newLayer = new PointsLayer(values[0], srid, spatialiteManager);
     	    }
     	    else if(values[1].equals("LINESTRING") || values[1].equals("MULTILINESTRING"))
     	    {
-    	        newLayer = new LinesLayer(values[0], srid);
+    	        newLayer = new LinesLayer(values[0], srid, spatialiteManager);
     	    }
             else if(values[1].equals("POLYGON") || values[1].equals("MULTIPOLYGON"))
             {
-                newLayer = new PolygonsLayer(values[0], srid);
+                newLayer = new PolygonsLayer(values[0], srid, spatialiteManager);
             }
     	    
     		layers.add(newLayer);
