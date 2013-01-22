@@ -2,6 +2,8 @@ package cz.kalcik.vojta.terraingis.layer;
 
 import java.util.ArrayList;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 import cz.kalcik.vojta.geom.Rectangle2D;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 
@@ -20,10 +22,12 @@ public abstract class VectorLayer extends AbstractLayer
     public enum VectorLayerType {POINT, LINE, POLYGON};
     
     // attributes ==============================================================
-    Paint paint;
-    VectorLayerType type;
-    int srid;
-    SpatiaLiteManager spatialite;
+    protected Paint paint;
+    protected VectorLayerType type;
+    protected int srid;
+    protected SpatiaLiteManager spatialite;
+    protected Envelope envelope;
+    
     
     // constructors ============================================================
     
@@ -45,6 +49,7 @@ public abstract class VectorLayer extends AbstractLayer
         this.name = name;
         this.srid = srid;
         this.spatialite = spatialite;
+        envelope = spatialite.getEnvelopeLayer(name);
     }
     
     // public methods =========================================================
