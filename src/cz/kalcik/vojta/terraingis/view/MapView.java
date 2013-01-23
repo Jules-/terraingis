@@ -5,9 +5,8 @@ import java.io.Serializable;
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 
-import com.jhlabs.map.proj.Projection;
+import com.vividsolutions.jts.geom.Coordinate;
 
-import cz.kalcik.vojta.geom.Point2D;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.Settings;
@@ -41,7 +40,7 @@ public class MapView extends SurfaceView
         private static final long serialVersionUID = -3597152260915322234L;
         
         // position only for save and restore (value in Navigator)
-        public Point2D.Double position = new Point2D.Double(0, 0);
+        public Coordinate position = new Coordinate(0, 0);
         // zoom only for save and restore (value in Navigator)
         public double zoom;
     }
@@ -55,7 +54,7 @@ public class MapView extends SurfaceView
     private MainActivity mainActivity;
     
     private boolean runLocation = false;
-    private Point2D.Double locationM = new Point2D.Double(0,0); // location from GPS or Wi-Fi
+    private Coordinate locationM = new Coordinate(0,0); // location from GPS or Wi-Fi
     private boolean freezLocation = false;
     private boolean locationValid = false;
     private MapViewData data = new MapViewData();
@@ -127,8 +126,9 @@ public class MapView extends SurfaceView
     
     public MapViewData getData()
     {
-        Point2D.Double position = navigator.getPositionM();
-        data.position.setLocation(position.x, position.y);
+        Coordinate position = navigator.getPositionM();
+        data.position.x = position.x;
+        data.position.y = position.y;
         data.zoom = navigator.getZoom();
         return data;
     }
@@ -137,7 +137,7 @@ public class MapView extends SurfaceView
     {
         this.data = (MapViewData)data;
         
-        Point2D.Double position = new Point2D.Double(this.data.position.x, this.data.position.y);
+        Coordinate position = new Coordinate(this.data.position.x, this.data.position.y);
         navigator.setPositionM(position);
         navigator.setZoom(this.data.zoom);
     }
@@ -172,13 +172,13 @@ public class MapView extends SurfaceView
      * set location
      * @param location
      */
-    public synchronized void setLonLatLocation(Point2D.Double location)
+    public synchronized void setLonLatLocation(Coordinate location)
     {
         if(freezLocation)
         {
             navigator.setLonLatPosition(location);
         }
-        layerManager.lonLatToM(location, locationM);
+        locationM = layerManager.lonLatToM(location);
         locationValid = true;
         invalidate();
     }

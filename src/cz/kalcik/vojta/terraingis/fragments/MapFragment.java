@@ -1,12 +1,8 @@
 package cz.kalcik.vojta.terraingis.fragments;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -19,19 +15,9 @@ import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 
-import com.jhlabs.map.proj.Projection;
-import com.jhlabs.map.proj.ProjectionFactory;
-
-import cz.kalcik.vojta.geom.Point2D;
-import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
-import cz.kalcik.vojta.terraingis.layer.VectorLayer;
-import cz.kalcik.vojta.terraingis.layer.VectorLine;
-import cz.kalcik.vojta.terraingis.layer.VectorPolygon;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.R.id;
-import cz.kalcik.vojta.terraingis.R.layout;
 
 /**
  * fragment with MapView
@@ -103,7 +89,7 @@ public class MapFragment extends Fragment
     
     private void createTestingMap()
     {
-        layerManager.loadSpatialite(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS/propojky.sqlite");
+        layerManager.loadSpatialite(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS/cyklostezka.sqlite");
          
         // tiles layer        
         final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;

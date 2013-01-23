@@ -11,7 +11,8 @@ import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.util.TileLooper;
 import org.osmdroid.views.MapView;
 
-import cz.kalcik.vojta.geom.Rectangle2D;
+import com.vividsolutions.jts.geom.Envelope;
+
 import cz.kalcik.vojta.terraingis.components.Navigator;
 
 import android.content.Context;
@@ -48,7 +49,7 @@ public class TilesLayer extends AbstractLayer
     private final Context aContext;
     private double scale;
     private Rect currentRect = new Rect();
-    private Rectangle2D.Double currentRealRect = new Rectangle2D.Double();
+    private Envelope currentRealRect = new Envelope();
     private Navigator navigator = Navigator.getInstance();
     
     /**
@@ -75,7 +76,7 @@ public class TilesLayer extends AbstractLayer
        
 
     @Override
-    public void draw(Canvas canvas, Rectangle2D.Double rect)
+    public void draw(Canvas canvas, Envelope rect)
     {
         int zoomLevel = Navigator.mpxToZoomLevel(navigator.getZoom());
         zoomLevel = Math.max(Math.min(zoomLevel, mTileProvider.getMaximumZoomLevel()), mTileProvider.getMinimumZoomLevel());
@@ -184,20 +185,20 @@ public class TilesLayer extends AbstractLayer
         return mLoadingTile;
     }
     
-    private void rectRealToTiles(Rectangle2D.Double input, Rect output)
+    private void rectRealToTiles(Envelope input, Rect output)
     {
-        output.set(coordRealToTiles(input.x),
-                   coordRealToTiles(-(input.y+input.height)),
-                   coordRealToTiles(input.x+input.width),
-                   coordRealToTiles(-input.y));        
+        output.set(coordRealToTiles(input.getMinX()),
+                   coordRealToTiles(-(input.getMaxY())),
+                   coordRealToTiles(input.getMaxX()),
+                   coordRealToTiles(-input.getMinY()));        
     }
 
-    private void rectTilesToReal(Rect input, Rectangle2D.Double output)
+    private void rectTilesToReal(Rect input, Envelope output)
     {
-        output.setRect(coordTilesToReal(input.left),
-                       coordTilesToReal(-input.bottom),
-                       coordTilesToReal(input.right-input.left),
-                       coordTilesToReal(input.bottom-input.top));         
+        output.init(coordTilesToReal(input.left),
+                    coordTilesToReal(input.right),
+                    coordTilesToReal(-input.bottom),
+                    coordTilesToReal(-input.top));         
     }
     
     private int coordRealToTiles(double coord)

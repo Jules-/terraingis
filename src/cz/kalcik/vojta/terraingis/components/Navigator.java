@@ -2,6 +2,9 @@ package cz.kalcik.vojta.terraingis.components;
 
 import java.util.ArrayList;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -9,8 +12,6 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import cz.kalcik.vojta.geom.Point2D;
-import cz.kalcik.vojta.geom.Rectangle2D;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 
 /**
@@ -39,10 +40,10 @@ public class Navigator
     // attributes =========================================================================
     
     private double zoom = DEFAULT_ZOOM;
-    private Point2D.Double positionM = new Point2D.Double(0,0);
+    private Coordinate positionM = new Coordinate(0,0);
     private LayerManager layerManager = LayerManager.getInstance();
     private Rect screen = new Rect();
-    private Rectangle2D.Double pxScreen = new Rectangle2D.Double(); // area showed in screen in pixels
+    private Envelope pxScreen = new Envelope(); // area showed in screen in pixels
     
     // getter setter ======================================================================
     
@@ -72,16 +73,16 @@ public class Navigator
      */
     public void setLonLatPosition(double lon, double lat)
     {
-        setLonLatPosition(new Point2D.Double(lon, lat));
+        setLonLatPosition(new Coordinate(lon, lat));
     }
     
     /**
      * set position by longitude and latitude
      * @param lonLatPosition
      */
-    public void setLonLatPosition(Point2D.Double lonLatPosition)
+    public void setLonLatPosition(Coordinate lonLatPosition)
     {
-        layerManager.lonLatToM(lonLatPosition, positionM);
+        positionM = layerManager.lonLatToM(lonLatPosition);
         updateDuplicateAttributes();
     }
     
@@ -90,31 +91,32 @@ public class Navigator
      * @param output
      * @return
      */
-    public Rectangle2D.Double getPxRectangle(Rectangle2D.Double output)
+    public Envelope getPxRectangle(Envelope output)
     {
-        Point2D.Double tempPoint = mToPx(positionM, null);
-        int width = screen.width();
-        int height = screen.height();
+        Coordinate tempPoint = mToPx(positionM, null);
         
         if(output == null)
         {
-            output = new Rectangle2D.Double();
+            output = new Envelope();
         }
         
-        output.setRect(tempPoint.x - width / 2.0,
-                       tempPoint.y - height / 2.0,
-                       width,
-                       height);
+        double width_half = screen.width() / 2.0;
+        double height_half = screen.height() / 2.0;
+        
+        output.init(tempPoint.x - width_half,
+                    tempPoint.x + width_half,
+                    tempPoint.y - height_half,
+                    tempPoint.y + height_half);
         
         return output;
     }
     
-    public Point2D.Double getPositionM()
+    public Coordinate getPositionM()
     {
         return positionM;
     }
     
-    public void setPositionM(Point2D.Double position)
+    public void setPositionM(Coordinate position)
     {
         positionM = position;
         updateDuplicateAttributes();
@@ -158,7 +160,7 @@ public class Navigator
      * @param drawable
      * @param bound
      */
-    public void drawCanvasDraweblePx(Canvas canvas, Drawable drawable, Rectangle2D.Double bound)
+    public void drawCanvasDraweblePx(Canvas canvas, Drawable drawable, Envelope bound)
     {
         drawable.setBounds(pxToSurfacePx(bound, null));
         drawable.draw(canvas);
@@ -170,7 +172,7 @@ public class Navigator
      * @param points
      * @param paint
      */
-    public void drawCanvasPathM(Canvas canvas, ArrayList<Point2D.Double> points, Paint paint)
+    public void drawCanvasPathM(Canvas canvas, ArrayList<Coordinate> points, Paint paint)
     {
         Path path = new Path();
         int size = points.size();
@@ -179,7 +181,7 @@ public class Navigator
             return;
         }
         
-        Point2D.Double pointPx = mToPx(points.get(0), null);
+        Coordinate pointPx = mToPx(points.get(0), null);
         PointF surfacePoint = pxToSurfacePx(pointPx, null);
         path.moveTo(surfacePoint.x, surfacePoint.y);
         
@@ -199,7 +201,7 @@ public class Navigator
      * @param points
      * @param paint
      */
-    public void drawLinesM(Canvas canvas, ArrayList<Point2D.Double> points, Paint paint)
+    public void drawLinesM(Canvas canvas, ArrayList<Coordinate> points, Paint paint)
     {
         int size = points.size();
         if(size < 2)
@@ -207,7 +209,7 @@ public class Navigator
             return;
         }      
         
-        Point2D.Double pointPx = mToPx(points.get(0), null);
+        Coordinate pointPx = mToPx(points.get(0), null);
         PointF previousSurfacePoint = pxToSurfacePx(pointPx, null);
         PointF currentSurfacePoint = new PointF();
         
@@ -228,9 +230,9 @@ public class Navigator
      * @param point
      * @param icon
      */
-    public synchronized void drawIconM(Canvas canvas, Point2D.Double point, Drawable icon)
+    public synchronized void drawIconM(Canvas canvas, Coordinate point, Drawable icon)
     {
-        Point2D.Double pointPx = mToPx(point, null);
+        Coordinate pointPx = mToPx(point, null);
 
         if(pxScreen.contains(pointPx.x, pointPx.y))
         {
@@ -253,9 +255,9 @@ public class Navigator
      */
     public void zoomByScale(float scale, PointF pivot)
     {
-        Point2D.Double tempPivot = surfacePxToPx(pivot, null);
+        Coordinate tempPivot = surfacePxToPx(pivot, null);
         
-        Point2D.Double tempPoint = mToPx(positionM, null);
+        Coordinate tempPoint = mToPx(positionM, null);
         
         double pivotCenterDistanceX = (tempPoint.x - tempPivot.x);
         double pivotCenterDistanceY = (tempPoint.y - tempPivot.y);
@@ -313,11 +315,11 @@ public class Navigator
      * @param output
      * @return
      */
-    private Point2D.Double mToPx(Point2D.Double input, Point2D.Double output)
+    private Coordinate mToPx(Coordinate input, Coordinate output)
     {
         if(output == null)
         {
-            output = new Point2D.Double();
+            output = new Coordinate();
         }
         
         output.x = mToPx(input.x);
@@ -342,11 +344,11 @@ public class Navigator
      * @param output
      * @return
      */
-    private Point2D.Double pxToM(Point2D.Double input, Point2D.Double output)
+    private Coordinate pxToM(Coordinate input, Coordinate output)
     {
         if(output == null)
         {
-            output = new Point2D.Double();
+            output = new Coordinate();
         }
         
         output.x = pxToM(input.x);
@@ -361,11 +363,9 @@ public class Navigator
      * @param output
      * @return
      */
-    private Point2D.Double pxToLonLat(Point2D.Double input, Point2D.Double output)
+    private Coordinate pxToLonLat(Coordinate input)
     {
-        Point2D.Double meters = pxToM(input, null);
-        
-        return layerManager.mToLonLat(meters, output);
+        return layerManager.mToLonLat(pxToM(input, null));
     }
 
     /**
@@ -375,26 +375,26 @@ public class Navigator
      * @param pxRectangle
      * @return
      */
-    private PointF pxToSurfacePx(Point2D.Double input, PointF output)
+    private PointF pxToSurfacePx(Coordinate input, PointF output)
     {
         if(output == null)
         {
             output = new PointF();
         }
         
-        output.set((float)(input.x - pxScreen.x), (float)(pxScreen.y + pxScreen.height - input.y));
+        output.set((float)(input.x - pxScreen.getMinX()), (float)(pxScreen.getMaxY() - input.y));
         
         return output;
     }
     
-    private Rect pxToSurfacePx(Rectangle2D.Double input, Rect output)
+    private Rect pxToSurfacePx(Envelope input, Rect output)
     {        
-        Point2D.Double pointPx = new Point2D.Double(input.x, input.y);
+        Coordinate pointPx = new Coordinate(input.getMinX(), input.getMinY());
         PointF point = pxToSurfacePx(pointPx, null);
         int left = (int)Math.round(point.x);
         int bottom = (int)Math.round(point.y);
-        pointPx.x = input.x + input.width;
-        pointPx.y = input.y + input.height;
+        pointPx.x = input.getMaxX();
+        pointPx.y = input.getMaxY();
         pxToSurfacePx(pointPx, point);
         
         if(output == null)
@@ -414,9 +414,9 @@ public class Navigator
      * @param output
      * @return
      */
-    private Point2D.Double lonLatToPx(Point2D.Double input, Point2D.Double output)
+    private Coordinate lonLatToPx(Coordinate input, Coordinate output)
     {
-        Point2D.Double meters = layerManager.lonLatToM(input, null);
+        Coordinate meters = layerManager.lonLatToM(input);
         
         return mToPx(meters, output);
     }
@@ -427,15 +427,15 @@ public class Navigator
      * @param output
      * @return
      */
-    private Point2D.Double surfacePxToPx(PointF input, Point2D.Double output)
+    private Coordinate surfacePxToPx(PointF input, Coordinate output)
     {
         if(output == null)
         {
-            output = new Point2D.Double();
+            output = new Coordinate();
         }
         
-        output.x = pxScreen.x + input.x;
-        output.y = pxScreen.y + (screen.height() - input.y);
+        output.x = pxScreen.getMinX() + input.x;
+        output.y = pxScreen.getMinY() + (screen.height() - input.y);
         
         return output;
     }
@@ -445,20 +445,20 @@ public class Navigator
      * @param output
      * @return
      */
-    private Rectangle2D.Double getMRectangle(Rectangle2D.Double output)
-    {
-        double width = pxToM(screen.width());
-        double height = pxToM(screen.height());
-        
+    private Envelope getMRectangle(Envelope output)
+    {        
         if(output == null)
         {
-            output = new Rectangle2D.Double();
+            output = new Envelope();
         }
         
-        output.setRect(positionM.x - width / 2.0,
-                       positionM.y - height / 2.0,
-                       width,
-                       height);
+        double width_half = pxToM(screen.width()) / 2.0;
+        double height_half = pxToM(screen.height()) / 2.0;
+        
+        output.init(positionM.x - width_half,
+                    positionM.x + width_half,
+                    positionM.y - height_half,
+                    positionM.y + height_half);
         
         return output;
     }

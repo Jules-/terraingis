@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 
-import com.jhlabs.map.proj.Projection;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
-import cz.kalcik.vojta.geom.Point2D;
-import cz.kalcik.vojta.geom.Rectangle2D;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.exception.TerrainGISException;
 import cz.kalcik.vojta.terraingis.view.MapView;
@@ -41,10 +40,10 @@ public class LayerManager
     // constants ==========================================================================
     
     private final int EPSG_SPHERICAL_MERCATOR = 3857;
+    private final int EPSG_LONLAT = 4326;
     
     // attributes =========================================================================
     
-    private Projection projection;    
     private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
     private SpatiaLiteManager spatialiteManager;
     
@@ -71,7 +70,7 @@ public class LayerManager
         layers.add(layer);
     }
     
-    public void redraw(Canvas canvas, Rectangle2D.Double rect)
+    public void redraw(Canvas canvas, Envelope rect)
     {
         int size = layers.size();
         
@@ -121,21 +120,6 @@ public class LayerManager
     }
     
     // getter setter =======================================================================
-    /**
-     * @return the projection
-     */   
-    public Projection getProjection()
-    {
-        return projection;
-    }
-
-    /**
-     * set the projection
-     */
-    public void setProjection(Projection projection)
-    {
-        this.projection = projection;
-    }
     
     /**
      * @return the layers
@@ -146,33 +130,13 @@ public class LayerManager
     }
 
     // public methods =======================================================================
-    public Point2D.Double lonLatToM(Point2D.Double input, Point2D.Double output)
-    {
-        if(projection == null)
-        {
-            throw new TerrainGISException("Projection is not set!");
-        }
-        
-        if(output == null)
-        {
-            output = new Point2D.Double();
-        }
-        
-        return projection.transform(input, output);
+    public Coordinate lonLatToM(Coordinate input)
+    {        
+        return spatialiteManager.transformSRS(input, EPSG_LONLAT, EPSG_SPHERICAL_MERCATOR);
     }
        
-    public Point2D.Double mToLonLat(Point2D.Double input, Point2D.Double output)
+    public Coordinate mToLonLat(Coordinate input)
     {
-        if(projection == null)
-        {
-            throw new TerrainGISException("Projection is not set!");
-        }
-        
-        if(output == null)
-        {
-            output = new Point2D.Double();
-        }
-        
-        return projection.inverseTransform(input, output);
+        return spatialiteManager.transformSRS(input, EPSG_SPHERICAL_MERCATOR, EPSG_LONLAT);
     }
 }

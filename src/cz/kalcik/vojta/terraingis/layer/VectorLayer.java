@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-import cz.kalcik.vojta.geom.Rectangle2D;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 
 import android.graphics.Canvas;
@@ -57,7 +56,7 @@ public abstract class VectorLayer extends AbstractLayer
      * draw objects to canvas
      */
     @Override
-    public void draw(Canvas canvas, Rectangle2D.Double rect)
+    public void draw(Canvas canvas, Envelope rect)
     {
 
     }

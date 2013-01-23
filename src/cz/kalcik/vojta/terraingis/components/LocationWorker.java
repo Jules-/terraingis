@@ -3,7 +3,8 @@ package cz.kalcik.vojta.terraingis.components;
 import java.io.Serializable;
 import java.util.List;
 
-import cz.kalcik.vojta.geom.Point2D;
+import com.vividsolutions.jts.geom.Coordinate;
+
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 import android.content.BroadcastReceiver;
@@ -229,7 +230,7 @@ public class LocationWorker
     class MyLocationListener implements LocationListener
     {
         private MapView map;
-        private Point2D.Double locationPoint = new Point2D.Double();
+        private Coordinate locationPoint = new Coordinate();
         
         /**
          * constructor
@@ -261,7 +262,9 @@ public class LocationWorker
                 return;
             }
             
-            locationPoint.setLocation(location.getLongitude(), location.getLatitude());
+            locationPoint.x = location.getLongitude();
+            locationPoint.y = location.getLatitude();
+            locationPoint.z = location.getAltitude();
             map.setLonLatLocation(locationPoint);
             
             float accuracy = location.getAccuracy();

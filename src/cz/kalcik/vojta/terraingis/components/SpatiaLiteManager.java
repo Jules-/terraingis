@@ -3,9 +3,11 @@ package cz.kalcik.vojta.terraingis.components;
 import java.io.File;
 import java.util.ArrayList;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
-
-import cz.kalcik.vojta.geom.Rectangle2D;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
+import com.vividsolutions.jts.io.WKTReader;
 
 import android.util.Log;
 
@@ -23,6 +25,7 @@ public class SpatiaLiteManager
 {    
     // attributes =========================================================================
     private Database db;
+    private WKBReader wkbReader = new WKBReader();
     
     // public methods ======================================================================
     /**
@@ -107,10 +110,10 @@ public class SpatiaLiteManager
             stmt.bind(1, name);
             if(stmt.step())
             {
-                return new Envelope(stmt.column_double(1),
+                return new Envelope(stmt.column_double(0),
+                                    stmt.column_double(1),
                                     stmt.column_double(2),
-                                    stmt.column_double(3),
-                                    stmt.column_double(4));
+                                    stmt.column_double(3));
             }
         }
         catch (Exception e)
@@ -119,6 +122,40 @@ public class SpatiaLiteManager
         }
         
         return null;        
+    }
+    
+    /**
+     * transform coordinates between two srid
+     * @param point
+     * @param from
+     * @param to
+     * @return
+     */
+    public Coordinate transformSRS(Coordinate point, int from, int to)
+    {
+        try
+        {            
+            Stmt stmt = db.prepare("SELECT AsBinary(Transform(MakePoint(?, ?, ?), ?))");
+            
+            stmt.bind(1, point.x);
+            stmt.bind(2, point.y);
+            stmt.bind(3, from);
+            stmt.bind(4, to);
+            if(stmt.step())
+            {
+                return wkbReader.read(stmt.column_bytes(0)).getCoordinate();
+            }
+        }
+        catch (ParseException e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return null;         
     }
     // private methods =======================================================================
     /**
