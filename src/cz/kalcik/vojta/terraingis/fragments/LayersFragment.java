@@ -36,7 +36,7 @@ import cz.kalcik.vojta.terraingis.R;
 public class LayersFragment extends Fragment
 {
     // constants =========================================================
-
+    private static String SELECTED_POSITION = "SelectedPosition";
     
     // properties =========================================================
     private ArrayAdapter<AbstractLayer> arrayAdapter;
@@ -111,8 +111,11 @@ public class LayersFragment extends Fragment
         
         listView.setAdapter(arrayAdapter);
         
+        // buttons
         ImageButton buttonZoomLayer = (ImageButton)myView.findViewById(R.id.button_zoom_to_layer);
         buttonZoomLayer.setOnClickListener(zoomLayerHandler);
+        ImageButton buttonHide = (ImageButton)myView.findViewById(R.id.button_hide);
+        buttonHide.setOnClickListener(hideHandler);
         
         // main activity
         mainActivity = (MainActivity)getActivity();
@@ -120,6 +123,26 @@ public class LayersFragment extends Fragment
         return myView;
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        super.onActivityCreated(savedInstanceState);
+
+        if(savedInstanceState != null)
+        {
+            listView.setMySelectedPosition(savedInstanceState.getInt(SELECTED_POSITION));
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState (Bundle outState)
+    {        
+        // Map view state
+        outState.putInt(SELECTED_POSITION, listView.getMySelectedPosition());
+        
+        super.onSaveInstanceState(outState);
+    }
+    
     // handlers ===============================================================
     
     /**
@@ -151,6 +174,18 @@ public class LayersFragment extends Fragment
             
             mainActivity.getMap().zoomToEnvelopeM(envelope);
         }
+    };
+
+    /**
+     * hide panel
+     */
+    View.OnClickListener hideHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            mainActivity.hideLayersFragment();
+        }        
     };
     
     // classes =============================================================================
