@@ -1,7 +1,5 @@
 package cz.kalcik.vojta.terraingis.layer;
 
-import java.util.jar.Attributes.Name;
-
 import microsoft.mappoint.TileSystem;
 
 import org.osmdroid.DefaultResourceProxyImpl;
@@ -9,10 +7,10 @@ import org.osmdroid.ResourceProxy;
 import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.util.TileLooper;
-import org.osmdroid.views.MapView;
 
 import com.vividsolutions.jts.geom.Envelope;
 
+import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 
 import android.content.Context;
@@ -20,7 +18,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -51,6 +48,7 @@ public class TilesLayer extends AbstractLayer
     private Rect currentRect = new Rect();
     private Envelope currentRealRect = new Envelope();
     private Navigator navigator = Navigator.getInstance();
+    private Drawer mDrawer = Drawer.getInstance();
     
     /**
      * constructor
@@ -71,8 +69,8 @@ public class TilesLayer extends AbstractLayer
         
         this.mTileProvider = aTileProvider;
         
-        name = aTileProvider.getTileSource().name();
-        envelope = new Envelope(-LayerManager.SPHERICAL_MERCATOR_DIST,
+        mName = aTileProvider.getTileSource().name();
+        mEnvelope = new Envelope(-LayerManager.SPHERICAL_MERCATOR_DIST,
                                 LayerManager.SPHERICAL_MERCATOR_DIST,
                                 -LayerManager.SPHERICAL_MERCATOR_DIST,
                                 LayerManager.SPHERICAL_MERCATOR_DIST);
@@ -115,7 +113,7 @@ public class TilesLayer extends AbstractLayer
 
         rectTilesToReal(tileRect, currentRealRect);
         
-        navigator.drawCanvasDraweblePx(c, currentMapTile, currentRealRect);
+        mDrawer.drawCanvasDraweblePx(c, currentMapTile, currentRealRect);
     }
     
     // private methods ==============================================================================

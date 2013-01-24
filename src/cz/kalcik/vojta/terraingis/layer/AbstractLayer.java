@@ -12,8 +12,8 @@ import android.graphics.Canvas;
 public abstract class AbstractLayer
 {
     // attributes ==============================================================
-    protected String name;
-    protected Envelope envelope;
+    protected String mName;
+    protected Envelope mEnvelope;
     protected int srid;
     
     // abstract methods ========================================================
@@ -23,7 +23,7 @@ public abstract class AbstractLayer
     // getter, setter ==========================================================
     public Envelope getEnvelope()
     {
-        return envelope;
+        return mEnvelope;
     }
 
     public int getSrid()
@@ -35,6 +35,6 @@ public abstract class AbstractLayer
     @Override
     public String toString()
     {
-        return name;
+        return mName;
     }
 }

@@ -16,6 +16,6 @@ public class LinesLayer extends PolyPointsLayer
     {
         super(VectorLayerType.LINE, paint, name, srid, spatialite);
         
-        this.paint.setStyle(Paint.Style.STROKE);
+        this.mPaint.setStyle(Paint.Style.STROKE);
     }        
 }

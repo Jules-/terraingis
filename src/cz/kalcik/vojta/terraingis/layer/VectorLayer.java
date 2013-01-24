@@ -1,14 +1,11 @@
 package cz.kalcik.vojta.terraingis.layer;
 
-import java.util.ArrayList;
-
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
 
 /**
  * class for vector layer
@@ -21,9 +18,10 @@ public abstract class VectorLayer extends AbstractLayer
     public enum VectorLayerType {POINT, LINE, POLYGON};
     
     // attributes ==============================================================
-    protected Paint paint;
-    protected VectorLayerType type;
-    protected SpatiaLiteManager spatialite;    
+    protected Paint mPaint;
+    protected VectorLayerType mType;
+    protected SpatiaLiteManager mSpatialite;
+    protected String mColumnGeom;
     
     // constructors ============================================================
     
@@ -35,17 +33,18 @@ public abstract class VectorLayer extends AbstractLayer
     public VectorLayer(VectorLayerType type, Paint paint, String name, int srid,
                        SpatiaLiteManager spatialite)
     {
-        this.type = type;
+        this.mType = type;
         if(paint == null)
         {
             paint = new Paint();
         }
         
-        this.paint = paint;        
-        this.name = name;
+        this.mPaint = paint;        
+        this.mName = name;
         this.srid = srid;
-        this.spatialite = spatialite;
-        envelope = spatialite.getEnvelopeLayer(name);
+        this.mSpatialite = spatialite;
+        mEnvelope = spatialite.getEnvelopeLayer(name);
+        mColumnGeom = mSpatialite.getColumnGeom(name);
     }
     
     // public methods =========================================================

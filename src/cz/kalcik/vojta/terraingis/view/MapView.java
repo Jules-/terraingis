@@ -9,6 +9,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
@@ -50,7 +51,7 @@ public class MapView extends SurfaceView
     private LayerManager layerManager = LayerManager.getInstance();
     private Navigator navigator = Navigator.getInstance();
     private Settings settings = Settings.getInstance();
-    private Context context;
+    private Drawer mDrawer = Drawer.getInstance();
     private GestureDetector gestureDetector;
     private MainActivity mainActivity;
     
@@ -82,7 +83,6 @@ public class MapView extends SurfaceView
     {
         super(context, attrs);
         
-        this.context = context;
         locationIcon = context.getResources().getDrawable(settings.getLocationIcon());
         this.setWillNotDraw(false);
         
@@ -222,7 +222,7 @@ public class MapView extends SurfaceView
             canvas.translate(touchDiff.x, touchDiff.y);
         }
         
-        navigator.draw(canvas, getWidth(), getHeight());
+        mDrawer.draw(canvas, getWidth(), getHeight());
         
         if(locationValid)
         {
@@ -341,7 +341,7 @@ public class MapView extends SurfaceView
     
     private void drawLocation(Canvas canvas)
     {
-        navigator.drawIconM(canvas, locationM, locationIcon);
+        mDrawer.drawIconM(canvas, locationM, locationIcon);
     }
     
     // classes =============================================================================

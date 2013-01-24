@@ -42,8 +42,8 @@ public class Navigator
     private double zoom = DEFAULT_ZOOM; // m/px
     private Coordinate positionM = new Coordinate(0,0);
     private LayerManager layerManager = LayerManager.getInstance();
-    private Rect screen = new Rect();
-    private Envelope pxScreen = new Envelope(); // area showed in screen in pixels
+    private Rect mScreen = new Rect();
+    private Envelope mPxScreen = new Envelope(); // area showed in screen in pixels
     
     // getter setter ======================================================================
     
@@ -100,8 +100,8 @@ public class Navigator
             output = new Envelope();
         }
         
-        double width_half = screen.width() / 2.0;
-        double height_half = screen.height() / 2.0;
+        double width_half = mScreen.width() / 2.0;
+        double height_half = mScreen.height() / 2.0;
         
         output.init(tempPoint.x - width_half,
                     tempPoint.x + width_half,
@@ -111,17 +111,49 @@ public class Navigator
         return output;
     }
     
+    /**
+     * @return position i meters
+     */
     public Coordinate getPositionM()
     {
         return positionM;
     }
     
+    /**
+     * set position in meters
+     * @param position
+     */
     public void setPositionM(Coordinate position)
     {
         positionM = position;
         updateDuplicateAttributes();
     }
     
+    /**
+     * @return screen rectangle
+     */
+    public Rect getScreen()
+    {
+        return mScreen;
+    }
+    
+    /**
+     * set screen
+     * @param screen
+     */
+    public void setScreen(Rect screen)
+    {
+        mScreen = screen;
+        updateDuplicateAttributes();
+    }
+    
+    /**
+     * @return screen rectangle in px
+     */
+    public Envelope getPxScreen()
+    {
+        return mPxScreen;
+    }
     // public methods =====================================================================
     
     /**
@@ -135,117 +167,6 @@ public class Navigator
         positionM.y += pxToM(-y);
         
         updateDuplicateAttributes();
-    }
-    
-    /**
-     * draw layers to canvas by position
-     * @param canvas
-     * @param width
-     * @param height
-     */
-    public void draw(Canvas canvas, int width, int height)
-    {
-        if(screen.width() != width || screen.height() != height)
-        {
-            screen.set(0, 0, width, height);
-            updateDuplicateAttributes();
-        }
-        
-        layerManager.redraw(canvas, getMRectangle(null));
-    }   
-    
-    /**
-     * draw drawable to canvas
-     * @param canvas
-     * @param drawable
-     * @param bound
-     */
-    public void drawCanvasDraweblePx(Canvas canvas, Drawable drawable, Envelope bound)
-    {
-        drawable.setBounds(pxToSurfacePx(bound, null));
-        drawable.draw(canvas);
-    }
-    
-    /**
-     * draw points to canvas
-     * @param canvas
-     * @param points
-     * @param paint
-     */
-    public void drawCanvasPathM(Canvas canvas, ArrayList<Coordinate> points, Paint paint)
-    {
-        Path path = new Path();
-        int size = points.size();
-        if(size < 2)
-        {
-            return;
-        }
-        
-        Coordinate pointPx = mToPx(points.get(0), null);
-        PointF surfacePoint = pxToSurfacePx(pointPx, null);
-        path.moveTo(surfacePoint.x, surfacePoint.y);
-        
-        for(int i = 1; i < size; i++)
-        {
-            mToPx(points.get(i), pointPx);
-            pxToSurfacePx(pointPx, surfacePoint);
-            path.lineTo(surfacePoint.x, surfacePoint.y);
-        }
-        
-        canvas.drawPath(path, paint);
-    }
-    
-    /**
-     * draw lines between points
-     * @param canvas
-     * @param points
-     * @param paint
-     */
-    public void drawLinesM(Canvas canvas, ArrayList<Coordinate> points, Paint paint)
-    {
-        int size = points.size();
-        if(size < 2)
-        {
-            return;
-        }      
-        
-        Coordinate pointPx = mToPx(points.get(0), null);
-        PointF previousSurfacePoint = pxToSurfacePx(pointPx, null);
-        PointF currentSurfacePoint = new PointF();
-        
-        for(int i = 1; i < size; i++)
-        {
-            mToPx(points.get(i), pointPx);
-            pxToSurfacePx(pointPx, currentSurfacePoint);
-            
-            canvas.drawLine(previousSurfacePoint.x, previousSurfacePoint.y,
-                            currentSurfacePoint.x, currentSurfacePoint.y, paint);
-            previousSurfacePoint.set(currentSurfacePoint);
-        }
-    }
-    
-    /**
-     * draw icon to position
-     * @param canvas
-     * @param point
-     * @param icon
-     */
-    public synchronized void drawIconM(Canvas canvas, Coordinate point, Drawable icon)
-    {
-        Coordinate pointPx = mToPx(point, null);
-
-        if(pxScreen.contains(pointPx.x, pointPx.y))
-        {
-            PointF pointSurface = pxToSurfacePx(pointPx, null);
-            float iconWidthHalf = (float)icon.getIntrinsicWidth() / 2;
-            float iconHeightHalf = (float)icon.getIntrinsicHeight() / 2;
-            Rect bounds = new Rect((int)Math.round(pointSurface.x-iconWidthHalf),
-                                   (int)Math.round(pointSurface.y-iconHeightHalf),
-                                   (int)Math.round(pointSurface.x+iconWidthHalf),
-                                   (int)Math.round(pointSurface.y+iconHeightHalf));
-            icon.setBounds(bounds);
-            icon.draw(canvas);
-        }
     }
     
     /**
@@ -293,8 +214,8 @@ public class Navigator
     {
         double envelopeWidth = zoomingEnvelope.getWidth();
         double envelopeHeight = zoomingEnvelope.getHeight();
-        double screenWidth = pxScreen.getWidth();
-        double screenHeight = pxScreen.getHeight();
+        double screenWidth = mPxScreen.getWidth();
+        double screenHeight = mPxScreen.getHeight();
         if(envelopeWidth/envelopeHeight >
            screenWidth/screenHeight)
         {
@@ -306,6 +227,97 @@ public class Navigator
         }
         
         setPositionM(zoomingEnvelope.centre());
+    }
+    
+    
+    /**
+     * return rectangle in meters which is showed on screen
+     * @param output
+     * @return
+     */
+    public Envelope getMRectangle(Envelope output)
+    {        
+        if(output == null)
+        {
+            output = new Envelope();
+        }
+        
+        double width_half = pxToM(mScreen.width()) / 2.0;
+        double height_half = pxToM(mScreen.height()) / 2.0;
+        
+        output.init(positionM.x - width_half,
+                positionM.x + width_half,
+                positionM.y - height_half,
+                positionM.y + height_half);
+        
+        return output;
+    }
+
+    /**
+     * convert rectangle in px to rectangle in Surface px
+     * @param input
+     * @param output
+     * @return
+     */
+    public Rect pxToSurfacePx(Envelope input, Rect output)
+    {        
+        Coordinate pointPx = new Coordinate(input.getMinX(), input.getMinY());
+        PointF point = pxToSurfacePx(pointPx, null);
+        int left = (int)Math.round(point.x);
+        int bottom = (int)Math.round(point.y);
+        pointPx.x = input.getMaxX();
+        pointPx.y = input.getMaxY();
+        pxToSurfacePx(pointPx, point);
+        
+        if(output == null)
+        {
+            output = new Rect();
+        }
+        
+        output.set(left, (int)Math.round(point.y),
+                   (int)Math.round(point.x), bottom);
+        
+        return output;
+    }
+    
+
+    /**
+     * convert px coordinates to coordinates in surface
+     * @param input
+     * @param output
+     * @param pxRectangle
+     * @return
+     */
+    public PointF pxToSurfacePx(Coordinate input, PointF output)
+    {
+        if(output == null)
+        {
+            output = new PointF();
+        }
+        
+        output.set((float)(input.x - mPxScreen.getMinX()), (float)(mPxScreen.getMaxY() - input.y));
+        
+        return output;
+    }
+    
+    
+    /**
+     * convert m coordinates to px coordinates
+     * @param input
+     * @param output
+     * @return
+     */
+    public Coordinate mToPx(Coordinate input, Coordinate output)
+    {
+        if(output == null)
+        {
+            output = new Coordinate();
+        }
+        
+        output.x = mToPx(input.x);
+        output.y = mToPx(input.y);
+        
+        return output;
     }
     
     // static public methods ==============================================================
@@ -330,25 +342,6 @@ public class Navigator
     private double mToPx(double inputValue)
     {
         return inputValue/zoom;
-    }
-    
-    /**
-     * convert m coordinates to px coordinates
-     * @param input
-     * @param output
-     * @return
-     */
-    private Coordinate mToPx(Coordinate input, Coordinate output)
-    {
-        if(output == null)
-        {
-            output = new Coordinate();
-        }
-        
-        output.x = mToPx(input.x);
-        output.y = mToPx(input.y);
-        
-        return output;
     }
     
     /**
@@ -390,46 +383,6 @@ public class Navigator
     {
         return layerManager.mToLonLatWGS84(pxToM(input, null));
     }
-
-    /**
-     * convert px coordinates to coordinates in surface
-     * @param input
-     * @param output
-     * @param pxRectangle
-     * @return
-     */
-    private PointF pxToSurfacePx(Coordinate input, PointF output)
-    {
-        if(output == null)
-        {
-            output = new PointF();
-        }
-        
-        output.set((float)(input.x - pxScreen.getMinX()), (float)(pxScreen.getMaxY() - input.y));
-        
-        return output;
-    }
-    
-    private Rect pxToSurfacePx(Envelope input, Rect output)
-    {        
-        Coordinate pointPx = new Coordinate(input.getMinX(), input.getMinY());
-        PointF point = pxToSurfacePx(pointPx, null);
-        int left = (int)Math.round(point.x);
-        int bottom = (int)Math.round(point.y);
-        pointPx.x = input.getMaxX();
-        pointPx.y = input.getMaxY();
-        pxToSurfacePx(pointPx, point);
-        
-        if(output == null)
-        {
-            output = new Rect();
-        }
-        
-        output.set(left, (int)Math.round(point.y),
-                   (int)Math.round(point.x), bottom);
-        
-        return output;
-    }
     
     /**
      * convert longitude latitude coordinates to px coordinates
@@ -457,31 +410,8 @@ public class Navigator
             output = new Coordinate();
         }
         
-        output.x = pxScreen.getMinX() + input.x;
-        output.y = pxScreen.getMinY() + (screen.height() - input.y);
-        
-        return output;
-    }
-    
-    /**
-     * return rectangle in meters which is showed on screen
-     * @param output
-     * @return
-     */
-    private Envelope getMRectangle(Envelope output)
-    {        
-        if(output == null)
-        {
-            output = new Envelope();
-        }
-        
-        double width_half = pxToM(screen.width()) / 2.0;
-        double height_half = pxToM(screen.height()) / 2.0;
-        
-        output.init(positionM.x - width_half,
-                    positionM.x + width_half,
-                    positionM.y - height_half,
-                    positionM.y + height_half);
+        output.x = mPxScreen.getMinX() + input.x;
+        output.y = mPxScreen.getMinY() + (mScreen.height() - input.y);
         
         return output;
     }
@@ -491,6 +421,6 @@ public class Navigator
      */
     private void updateDuplicateAttributes()
     {
-        getPxRectangle(pxScreen);
+        getPxRectangle(mPxScreen);
     }
 }

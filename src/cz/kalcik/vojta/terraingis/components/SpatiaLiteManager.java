@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKTReader;
@@ -74,10 +76,9 @@ public class SpatiaLiteManager
      */
     public boolean indexEnabled(String name)
     {
-        Stmt stmt;
         try
         {
-            stmt = db.prepare("SELECT spatial_index_enabled FROM geometry_columns WHERE f_table_name = ?");
+            Stmt stmt = db.prepare("SELECT spatial_index_enabled FROM geometry_columns WHERE f_table_name = ?");
             stmt.bind(1, name);
             if(stmt.step())
             {
@@ -182,6 +183,69 @@ public class SpatiaLiteManager
         Coordinate max = transformSRS(new Coordinate(envelope.getMaxX(), envelope.getMaxY()), from, to);
         
         return new Envelope(min, max);
+    }
+    
+    /**
+     * return objects from envelope
+     * @param envelope
+     * @param name
+     * @param column
+     * @param output_srid
+     * @return
+     */
+    public ArrayList<Geometry> getObjects(Envelope envelope, String name, String column, int output_srid)
+    {
+        ArrayList<Geometry> result = new ArrayList<Geometry>();
+        try
+        {
+            Stmt stmt = db.prepare("SELECT Transform(?, ?) FROM ? WHERE xmin<? AND xmax>? AND ymin<? AND ymax>?");
+            stmt.bind(1, column);
+            stmt.bind(2, output_srid);
+            stmt.bind(3, name);
+            stmt.bind(4, envelope.getMaxX());
+            stmt.bind(5, envelope.getMinX());
+            stmt.bind(6, envelope.getMaxY());
+            stmt.bind(7, envelope.getMinY());
+            
+            while(stmt.step())
+            {
+                result.add(wkbReader.read(stmt.column_bytes(0)));
+            }
+        }
+        catch (ParseException e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return result;        
+    }
+    
+    /**
+     * get name of column with geometry
+     * @param name
+     * @return
+     */
+    public String getColumnGeom(String name)
+    {
+        try
+        {
+            Stmt stmt = db.prepare("SELECT f_geometry_column FROM geometry_columns WHERE f_table_name = ?");
+            stmt.bind(1, name);
+            if(stmt.step())
+            {
+                return stmt.column_string(0);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return null;        
     }
     // private methods =======================================================================
     /**

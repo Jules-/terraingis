@@ -17,6 +17,6 @@ public class PolygonsLayer extends PolyPointsLayer
     {
         super(VectorLayerType.POLYGON, paint, name, srid, spatialite);
         
-        this.paint.setStyle(Paint.Style.FILL);
+        this.mPaint.setStyle(Paint.Style.FILL);
     }
 }
