@@ -4,10 +4,16 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 
 import com.mobeta.android.dslv.DragSortListView;
+import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 
 
 public class LayersView extends DragSortListView
@@ -20,6 +26,7 @@ public class LayersView extends DragSortListView
     // attributes =========================================================================
     private GestureDetector mGestureDetector;
     private MainActivity mMainActivity;
+    private int mMySelectedPosition = -1;
     
     // public methods ======================================================================
     
@@ -34,6 +41,25 @@ public class LayersView extends DragSortListView
         
         mGestureDetector =  new GestureDetector(context, new MySimpleOnGestureListener());
         mMainActivity = (MainActivity)getContext();
+        setOnItemClickListener(itemClickHandler);
+    }
+    
+    // getter, setter ======================================================================
+    /**
+     * @return the mMySelectedPosition
+     */
+    public int getMySelectedPosition()
+    {
+        return mMySelectedPosition;
+    }
+    
+    /**
+     * set MySelectedPosition
+     * @param position
+     */
+    public void setMySelectedPosition(int position)
+    {
+        mMySelectedPosition = position;
     }
     
     // on methods ==========================================================================
@@ -47,6 +73,15 @@ public class LayersView extends DragSortListView
         return value;
     }
     
+    // handler ============================================================================
+    OnItemClickListener itemClickHandler = new OnItemClickListener()
+    {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+        {
+            mMySelectedPosition = position;
+        }
+    };    
     
     // classes =============================================================================
     

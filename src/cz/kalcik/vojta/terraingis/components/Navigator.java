@@ -39,7 +39,7 @@ public class Navigator
     
     // attributes =========================================================================
     
-    private double zoom = DEFAULT_ZOOM;
+    private double zoom = DEFAULT_ZOOM; // m/px
     private Coordinate positionM = new Coordinate(0,0);
     private LayerManager layerManager = LayerManager.getInstance();
     private Rect screen = new Rect();
@@ -82,7 +82,7 @@ public class Navigator
      */
     public void setLonLatPosition(Coordinate lonLatPosition)
     {
-        positionM = layerManager.lonLatToM(lonLatPosition);
+        positionM = layerManager.lonLatWGS84ToM(lonLatPosition);
         updateDuplicateAttributes();
     }
     
@@ -285,6 +285,29 @@ public class Navigator
         updateDuplicateAttributes();
     }
     
+    /**
+     * change zoom and position by envelop
+     * @param zoomingEnvelope
+     */
+    public void zoomToEnvelopeM(Envelope zoomingEnvelope)
+    {
+        double envelopeWidth = zoomingEnvelope.getWidth();
+        double envelopeHeight = zoomingEnvelope.getHeight();
+        double screenWidth = pxScreen.getWidth();
+        double screenHeight = pxScreen.getHeight();
+        if(envelopeWidth/envelopeHeight >
+           screenWidth/screenHeight)
+        {
+            setZoom(envelopeWidth/screenWidth);
+        }
+        else
+        {
+            setZoom(envelopeHeight/screenHeight);
+        }
+        
+        setPositionM(zoomingEnvelope.centre());
+    }
+    
     // static public methods ==============================================================
     
     static public int mpxToZoomLevel(double zoom)
@@ -365,7 +388,7 @@ public class Navigator
      */
     private Coordinate pxToLonLat(Coordinate input)
     {
-        return layerManager.mToLonLat(pxToM(input, null));
+        return layerManager.mToLonLatWGS84(pxToM(input, null));
     }
 
     /**
@@ -416,7 +439,7 @@ public class Navigator
      */
     private Coordinate lonLatToPx(Coordinate input, Coordinate output)
     {
-        Coordinate meters = layerManager.lonLatToM(input);
+        Coordinate meters = layerManager.lonLatWGS84ToM(input);
         
         return mToPx(meters, output);
     }

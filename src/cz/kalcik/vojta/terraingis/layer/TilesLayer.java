@@ -72,6 +72,11 @@ public class TilesLayer extends AbstractLayer
         this.mTileProvider = aTileProvider;
         
         name = aTileProvider.getTileSource().name();
+        envelope = new Envelope(-LayerManager.SPHERICAL_MERCATOR_DIST,
+                                LayerManager.SPHERICAL_MERCATOR_DIST,
+                                -LayerManager.SPHERICAL_MERCATOR_DIST,
+                                LayerManager.SPHERICAL_MERCATOR_DIST);
+        srid = LayerManager.EPSG_SPHERICAL_MERCATOR;
     }
        
 

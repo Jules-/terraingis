@@ -39,14 +39,16 @@ public class LayerManager
     
     // constants ==========================================================================
     
-    private final int EPSG_SPHERICAL_MERCATOR = 3857;
-    private final int EPSG_LONLAT = 4326;
+    public static final int EPSG_SPHERICAL_MERCATOR = 3857;
+    public static final int EPSG_LONLAT = 4326;
+    public static final double SPHERICAL_MERCATOR_DIST = 20037508.342789;
     
     // attributes =========================================================================
     
     private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
     private SpatiaLiteManager spatialiteManager;
-    
+    private int srid = EPSG_SPHERICAL_MERCATOR;
+
     // public methods ======================================================================
     /**
      * create tiles layer
@@ -129,14 +131,29 @@ public class LayerManager
         return layers;
     }
 
+    /**
+     * @return the srid
+     */
+    public int getSrid()
+    {
+        return srid;
+    }
+    
+    /**
+     * @return the spatialiteManager
+     */
+    public SpatiaLiteManager getSpatialiteManager()
+    {
+        return spatialiteManager;
+    }
     // public methods =======================================================================
-    public Coordinate lonLatToM(Coordinate input)
+    public Coordinate lonLatWGS84ToM(Coordinate input)
     {        
-        return spatialiteManager.transformSRS(input, EPSG_LONLAT, EPSG_SPHERICAL_MERCATOR);
+        return spatialiteManager.transformSRS(input, EPSG_LONLAT, srid);
     }
        
-    public Coordinate mToLonLat(Coordinate input)
+    public Coordinate mToLonLatWGS84(Coordinate input)
     {
-        return spatialiteManager.transformSRS(input, EPSG_SPHERICAL_MERCATOR, EPSG_LONLAT);
+        return spatialiteManager.transformSRS(input, srid, EPSG_LONLAT);
     }
 }

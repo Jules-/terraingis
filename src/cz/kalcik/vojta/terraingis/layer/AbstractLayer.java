@@ -11,11 +11,27 @@ import android.graphics.Canvas;
  */
 public abstract class AbstractLayer
 {
+    // attributes ==============================================================
     protected String name;
+    protected Envelope envelope;
+    protected int srid;
     
+    // abstract methods ========================================================
     public abstract void draw(final Canvas canvas, Envelope rect);
     public abstract void detach();
     
+    // getter, setter ==========================================================
+    public Envelope getEnvelope()
+    {
+        return envelope;
+    }
+
+    public int getSrid()
+    {
+        return srid;
+    }
+    
+    // public methods =========================================================
     @Override
     public String toString()
     {

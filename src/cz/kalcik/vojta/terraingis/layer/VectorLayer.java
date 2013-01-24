@@ -23,10 +23,7 @@ public abstract class VectorLayer extends AbstractLayer
     // attributes ==============================================================
     protected Paint paint;
     protected VectorLayerType type;
-    protected int srid;
-    protected SpatiaLiteManager spatialite;
-    protected Envelope envelope;
-    
+    protected SpatiaLiteManager spatialite;    
     
     // constructors ============================================================
     
@@ -67,7 +64,6 @@ public abstract class VectorLayer extends AbstractLayer
         // TODO Auto-generated method stub
         
     }
-    
     // private methods ========================================================
     
 }

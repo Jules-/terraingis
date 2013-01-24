@@ -102,7 +102,7 @@ public class SpatiaLiteManager
         {
             String[] args = {name};
             
-            db.exec("SELECT UpdateLayerStatistics(?)", null, args);
+            db.exec("SELECT UpdateLayerStatistics('%q')", null, args);
             
             Stmt stmt;
             stmt = db.prepare("SELECT extent_min_x, extent_max_x, extent_min_y, extent_max_y " +
@@ -125,7 +125,7 @@ public class SpatiaLiteManager
     }
     
     /**
-     * transform coordinates between two srid
+     * transform coordinates between two srs
      * @param point
      * @param from
      * @param to
@@ -133,6 +133,11 @@ public class SpatiaLiteManager
      */
     public Coordinate transformSRS(Coordinate point, int from, int to)
     {
+        if(from == to)
+        {
+            return (Coordinate)point.clone();
+        }
+        
         try
         {            
             Stmt stmt = db.prepare("SELECT AsBinary(Transform(MakePoint(?, ?, ?), ?))");
@@ -156,6 +161,27 @@ public class SpatiaLiteManager
         }
         
         return null;         
+    }
+    
+    /**
+     * transform envelop coordinates between two srs
+     * @param envelope
+     * @param from
+     * @param to
+     * @return
+     */
+    public Envelope transformSRSEnvelope(Envelope envelope, int from, int to)
+    {
+        if(from == to)
+        {
+            return new Envelope(envelope.getMinX(), envelope.getMaxX(),
+                                envelope.getMinY(), envelope.getMaxY());
+        }
+        
+        Coordinate min = transformSRS(new Coordinate(envelope.getMinX(), envelope.getMinY()), from, to);
+        Coordinate max = transformSRS(new Coordinate(envelope.getMaxX(), envelope.getMaxY()), from, to);
+        
+        return new Envelope(min, max);
     }
     // private methods =======================================================================
     /**

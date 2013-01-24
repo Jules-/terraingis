@@ -6,6 +6,7 @@ import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Navigator;
@@ -122,6 +123,16 @@ public class MapView extends SurfaceView
         return locationValid;
     }
     
+    /**
+     * zoom to envelope
+     * @param zoomingEnvelope
+     */
+    public void zoomToEnvelopeM(Envelope zoomingEnvelope)
+    {
+        navigator.zoomToEnvelopeM(zoomingEnvelope);
+        invalidate();
+    }
+    
     // getter setter =======================================================================
     
     public MapViewData getData()
@@ -178,7 +189,7 @@ public class MapView extends SurfaceView
         {
             navigator.setLonLatPosition(location);
         }
-        locationM = layerManager.lonLatToM(location);
+        locationM = layerManager.lonLatWGS84ToM(location);
         locationValid = true;
         invalidate();
     }

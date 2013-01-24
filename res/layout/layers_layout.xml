@@ -9,38 +9,48 @@
         android:layout_height="wrap_content" >
 
         <ImageButton
-            android:id="@+id/imageView1"
+            android:id="@+id/button_hide"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/hide"
             android:layout_gravity="center_vertical"
             android:background="@android:color/transparent"
-            android:padding="12dp" />
+            android:padding="13dp" />
         
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_weight="1"
             android:layout_height="wrap_content"/>
+
+        <ImageButton
+            android:id="@+id/button_zoom_to_layer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/zoom_to_layer"
+            android:layout_gravity="center_vertical"
+            android:background="@android:color/transparent"
+            android:layout_weight="0"
+            android:padding="13dp" />
         
         <ImageButton
-            android:id="@+id/imageView2"
+            android:id="@+id/button_add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/add"
             android:layout_gravity="center_vertical"
             android:background="@android:color/transparent"
             android:layout_weight="0"
-            android:padding="12dp" />
+            android:padding="13dp" />
 
         <ImageButton
-            android:id="@+id/imageView3"
+            android:id="@+id/button_remove"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/remove"
             android:layout_gravity="center_vertical"
             android:background="@android:color/transparent"
             android:layout_weight="0"
-            android:padding="12dp" />
+            android:padding="13dp" />
 
     </LinearLayout>
     
@@ -49,6 +59,7 @@
         android:id="@+id/list_layers"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:choiceMode="singleChoice" 
         dslv:click_remove_id="@id/click_remove"
         dslv:collapsed_height="1px"
         dslv:drag_enabled="true"
@@ -58,6 +69,7 @@
         dslv:float_alpha="0.6"
         dslv:remove_enabled="true"
         dslv:remove_mode="clickRemove"
-        dslv:slide_shuffle_speed="0.3"/>
+        dslv:slide_shuffle_speed="0.3"
+        dslv:float_background_color="@android:color/background_light" />
 
 </LinearLayout>
