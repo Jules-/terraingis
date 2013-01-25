@@ -80,6 +80,7 @@ public class LayersView extends DragSortListView
         public void onItemClick(AdapterView<?> parent, View view, int position, long id)
         {
             mMySelectedPosition = position;
+            invalidateViews();
         }
     };    
     

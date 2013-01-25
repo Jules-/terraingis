@@ -90,7 +90,7 @@ public class MapFragment extends Fragment
     
     private void createTestingMap()
     {
-        layerManager.loadSpatialite(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS/cyklostezka.sqlite");
+        layerManager.loadSpatialite(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS/db.sqlite");
          
         // tiles layer        
         final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;

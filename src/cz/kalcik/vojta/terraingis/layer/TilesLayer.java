@@ -10,7 +10,6 @@ import org.osmdroid.util.TileLooper;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 
 import android.content.Context;
@@ -48,7 +47,6 @@ public class TilesLayer extends AbstractLayer
     private Rect currentRect = new Rect();
     private Envelope currentRealRect = new Envelope();
     private Navigator navigator = Navigator.getInstance();
-    private Drawer mDrawer = Drawer.getInstance();
     
     /**
      * constructor
@@ -74,7 +72,7 @@ public class TilesLayer extends AbstractLayer
                                 LayerManager.SPHERICAL_MERCATOR_DIST,
                                 -LayerManager.SPHERICAL_MERCATOR_DIST,
                                 LayerManager.SPHERICAL_MERCATOR_DIST);
-        srid = LayerManager.EPSG_SPHERICAL_MERCATOR;
+        mSrid = LayerManager.EPSG_SPHERICAL_MERCATOR;
     }
        
 

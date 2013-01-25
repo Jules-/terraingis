@@ -198,14 +198,14 @@ public class SpatiaLiteManager
         ArrayList<Geometry> result = new ArrayList<Geometry>();
         try
         {
-            Stmt stmt = db.prepare("SELECT Transform(?, ?) FROM ? WHERE xmin<? AND xmax>? AND ymin<? AND ymax>?");
-            stmt.bind(1, column);
-            stmt.bind(2, output_srid);
-            stmt.bind(3, name);
+            Stmt stmt = db.prepare("SELECT AsBinary(Transform("+column+", ?)) FROM "+name+" WHERE "+
+                    "MbrIntersects(BuildMBR(?, ?, ?, ?), Transform("+column+", ?)) = 1");
+            stmt.bind(1, output_srid);
+            stmt.bind(6, output_srid);
+            stmt.bind(2, envelope.getMinX());
+            stmt.bind(3, envelope.getMinY());
             stmt.bind(4, envelope.getMaxX());
-            stmt.bind(5, envelope.getMinX());
-            stmt.bind(6, envelope.getMaxY());
-            stmt.bind(7, envelope.getMinY());
+            stmt.bind(5, envelope.getMaxY());
             
             while(stmt.step())
             {

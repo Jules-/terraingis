@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
 
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 
@@ -77,22 +78,23 @@ public class Drawer
      * @param points
      * @param paint
      */
-    public void drawCanvasPathM(Canvas canvas, ArrayList<Coordinate> points, Paint paint)
+    public void drawCanvasPathM(Canvas canvas, Geometry object, Paint paint)
     {
         Path path = new Path();
-        int size = points.size();
+        int size = object.getNumPoints();;
         if(size < 2)
         {
             return;
         }
         
-        Coordinate pointPx = mNavigator.mToPx(points.get(0), null);
+        Coordinate[] points = object.getCoordinates();
+        Coordinate pointPx = mNavigator.mToPx(points[0], null);
         PointF surfacePoint = mNavigator.pxToSurfacePx(pointPx, null);
         path.moveTo(surfacePoint.x, surfacePoint.y);
         
         for(int i = 1; i < size; i++)
         {
-            mNavigator.mToPx(points.get(i), pointPx);
+            mNavigator.mToPx(points[i], pointPx);
             mNavigator.pxToSurfacePx(pointPx, surfacePoint);
             path.lineTo(surfacePoint.x, surfacePoint.y);
         }
@@ -106,21 +108,22 @@ public class Drawer
      * @param points
      * @param paint
      */
-    public void drawLinesM(Canvas canvas, ArrayList<Coordinate> points, Paint paint)
+    public void drawLinesM(Canvas canvas, Geometry object, Paint paint)
     {
-        int size = points.size();
+        int size = object.getNumPoints();
         if(size < 2)
         {
             return;
         }      
         
-        Coordinate pointPx = mNavigator.mToPx(points.get(0), null);
+        Coordinate[] points = object.getCoordinates();
+        Coordinate pointPx = mNavigator.mToPx(points[0], null);
         PointF previousSurfacePoint = mNavigator.pxToSurfacePx(pointPx, null);
         PointF currentSurfacePoint = new PointF();
         
         for(int i = 1; i < size; i++)
         {
-            mNavigator.mToPx(points.get(i), pointPx);
+            mNavigator.mToPx(points[i], pointPx);
             mNavigator.pxToSurfacePx(pointPx, currentSurfacePoint);
             
             canvas.drawLine(previousSurfacePoint.x, previousSurfacePoint.y,

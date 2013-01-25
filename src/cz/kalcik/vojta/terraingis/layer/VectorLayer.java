@@ -1,6 +1,9 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import java.util.ArrayList;
+
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
 
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 
@@ -41,28 +44,22 @@ public abstract class VectorLayer extends AbstractLayer
         
         this.mPaint = paint;        
         this.mName = name;
-        this.srid = srid;
+        this.mSrid = srid;
         this.mSpatialite = spatialite;
         mEnvelope = spatialite.getEnvelopeLayer(name);
         mColumnGeom = mSpatialite.getColumnGeom(name);
     }
     
-    // public methods =========================================================
-    /**
-     * draw objects to canvas
-     */
-    @Override
-    public void draw(Canvas canvas, Envelope rect)
-    {
-
-    }
-    
+    // public methods =========================================================    
     @Override
     public void detach()
     {
         // TODO Auto-generated method stub
         
     }
-    // private methods ========================================================
-    
+    // protected methods ========================================================
+    protected ArrayList<Geometry> getObjects(Envelope envelope)
+    {
+        return mSpatialite.getObjects(envelope, mName, mColumnGeom, mLayerManager.getSrid());
+    }
 }

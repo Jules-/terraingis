@@ -73,6 +73,7 @@ public class LayersFragment extends Fragment
                             listView.setMySelectedPosition(selectedItem+1);
                         }
                         
+                        listView.invalidateViews();
                         mainActivity.getMap().invalidate();
                     }
                 }
