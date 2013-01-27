@@ -320,6 +320,17 @@ public class Navigator
         return output;
     }
     
+    /**
+     * convert coordinates in meters to surface px
+     * @param input
+     * @param output
+     * @return
+     */
+    public PointF mToSurfacePx(Coordinate input, PointF output)
+    {
+        Coordinate pxCoord = mToPx(input, null);
+        return pxToSurfacePx(pxCoord, output);
+    }
     // static public methods ==============================================================
     
     static public int mpxToZoomLevel(double zoom)

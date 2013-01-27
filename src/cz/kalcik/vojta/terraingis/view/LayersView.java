@@ -12,6 +12,7 @@ import com.mobeta.android.dslv.DragSortListView;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 
@@ -105,7 +106,7 @@ public class LayersView extends DragSortListView
             
             // right to left swipe
             if(e1.getX() - e2.getX() > getWidth()*MEASURE_PATH_MIN_DISTANCE &&
-               Math.abs(velocityX) > mMainActivity.dp2px(SWIPE_THRESHOLD_VELOCITY))
+               Math.abs(velocityX) > ConvertUnits.dp2px(SWIPE_THRESHOLD_VELOCITY))
             {
                 mMainActivity.hideLayersFragment();
                 return true;

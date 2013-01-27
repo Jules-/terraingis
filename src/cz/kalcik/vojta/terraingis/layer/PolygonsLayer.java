@@ -15,7 +15,7 @@ public class PolygonsLayer extends VectorLayer
     public PolygonsLayer(String name, int srid,
                          SpatiaLiteManager spatialite)
     {
-        this(null, name, srid, spatialite);
+        this(DefaultPaints.getPolygon(), name, srid, spatialite);
     }
     
     public PolygonsLayer(Paint paint, String name, int srid,

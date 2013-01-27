@@ -15,7 +15,7 @@ public class LinesLayer extends VectorLayer
     public LinesLayer(String name, int srid,
                       SpatiaLiteManager spatialite)
     {
-        this(DefaultPaints.getLines(), name, srid, spatialite);
+        this(DefaultPaints.getLine(), name, srid, spatialite);
     }
     
     public LinesLayer(Paint paint, String name, int srid,

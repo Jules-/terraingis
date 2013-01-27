@@ -198,7 +198,7 @@ public class SpatiaLiteManager
         ArrayList<Geometry> result = new ArrayList<Geometry>();
         try
         {
-            Stmt stmt = db.prepare("SELECT AsBinary(Transform("+column+", ?)) FROM "+name+" WHERE "+
+            Stmt stmt = db.prepare("SELECT AsBinary(Transform("+column+", ?)) FROM '"+name+"' WHERE "+
                     "MbrIntersects(BuildMBR(?, ?, ?, ?), Transform("+column+", ?)) = 1");
             stmt.bind(1, output_srid);
             stmt.bind(6, output_srid);

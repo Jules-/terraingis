@@ -1,18 +1,26 @@
 package cz.kalcik.vojta.terraingis.layer;
 
-import com.vividsolutions.jts.geom.Envelope;
+import java.util.ArrayList;
 
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+
+import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
 public class PointsLayer extends VectorLayer
 {
+    // constants ==============================================================
+    // TODO dp
+    private final float RADIUS = 4;
+    
     // public methods =========================================================
     public PointsLayer(String name, int srid,
                        SpatiaLiteManager spatialite)
     {
-        this(null, name, srid, spatialite);
+        this(DefaultPaints.getPoint(), name, srid, spatialite);
     }
     
 	public PointsLayer(Paint paint, String name, int srid,
@@ -27,6 +35,10 @@ public class PointsLayer extends VectorLayer
     @Override
     public void draw(Canvas canvas, Envelope rect)
     {
-
+        ArrayList<Geometry> objects = getObjects(rect);
+        for(Geometry object: objects)
+        {
+            mDrawer.drawCircleM(canvas, mPaint, object.getCoordinate(), RADIUS);
+        }
     }
 }

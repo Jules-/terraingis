@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
@@ -72,7 +73,7 @@ public class MainActivity extends FragmentActivity
         if(!mLayersLayout.isShown())
         {
             Display display = getWindowManager().getDefaultDisplay();
-            float dp_width = px2dp(display.getWidth());
+            float dp_width = ConvertUnits.px2dp(display.getWidth());
             
             boolean run = true;
             int i = 3;
@@ -95,17 +96,6 @@ public class MainActivity extends FragmentActivity
             
             mLayersLayout.setVisibility(View.VISIBLE);
         }
-    }
-    
-    /**
-     * convert value in dp to px
-     * @param dp
-     * @return
-     */
-    public int dp2px(float dp)
-    {
-        final float scale = getResources().getDisplayMetrics().density;
-        return (int) (dp * scale + 0.5f);
     }
     // getter, setter =====================================================
     
@@ -142,6 +132,8 @@ public class MainActivity extends FragmentActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        ConvertUnits.setDensity(getResources().getDisplayMetrics().density);
         
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
         mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
@@ -274,17 +266,6 @@ public class MainActivity extends FragmentActivity
             menuShowLocation.setVisible(false);
         }        
     }
-    
-    /**
-     * convert value in px to dp
-     * @param px
-     * @return dp
-     */
-    private float px2dp(int px)
-    {
-        final float scale = getResources().getDisplayMetrics().density;
-        return px/scale;
-    }    
     // classes =================================================================
     /**
      * task for hidding action bar

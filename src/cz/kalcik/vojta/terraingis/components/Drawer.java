@@ -133,6 +133,19 @@ public class Drawer
     }
     
     /**
+     * draw circle
+     * @param canvas
+     * @param paint
+     * @param center
+     * @param radius
+     */
+    public void drawCircleM(Canvas canvas, Paint paint, Coordinate center, float radius)
+    {
+        PointF centerSurfacePx = mNavigator.mToSurfacePx(center, null);
+        canvas.drawCircle(centerSurfacePx.x, centerSurfacePx.y, radius, paint);
+    }
+    
+    /**
      * draw icon to position
      * @param canvas
      * @param point
