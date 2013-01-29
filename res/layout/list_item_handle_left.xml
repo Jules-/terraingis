@@ -11,7 +11,7 @@
     android:layout_height="@dimen/item_height"
     android:layout_weight="0" />
   <TextView
-    android:id="@+id/text"
+    android:id="@+id/text_item"
     android:layout_width="wrap_content"
     android:layout_height="@dimen/item_height"
     android:layout_weight="1"

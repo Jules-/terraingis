@@ -24,7 +24,7 @@ public class MainActivity extends FragmentActivity
     // constants ==========================================================
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
     private static final String SHOWN_LAYERS = "ShownLayers";
-    private static final float MIN_WIDTH_PANEL_DP = 250;
+    private static final float MIN_WIDTH_PANEL_DP = 300;
     
     // properties =========================================================
     private MenuItem menuRunLocation;

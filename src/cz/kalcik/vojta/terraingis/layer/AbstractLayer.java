@@ -4,6 +4,7 @@ import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.components.Drawer;
 
+import android.R.bool;
 import android.graphics.Canvas;
 
 /**
@@ -19,6 +20,7 @@ public abstract class AbstractLayer
     protected int mSrid;
     protected Drawer mDrawer = Drawer.getInstance();
     protected LayerManager mLayerManager = LayerManager.getInstance();
+    protected boolean mVisible = true;
     
     // abstract methods ========================================================
     public abstract void draw(final Canvas canvas, Envelope rect);
@@ -35,10 +37,27 @@ public abstract class AbstractLayer
         return mSrid;
     }
     
+    /**
+     * Is layer visible?
+     * @return
+     */
+    public boolean isVisible()
+    {
+        return mVisible;
+    }
+    
     // public methods =========================================================
     @Override
     public String toString()
     {
         return mName;
+    }
+    
+    /**
+     * Toggle visibility
+     */
+    public void toggleVisibility()
+    {
+        mVisible = !mVisible;
     }
 }

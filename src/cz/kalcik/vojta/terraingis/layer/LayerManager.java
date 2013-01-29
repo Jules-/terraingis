@@ -78,7 +78,12 @@ public class LayerManager
         
         for(int i=size-1; i >= 0; i--)
         {
-            layers.get(i).draw(canvas, rect);
+            AbstractLayer layer = layers.get(i);
+            
+            if(layer.isVisible())
+            {
+                layer.draw(canvas, rect);
+            }
         }
     }
    

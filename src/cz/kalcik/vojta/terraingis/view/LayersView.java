@@ -62,7 +62,6 @@ public class LayersView extends DragSortListView
     {
         mMySelectedPosition = position;
     }
-    
     // on methods ==========================================================================
     @Override
     public boolean onTouchEvent(MotionEvent e)

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.GestureDetector;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mobeta.android.dslv.DragSortListView;
@@ -39,9 +41,9 @@ public class LayersFragment extends Fragment
     private static String SELECTED_POSITION = "SelectedPosition";
     
     // properties =========================================================
-    private ArrayAdapter<AbstractLayer> arrayAdapter;
-    private LayersView listView;
-    private MainActivity mainActivity;
+    private ArrayAdapter<AbstractLayer> mArrayAdapter;
+    private LayersView mListView;
+    private MainActivity mMainActivity;
     private LayerManager mLayerManager = LayerManager.getInstance();
     
     private DragSortListView.DropListener onDrop =
@@ -52,29 +54,29 @@ public class LayersFragment extends Fragment
                 {
                     if (from != to)
                     {
-                        AbstractLayer item = arrayAdapter.getItem(from);
-                        arrayAdapter.remove(item);
-                        arrayAdapter.insert(item, to);
-                        listView.moveCheckState(from, to);
+                        AbstractLayer item = mArrayAdapter.getItem(from);
+                        mArrayAdapter.remove(item);
+                        mArrayAdapter.insert(item, to);
+                        mListView.moveCheckState(from, to);
                         
                         //change selection
-                        int selectedItem = listView.getMySelectedPosition();
+                        int selectedItem = mListView.getMySelectedPosition();
                         
                         if(from == selectedItem)
                         {
-                            listView.setMySelectedPosition(to);
+                            mListView.setMySelectedPosition(to);
                         }
                         else if(from < selectedItem && to >= selectedItem)
                         {
-                            listView.setMySelectedPosition(selectedItem-1);
+                            mListView.setMySelectedPosition(selectedItem-1);
                         }
                         else if(from > selectedItem && to <= selectedItem)
                         {
-                            listView.setMySelectedPosition(selectedItem+1);
+                            mListView.setMySelectedPosition(selectedItem+1);
                         }
                         
-                        listView.invalidateViews();
-                        mainActivity.getMap().invalidate();
+                        mListView.invalidateViews();
+                        mMainActivity.getMap().invalidate();
                     }
                 }
             };
@@ -90,36 +92,58 @@ public class LayersFragment extends Fragment
         View myView = inflater.inflate(R.layout.layers_layout, container, false);
         
         // listView
-        listView = (LayersView) myView.findViewById(R.id.list_layers);
-        listView.setDropListener(onDrop);
+        mListView = (LayersView) myView.findViewById(R.id.list_layers);
+        mListView.setDropListener(onDrop);
         
         ArrayList<AbstractLayer> layers = mLayerManager.getLayers();
         
-        arrayAdapter = new ArrayAdapter<AbstractLayer>(getActivity(), R.layout.list_item_handle_left, R.id.text, layers)
+        mArrayAdapter = new ArrayAdapter<AbstractLayer>(getActivity(), R.layout.list_item_handle_left, R.id.text_item, layers)
             {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent)
                 {
                     View itemView = super.getView(position, convertView, parent);
-                    int selectedPosition = listView.getMySelectedPosition();
+                    
+                    // selected layer
+                    int selectedPosition = mListView.getMySelectedPosition();
                     if (selectedPosition == position)
+                    {
                         itemView.setBackgroundColor(getResources().getColor(R.color.highlight_selected_item));
+                    }
                     else
+                    {
                         itemView.setBackgroundColor(Color.TRANSPARENT);
+                    }
+                    
+                    // visible layer
+                    TextView textView = (TextView)itemView.findViewById(R.id.text_item);
+                    if(getItem(position).isVisible())
+                    {
+                        textView.setTextColor(Color.BLACK);
+                        textView.setTypeface(null, Typeface.NORMAL);
+                    }
+                    else
+                    {
+                        textView.setTextColor(Color.GRAY);
+                        textView.setTypeface(null, Typeface.ITALIC);
+                    }
+                    
                     return itemView;
                 }
             };
         
-        listView.setAdapter(arrayAdapter);
+        mListView.setAdapter(mArrayAdapter);
         
         // buttons
         ImageButton buttonZoomLayer = (ImageButton)myView.findViewById(R.id.button_zoom_to_layer);
         buttonZoomLayer.setOnClickListener(zoomLayerHandler);
         ImageButton buttonHide = (ImageButton)myView.findViewById(R.id.button_hide);
-        buttonHide.setOnClickListener(hideHandler);
+        buttonHide.setOnClickListener(hidePanelHandler);
+        ImageButton buttonHideLayer = (ImageButton)myView.findViewById(R.id.button_hide_layer);
+        buttonHideLayer.setOnClickListener(hideLayerHandler);
         
         // main activity
-        mainActivity = (MainActivity)getActivity();
+        mMainActivity = (MainActivity)getActivity();
         
         return myView;
     }
@@ -131,7 +155,7 @@ public class LayersFragment extends Fragment
 
         if(savedInstanceState != null)
         {
-            listView.setMySelectedPosition(savedInstanceState.getInt(SELECTED_POSITION));
+            mListView.setMySelectedPosition(savedInstanceState.getInt(SELECTED_POSITION));
         }
     }
 
@@ -139,7 +163,7 @@ public class LayersFragment extends Fragment
     public void onSaveInstanceState (Bundle outState)
     {        
         // Map view state
-        outState.putInt(SELECTED_POSITION, listView.getMySelectedPosition());
+        outState.putInt(SELECTED_POSITION, mListView.getMySelectedPosition());
         
         super.onSaveInstanceState(outState);
     }
@@ -154,14 +178,14 @@ public class LayersFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            int selectedPosition = listView.getMySelectedPosition();
+            int selectedPosition = mListView.getMySelectedPosition();
             if(selectedPosition < 0)
             {
-                Toast.makeText(mainActivity, R.string.not_selected_layer, Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainActivity, R.string.not_selected_layer, Toast.LENGTH_LONG).show();
                 return;
             }
             
-            AbstractLayer layer = (AbstractLayer)listView.getItemAtPosition(selectedPosition);
+            AbstractLayer layer = (AbstractLayer)mListView.getItemAtPosition(selectedPosition);
             SpatiaLiteManager spatialite = mLayerManager.getSpatialiteManager();
             
             int from = layer.getSrid();
@@ -173,21 +197,34 @@ public class LayersFragment extends Fragment
                 envelope = spatialite.transformSRSEnvelope(envelope, from, to);
             }
             
-            mainActivity.getMap().zoomToEnvelopeM(envelope);
+            mMainActivity.getMap().zoomToEnvelopeM(envelope);
         }
     };
 
     /**
      * hide panel
      */
-    View.OnClickListener hideHandler = new View.OnClickListener()
+    View.OnClickListener hidePanelHandler = new View.OnClickListener()
     {
         @Override
         public void onClick(View v)
         {
-            mainActivity.hideLayersFragment();
+            mMainActivity.hideLayersFragment();
         }        
     };
     
+    /**
+     * show/hide panel
+     */
+    View.OnClickListener hideLayerHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            mArrayAdapter.getItem(mListView.getMySelectedPosition()).toggleVisibility();
+            mMainActivity.getMap().invalidate();
+            mListView.invalidateViews();
+        }        
+    };   
     // classes =============================================================================
 }
