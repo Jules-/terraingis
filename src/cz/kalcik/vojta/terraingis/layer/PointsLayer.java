@@ -13,7 +13,6 @@ import android.graphics.Paint;
 public class PointsLayer extends VectorLayer
 {
     // constants ==============================================================
-    // TODO dp
     private final float RADIUS = 4;
     
     // public methods =========================================================

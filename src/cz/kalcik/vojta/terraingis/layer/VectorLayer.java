@@ -21,6 +21,8 @@ public abstract class VectorLayer extends AbstractLayer
     public enum VectorLayerType {POINT, LINE, POLYGON};
     
     // attributes ==============================================================
+    private boolean mHaveIndex;
+
     protected Paint mPaint;
     protected VectorLayerType mType;
     protected SpatiaLiteManager mSpatialite;
@@ -46,8 +48,9 @@ public abstract class VectorLayer extends AbstractLayer
         this.mName = name;
         this.mSrid = srid;
         this.mSpatialite = spatialite;
-        mEnvelope = spatialite.getEnvelopeLayer(name);
+        mEnvelope = mSpatialite.getEnvelopeLayer(name);
         mColumnGeom = mSpatialite.getColumnGeom(name);
+        mHaveIndex = mSpatialite.indexEnabled(name);
     }
     
     // public methods =========================================================    
@@ -60,6 +63,7 @@ public abstract class VectorLayer extends AbstractLayer
     // protected methods ========================================================
     protected ArrayList<Geometry> getObjects(Envelope envelope)
     {
-        return mSpatialite.getObjects(envelope, mName, mColumnGeom, mLayerManager.getSrid());
+        return mSpatialite.getObjects(envelope, mName, mColumnGeom, mSrid,
+                                      mLayerManager.getSrid(), mHaveIndex);
     }
 }

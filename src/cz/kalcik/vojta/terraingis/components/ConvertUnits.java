@@ -3,6 +3,7 @@
  */
 package cz.kalcik.vojta.terraingis.components;
 
+import cz.kalcik.vojta.terraingis.exception.TerrainGISException;
 import android.content.Context;
 
 /**
@@ -11,7 +12,7 @@ import android.content.Context;
  */
 public class ConvertUnits
 {
-    private static float density = 0;
+    private static float density = -1;
     
     /**
      * @param density the density to set
@@ -28,7 +29,10 @@ public class ConvertUnits
      */
     public static int dp2px(float dp)
     {
-        assert density == 0 : "Density is not set!"; 
+        if(density <= 0)
+        {
+            throw new TerrainGISException("Density is not set!"); 
+        }
         
         return (int) (dp * density + 0.5f);
     }
@@ -40,7 +44,10 @@ public class ConvertUnits
      */
     public static float px2dp(int px)
     {
-        assert density == 0 : "Density is not set!"; 
+        if(density <= 0)
+        {
+            throw new TerrainGISException("Density is not set!"); 
+        }
         
         return px/density;
     }    

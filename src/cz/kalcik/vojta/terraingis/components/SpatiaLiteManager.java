@@ -11,6 +11,7 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKTReader;
 
+import android.R.bool;
 import android.util.Log;
 
 import jsqlite.Constants;
@@ -179,10 +180,32 @@ public class SpatiaLiteManager
                                 envelope.getMinY(), envelope.getMaxY());
         }
         
-        Coordinate min = transformSRS(new Coordinate(envelope.getMinX(), envelope.getMinY()), from, to);
-        Coordinate max = transformSRS(new Coordinate(envelope.getMaxX(), envelope.getMaxY()), from, to);
+        try
+        {            
+            Stmt stmt = db.prepare("SELECT AsBinary(Transform(BuildMbr(?, ?, ?, ?, ?), ?))");
+            
+            stmt.bind(1, envelope.getMinX());
+            stmt.bind(2, envelope.getMinY());
+            stmt.bind(3, envelope.getMaxX());
+            stmt.bind(4, envelope.getMaxY());
+            stmt.bind(5, from);
+            stmt.bind(6, to);
+            
+            if(stmt.step())
+            {
+                return wkbReader.read(stmt.column_bytes(0)).getEnvelope().getEnvelopeInternal();
+            }
+        }
+        catch (ParseException e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
         
-        return new Envelope(min, max);
+        return null;
     }
     
     /**
@@ -190,18 +213,41 @@ public class SpatiaLiteManager
      * @param envelope
      * @param name
      * @param column
-     * @param output_srid
+     * @param inputSrid
+     * @param outputSrid
+     * @param useRTree
      * @return
      */
-    public ArrayList<Geometry> getObjects(Envelope envelope, String name, String column, int output_srid)
+    public ArrayList<Geometry> getObjects(Envelope envelope, String name, String column,
+                                          int inputSrid, int outputSrid, boolean useRTree)
     {
-        ArrayList<Geometry> result = new ArrayList<Geometry>();
+        ArrayList<Geometry> result = new ArrayList<Geometry>();        
         try
         {
-            Stmt stmt = db.prepare("SELECT AsBinary(Transform("+column+", ?)) FROM '"+name+"' WHERE "+
-                    "MbrIntersects(BuildMBR(?, ?, ?, ?), Transform("+column+", ?)) = 1");
-            stmt.bind(1, output_srid);
-            stmt.bind(6, output_srid);
+            String cmd;
+            Stmt stmt;
+            if(useRTree)
+            {
+                cmd = String.format("SELECT AsBinary(Transform(%s, ?)) FROM '%s' WHERE "+
+                        "ROWID IN (SELECT pkid FROM 'idx_%s_%s' WHERE pkid MATCH RTreeIntersects(?, ?, ?, ?))",
+                        column, name, name, column);
+                
+                stmt = db.prepare(cmd);
+                
+                if(inputSrid != outputSrid)
+                {
+                    envelope = transformSRSEnvelope(envelope, outputSrid, inputSrid);
+                }
+            }
+            else
+            {
+                cmd = String.format("SELECT AsBinary(Transform(%s, ?)) FROM '%s' WHERE "+
+                        "MbrIntersects(BuildMBR(?, ?, ?, ?), Transform(%s, ?)) = 1", column, name, column);           
+                stmt = db.prepare(cmd);
+                stmt.bind(6, outputSrid);
+            }
+            
+            stmt.bind(1, outputSrid);
             stmt.bind(2, envelope.getMinX());
             stmt.bind(3, envelope.getMinY());
             stmt.bind(4, envelope.getMaxX());
