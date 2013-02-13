@@ -1,8 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_record"
+        android:checkable="true"
+        android:showAsAction="always"
+        android:icon="@drawable/record_off"/>
     <item android:id="@+id/menu_location"
         android:checkable="true"
         android:showAsAction="always"
-        android:icon="@drawable/gps_on"/>
+        android:icon="@drawable/gps_off"/>
     <item android:id="@+id/menu_show_location"
           android:showAsAction="always"
           android:icon="@drawable/show_gps"/>

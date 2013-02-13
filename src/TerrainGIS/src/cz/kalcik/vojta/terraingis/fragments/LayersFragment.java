@@ -89,6 +89,25 @@ public class LayersFragment extends Fragment
     
     // public methods =====================================================
     
+    // getter, setter =====================================================
+    /**
+     * when layer is not selected return null
+     * @return selected layer
+     */
+    public AbstractLayer getSelectedLayer()
+    {
+        int position = mListView.getMySelectedPosition();
+        
+        if(position < 0)
+        {
+            return null;
+        }
+        else
+        {
+            return mArrayAdapter.getItem(position);
+        }
+    }
+            
     // on methods =========================================================
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)

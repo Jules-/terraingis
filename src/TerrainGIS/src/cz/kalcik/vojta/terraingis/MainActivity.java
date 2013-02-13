@@ -15,6 +15,7 @@ import android.widget.Toast;
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
 import cz.kalcik.vojta.terraingis.components.Settings;
+import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
@@ -27,14 +28,17 @@ public class MainActivity extends FragmentActivity
     private static final float MIN_WIDTH_PANEL_DP = 300;
     
     // properties =========================================================
-    private MenuItem menuRunLocation;
-    private MenuItem menuShowLocation;
+    private MenuItem mMenuRunLocation;
+    private MenuItem mMenuShowLocation;
+    private MenuItem mMenuRecord;
     private Timer timer;
-    private LocationWorker locationWorker;
-    private Settings settings = Settings.getInstance();
-    private MapFragment mapFragment;
+    private LocationWorker mLocationWorker;
+    private Settings mSettings = Settings.getInstance();
+    private MapFragment mMapFragment;
+    private LayersFragment mLayersFragment;
     private LinearLayout mMapLayout;
     private LinearLayout mLayersLayout;
+    private boolean mRecordMode = false;
     
     // public methods =====================================================
     
@@ -44,7 +48,7 @@ public class MainActivity extends FragmentActivity
     public void showActionBar()
     {
         getActionBar().show();
-        if(settings.isHideActionBar())
+        if(mSettings.isHideActionBar())
         {
             runTimerActionBar();
         }
@@ -100,8 +104,7 @@ public class MainActivity extends FragmentActivity
     // getter, setter =====================================================
     
     /**
-     * return height of ActionBar
-     * @return
+     * @return height of ActionBar
      */
     public int getActionBarHeight()
     {
@@ -109,12 +112,11 @@ public class MainActivity extends FragmentActivity
     }
     
     /**
-     * return MapView
-     * @return
+     * @return MapView
      */
     public MapView getMap()
     {
-        return mapFragment.getMap();
+        return mMapFragment.getMap();
     }
     
     /**
@@ -126,6 +128,29 @@ public class MainActivity extends FragmentActivity
         return !mLayersLayout.isShown();
     }
     
+    /**
+     * @return record mode state
+     */
+    public boolean isRecordMode()
+    {
+        return mRecordMode;
+    }
+    
+    /**
+     * @return LayersFragment
+     */
+    public LayersFragment getLayersFragment()
+    {
+        return mLayersFragment;
+    }
+    
+    /**
+     * @return MapFragment
+     */
+    public MapFragment getMapFragment()
+    {
+        return mMapFragment;
+    }
     // on methods =========================================================
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -138,13 +163,14 @@ public class MainActivity extends FragmentActivity
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
         mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
         
-        mapFragment = (MapFragment)getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+        mMapFragment = (MapFragment)getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+        mLayersFragment = (LayersFragment)getSupportFragmentManager().findFragmentById(R.id.layers_fragment);
         
-        MapView map = mapFragment.getMap();
+        MapView map = mMapFragment.getMap();
         map.setMainActivity(this);
         
-        locationWorker = new LocationWorker(this, map);
-        if(settings.isHideActionBar())
+        mLocationWorker = new LocationWorker(this, map);
+        if(mSettings.isHideActionBar())
         {
             runTimerActionBar();
         }
@@ -155,9 +181,10 @@ public class MainActivity extends FragmentActivity
     {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         
-        menuRunLocation = menu.findItem(R.id.menu_location);
-        menuShowLocation = menu.findItem(R.id.menu_show_location);
-        setActionBarByLocation();
+        mMenuRunLocation = menu.findItem(R.id.menu_location);
+        mMenuShowLocation = menu.findItem(R.id.menu_show_location);
+        mMenuRecord = menu.findItem(R.id.menu_record);
+        setActionBarIcons();
         
         return true;
     }
@@ -166,25 +193,40 @@ public class MainActivity extends FragmentActivity
     public boolean onOptionsItemSelected(MenuItem item)
     {
         int id = item.getItemId();
-        if(menuRunLocation.getItemId() == id)
+        // stop/start location
+        if(mMenuRunLocation.getItemId() == id)
         {
-            if(locationWorker.isRunLocation())
+            if(mLocationWorker.isRunLocation())
             {
-                locationWorker.stop();
+                mLocationWorker.stop();
             }
             else
             {
-                locationWorker.start();
+                mLocationWorker.start();
             }
-            setActionBarByLocation();
         }
-        else if(menuShowLocation.getItemId() == id)
+        // show location
+        else if(mMenuShowLocation.getItemId() == id)
         {
-            if(!mapFragment.getMap().showLocation())
+            if(!mMapFragment.getMap().showLocation())
             {
                 Toast.makeText(this, R.string.warning_location_fix, Toast.LENGTH_LONG).show();
             }
         }
+        // record
+        else if(mMenuRecord.getItemId() == id)
+        {
+            if(mRecordMode)
+            {
+                stopRecord();
+            }
+            else
+            {
+                startRecord();
+            }
+        }
+        
+        setActionBarIcons();
      
         return true;
     }
@@ -194,7 +236,7 @@ public class MainActivity extends FragmentActivity
     {
         super.onPause();
         
-        locationWorker.pause();
+        mLocationWorker.pause();
     }
     
     @Override
@@ -202,7 +244,7 @@ public class MainActivity extends FragmentActivity
     {
         super.onResume();
         
-        locationWorker.resume();
+        mLocationWorker.resume();
     }
     
     @Override
@@ -212,7 +254,7 @@ public class MainActivity extends FragmentActivity
         outState.putBoolean(SHOWN_LAYERS, mLayersLayout.isShown());
         
         // gps state
-        outState.putSerializable(LOCATION_WORKER_DATA, locationWorker.getData());
+        outState.putSerializable(LOCATION_WORKER_DATA, mLocationWorker.getData());
         
         super.onSaveInstanceState(outState);
     }
@@ -229,8 +271,8 @@ public class MainActivity extends FragmentActivity
         }
         
         // GPS state
-        locationWorker.setData(savedInstanceState.getSerializable(LOCATION_WORKER_DATA));
-        setActionBarByLocation();
+        mLocationWorker.setData(savedInstanceState.getSerializable(LOCATION_WORKER_DATA));
+        setActionBarIcons();
     }
     
     // private methods ========================================================
@@ -247,25 +289,59 @@ public class MainActivity extends FragmentActivity
         }
         
         timer = new Timer();
-        timer.schedule(new HideActionBarTask(), settings.getTimeHideActionBar());
+        timer.schedule(new HideActionBarTask(), mSettings.getTimeHideActionBar());
     }
     
     /**
      * set icons in ActionBar by location
      */
-    private void setActionBarByLocation()
+    private void setActionBarIcons()
     {
-        if(locationWorker.isRunLocation())
+        // location icons
+        if(mLocationWorker.isRunLocation())
         {
-            menuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.gps_off));
-            menuShowLocation.setVisible(true);
+            mMenuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.gps_on));
+            mMenuShowLocation.setVisible(true);
         }
         else
         {
-            menuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.gps_on));
-            menuShowLocation.setVisible(false);
-        }        
+            mMenuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.gps_off));
+            mMenuShowLocation.setVisible(false);
+        }
+        
+        // record icon
+        if(mRecordMode)
+        {
+            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.record_on));
+        }
+        else
+        {
+            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.record_off));
+        }
     }
+    
+    /**
+     * start record state
+     */
+    private void startRecord()
+    {
+        mRecordMode = true;
+        if(!mLocationWorker.isRunLocation())
+        {
+            mLocationWorker.start();
+        }
+        mMapFragment.changeRecordButtons();
+    }
+
+    /**
+     * stop record state
+     */
+    private void stopRecord()
+    {
+        mRecordMode = false;
+        mMapFragment.changeRecordButtons();
+    }
+    
     // classes =================================================================
     /**
      * task for hidding action bar
