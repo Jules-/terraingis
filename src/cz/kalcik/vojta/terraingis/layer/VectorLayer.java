@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis.layer;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -61,7 +62,7 @@ public abstract class VectorLayer extends AbstractLayer
         
     }
     // protected methods ========================================================
-    protected ArrayList<Geometry> getObjects(Envelope envelope)
+    protected Iterator<Geometry> getObjects(Envelope envelope)
     {
         return mSpatialite.getObjects(envelope, mName, mColumnGeom, mSrid,
                                       mLayerManager.getSrid(), mHaveIndex);

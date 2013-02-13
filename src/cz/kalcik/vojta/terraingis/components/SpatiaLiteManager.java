@@ -2,6 +2,7 @@ package cz.kalcik.vojta.terraingis.components;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -218,10 +219,9 @@ public class SpatiaLiteManager
      * @param useRTree
      * @return
      */
-    public ArrayList<Geometry> getObjects(Envelope envelope, String name, String column,
+    public Iterator<Geometry> getObjects(Envelope envelope, String name, String column,
                                           int inputSrid, int outputSrid, boolean useRTree)
     {
-        ArrayList<Geometry> result = new ArrayList<Geometry>();        
         try
         {
             String cmd;
@@ -253,21 +253,14 @@ public class SpatiaLiteManager
             stmt.bind(4, envelope.getMaxX());
             stmt.bind(5, envelope.getMaxY());
             
-            while(stmt.step())
-            {
-                result.add(wkbReader.read(stmt.column_bytes(0)));
-            }
-        }
-        catch (ParseException e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
+            return new GeomIterator(stmt);
         }
         catch (Exception e)
         {
             Log.e("TerrainGIS", e.getMessage());
         }
         
-        return result;        
+        return null;
     }
     
     /**
@@ -293,9 +286,33 @@ public class SpatiaLiteManager
         
         return null;        
     }
+    
+    /**
+     * create virtual shape
+     * @param path
+     * @param name
+     * @param encoding
+     * @param srid
+     */
+    public void createVirtualShape(String path, String name, String encoding, int srid)
+    {
+        try
+        {
+            Stmt stmt = db.prepare(String.format("CREATE VIRTUAL TABLE '%s_virtual' USING VirtualShape('%s', '%s', %d)", name, path, encoding, srid));
+//            stmt.bind(1, path);
+//            stmt.bind(2, encoding);
+//            stmt.bind(3, srid);
+            stmt.step();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }        
+    }
+    
     // private methods =======================================================================
     /**
-     * open spatialite databse
+     * open spatialite database
      * @param path
      */
     private void open(String path)
@@ -311,5 +328,71 @@ public class SpatiaLiteManager
         {
             Log.e("TerrainGIS", e.getMessage());
         }
+    }
+    
+    // classes ===============================================================================
+    /**
+     * Iterator returned from db
+     * @author jules
+     *
+     */
+    class GeomIterator implements Iterator<Geometry>
+    {
+        private Stmt mStmt;
+        private boolean mHasNext = false;
+        private boolean mIsNext = false;
+        
+        public GeomIterator(Stmt stmt)
+        {
+            this.mStmt = stmt;
+        }
+        
+        @Override
+        public boolean hasNext()
+        {
+            if(!mIsNext)
+            {
+                try
+                {
+                    mHasNext = mStmt.step();
+                }
+                catch (Exception e)
+                {
+                    Log.e("TerrainGIS", e.getMessage());
+                }
+                
+                mIsNext = true;
+            }
+            return mHasNext;
+        }
+
+        @Override
+        public Geometry next()
+        {
+            if(hasNext())
+            {
+                try
+                {
+                    mIsNext = false;
+                    return wkbReader.read(mStmt.column_bytes(0));
+                }
+                catch (ParseException e)
+                {
+                    Log.e("TerrainGIS", e.getMessage());
+                }
+                catch (Exception e)
+                {
+                    Log.e("TerrainGIS", e.getMessage());
+                }
+            }
+            
+            return null;
+        }
+
+        @Override
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }    
     }
 }

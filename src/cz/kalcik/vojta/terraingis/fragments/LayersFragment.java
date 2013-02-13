@@ -1,12 +1,16 @@
 package cz.kalcik.vojta.terraingis.fragments;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
@@ -39,6 +43,7 @@ public class LayersFragment extends Fragment
 {
     // constants =========================================================
     private static String SELECTED_POSITION = "SelectedPosition";
+    private static int LOAD_REQUESTCODE = 0;
     
     // properties =========================================================
     private ArrayAdapter<AbstractLayer> mArrayAdapter;
@@ -135,12 +140,14 @@ public class LayersFragment extends Fragment
         mListView.setAdapter(mArrayAdapter);
         
         // buttons
-        ImageButton buttonZoomLayer = (ImageButton)myView.findViewById(R.id.button_zoom_to_layer);
-        buttonZoomLayer.setOnClickListener(zoomLayerHandler);
         ImageButton buttonHide = (ImageButton)myView.findViewById(R.id.button_hide);
         buttonHide.setOnClickListener(hidePanelHandler);
         ImageButton buttonHideLayer = (ImageButton)myView.findViewById(R.id.button_hide_layer);
         buttonHideLayer.setOnClickListener(hideLayerHandler);
+        ImageButton buttonZoomLayer = (ImageButton)myView.findViewById(R.id.button_zoom_to_layer);
+        buttonZoomLayer.setOnClickListener(zoomLayerHandler);
+        ImageButton buttonAdd = (ImageButton)myView.findViewById(R.id.button_add);
+        buttonAdd.setOnClickListener(loadFileHandler);
         
         // main activity
         mMainActivity = (MainActivity)getActivity();
@@ -166,6 +173,19 @@ public class LayersFragment extends Fragment
         outState.putInt(SELECTED_POSITION, mListView.getMySelectedPosition());
         
         super.onSaveInstanceState(outState);
+    }
+    
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if(requestCode == LOAD_REQUESTCODE)
+        {
+            if(resultCode == Activity.RESULT_OK)
+            {
+                File shapefile = new File(data.getData().getPath());
+                mLayerManager.addVirtualShape(shapefile);
+            }            
+        }
     }
     
     // handlers ===============================================================
@@ -225,6 +245,20 @@ public class LayersFragment extends Fragment
             mMainActivity.getMap().invalidate();
             mListView.invalidateViews();
         }        
-    };   
+    };
+    
+    /**
+     * open file manager for open ShapeFile
+     */
+    View.OnClickListener loadFileHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("file/*");
+            startActivityForResult(intent, LOAD_REQUESTCODE);            
+        }        
+    };
     // classes =============================================================================
 }

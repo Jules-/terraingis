@@ -1,5 +1,6 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import org.osmdroid.tileprovider.MapTileProviderBase;
@@ -126,6 +127,22 @@ public class LayerManager
     	}
     }
     
+    /**
+     * add virtual shape file layer
+     * @param shapefile
+     */
+    public void addVirtualShape(File shapefile)
+    {
+        // FIXME
+        String name = shapefile.getName();
+        int dotIndex = name.lastIndexOf('.');
+        name = name.substring(0, dotIndex);
+        String path = String.format("%s/%s", shapefile.getParent(), name);
+        // !!!!!!!!!!!!!!!!!!!!!!!!!
+        String encoding = "utf8";
+        int srid = 32633;
+        spatialiteManager.createVirtualShape(path, name, encoding, srid);
+    }
     // getter setter =======================================================================
     
     /**

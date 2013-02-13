@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis.layer;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -32,10 +33,10 @@ public class LinesLayer extends VectorLayer
     @Override
     public void draw(Canvas canvas, Envelope rect)
     {
-        ArrayList<Geometry> objects = getObjects(rect);
-        for(Geometry object: objects)
+        Iterator<Geometry> iter = getObjects(rect);
+        while(iter.hasNext())
         {
-            mDrawer.drawLinesM(canvas, object, mPaint);
+            mDrawer.drawLinesM(canvas, iter.next(), mPaint);
         }
     }
 }
