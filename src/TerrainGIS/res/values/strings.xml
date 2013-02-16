@@ -3,6 +3,7 @@
     <string name="warning_location_fix">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>
     <string name="not_selected_layer">It is not any layer selected!</string>
-    <string name="record_point">Point</string>
-    <string name="record_object">Start</string>
+    <string name="record_point">Add point</string>
+    <string name="record_object">End object</string>
+    <string name="record_point_error">Location service is not fix.</string>
 </resources>

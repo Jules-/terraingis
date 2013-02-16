@@ -151,6 +151,14 @@ public class MainActivity extends FragmentActivity
     {
         return mMapFragment;
     }
+    
+    /**
+     * @return the mLocationWorker
+     */
+    public LocationWorker getLocationWorker()
+    {
+        return mLocationWorker;
+    }
     // on methods =========================================================
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -198,7 +206,7 @@ public class MainActivity extends FragmentActivity
         {
             if(mLocationWorker.isRunLocation())
             {
-                mLocationWorker.stop();
+                stopLocation();
             }
             else
             {
@@ -318,6 +326,19 @@ public class MainActivity extends FragmentActivity
         {
             mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.record_off));
         }
+    }
+
+    /**
+     * stop location service
+     */
+    private void stopLocation()
+    {
+        if(mRecordMode)
+        {
+            stopRecord();
+        }
+        
+        mLocationWorker.stop();
     }
     
     /**

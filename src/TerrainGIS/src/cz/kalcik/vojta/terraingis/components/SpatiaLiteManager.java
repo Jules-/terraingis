@@ -10,6 +10,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
+import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.io.WKTReader;
 
 import android.R.bool;
@@ -30,6 +31,7 @@ public class SpatiaLiteManager
     // attributes =========================================================================
     private Database db;
     private WKBReader wkbReader = new WKBReader();
+    private WKBWriter mWKBWriter = new WKBWriter();
     
     // public methods ======================================================================
     /**
@@ -298,6 +300,7 @@ public class SpatiaLiteManager
     {
         try
         {
+            // TODO virtual shape
             Stmt stmt = db.prepare(String.format("CREATE VIRTUAL TABLE '%s_virtual' USING VirtualShape('%s', '%s', %d)", name, path, encoding, srid));
 //            stmt.bind(1, path);
 //            stmt.bind(2, encoding);
@@ -308,6 +311,28 @@ public class SpatiaLiteManager
         {
             Log.e("TerrainGIS", e.getMessage());
         }        
+    }
+    
+    /**
+     * insert geometry to db
+     * @param geom
+     * @param name
+     * @param column
+     * @param srid
+     */
+    public void inserGeometry(Geometry geom, String name, String column, int srid)
+    {
+        try
+        {
+            Stmt stmt = db.prepare(String.format("INSERT INTO '%s' (%s) (GeomFromWKB(?, ?))", name, column));
+            stmt.bind(1, mWKBWriter.write(geom));
+            stmt.bind(2, srid);
+            stmt.step();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }    
     }
     
     // private methods =======================================================================

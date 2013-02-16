@@ -10,15 +10,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.Toast;
 
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import cz.kalcik.vojta.terraingis.layer.VectorLayer;
+import cz.kalcik.vojta.terraingis.layer.VectorLayer.VectorLayerType;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
@@ -46,23 +50,47 @@ public class MapFragment extends Fragment
      */
     public void changeRecordButtons()
     {
+        boolean showObjectButton = false;
+        boolean showPointButton = false;
+        
         if(mMainActivity.isRecordMode())
         {
             AbstractLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayer();
-            if(selectedLayer == null)
+            if(selectedLayer != null)
             {
-                mButtonRecordObject.setVisibility(View.GONE);
-                mButtonRecordPoint.setVisibility(View.GONE);                
+                if(selectedLayer instanceof VectorLayer)
+                {
+                    VectorLayer selectedVectorLayer = (VectorLayer)selectedLayer;
+                    VectorLayerType type = selectedVectorLayer.getType();
+                    // point button
+                    showPointButton = true;
+    
+                    // object button
+                    if((type == VectorLayerType.LINE ||
+                            type == VectorLayerType.POLYGON) &&
+                        selectedVectorLayer.haveOpenedRecordObject())
+                   {
+                       showObjectButton = true;
+                   }
+                }
             }
-            else
-            {
-                mButtonRecordObject.setVisibility(View.VISIBLE);
-                mButtonRecordPoint.setVisibility(View.VISIBLE);                
-            }
+        }
+        
+        if(showObjectButton)
+        {
+            mButtonRecordObject.setVisibility(View.VISIBLE);
         }
         else
         {
             mButtonRecordObject.setVisibility(View.GONE);
+        }
+        
+        if(showPointButton)
+        {
+            mButtonRecordPoint.setVisibility(View.VISIBLE);
+        }
+        else
+        {
             mButtonRecordPoint.setVisibility(View.GONE);
         }
     }
@@ -84,6 +112,7 @@ public class MapFragment extends Fragment
         // record buttons
         mButtonRecordObject = (Button)myView.findViewById(R.id.button_record_object);
         mButtonRecordPoint = (Button)myView.findViewById(R.id.button_record_point);
+        mButtonRecordPoint.setOnClickListener(addPointHandler);
         
         // Map view state
         map = (MapView) myView.findViewById(R.id.map);
@@ -132,4 +161,33 @@ public class MapFragment extends Fragment
 
         layerManager.addTilesLayer(tileProvider, (Context)mMainActivity, map);
     }
+    
+    // handlers ===============================================================
+    
+    /**
+     * add point
+     */
+    View.OnClickListener addPointHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            Coordinate location = mMainActivity.getLocationWorker().getLocation();
+            if(location == null)
+            {
+                Toast.makeText((Context)mMainActivity, R.string.record_point_error, Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+            
+            selectedLayer.addPoint(location);
+            if(selectedLayer.getType() == VectorLayerType.POINT)
+            {
+                selectedLayer.endObject();
+            }
+            
+            changeRecordButtons();
+        }        
+    };
 }

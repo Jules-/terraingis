@@ -16,6 +16,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 
 /**
@@ -27,6 +28,7 @@ public class LocationWorker
 {
     // constants =====================================================================
     private final int MINTIME = 2000;
+    private final int SLEEPTIME = 500;
     private final int MINDIST = 3;   
     private final FixReceiver FIX_RECEIVER = new FixReceiver();
     private final IntentFilter INTENT_FILTER = new IntentFilter("android.location.GPS_FIX_CHANGE");
@@ -56,7 +58,11 @@ public class LocationWorker
     private ProviderType currentProvider;
     private LocationWorkerData data = new LocationWorkerData(false, MINDIST);
     private boolean validGPS = true; // for external bluetooth GPS
-
+    private int mCurrentMintime = MINTIME;
+    private int mCurrentMindist = data.currentMindist;
+    
+    private long mLastFixTime = 0;
+    private Location mLastFixLocation = null;
     /**
      * constructor
      * @param context
@@ -136,6 +142,64 @@ public class LocationWorker
         return data.runLocation;
     }
     
+    /**
+     * @return current location
+     */
+    public Coordinate getLocation()
+    {
+        Coordinate result = null;
+        // change mindist and mintime
+        mCurrentMindist = 0;
+        int oldMintime = mCurrentMintime;
+        mCurrentMintime = 0;
+        switchProvider();
+        
+        boolean run = true;
+        boolean first = true;
+        
+        while(run)
+        {
+            long timeFromFix = SystemClock.elapsedRealtime()-mLastFixTime;
+            Log.d("TerrainGIS", Long.toString(timeFromFix));
+            
+            if(mLastFixLocation != null &&
+               SystemClock.elapsedRealtime()-mLastFixTime <= MINTIME)
+            {
+                synchronized(this)
+                {
+                    result = new Coordinate(mLastFixLocation.getLongitude(),
+                                            mLastFixLocation.getLatitude(),
+                                            mLastFixLocation.getAltitude());
+                }
+                break;
+            }
+            
+            if(first)
+            {
+                try
+                {
+                    Thread.sleep(SLEEPTIME);
+                }
+                catch (InterruptedException e)
+                {
+                    Log.e("TerrainGIS", e.getMessage());
+                }
+                first = false;
+            }
+            else
+            {
+                run = false;
+            }
+        }
+
+        // restore mindist and mintime
+        mCurrentMindist = data.currentMindist;
+        mCurrentMintime = oldMintime;
+        switchProvider();
+        
+        return result;
+    }
+    
     // private methods ===============================================================
     /**
      * check if device has GPS
@@ -166,7 +230,7 @@ public class LocationWorker
     {
         if(hasGPS)
         {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MINTIME, data.currentMindist, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mCurrentMintime, mCurrentMindist, locationListener);
             
             context.registerReceiver(FIX_RECEIVER, INTENT_FILTER);
         }        
@@ -177,7 +241,7 @@ public class LocationWorker
      */
     private void runNetwork()
     {
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MINTIME, data.currentMindist, locationListener);       
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mCurrentMintime, mCurrentMindist, locationListener);       
     }
 
     /**
@@ -244,7 +308,7 @@ public class LocationWorker
         /**
          * receive new location update
          */
-        public void onLocationChanged(Location location)
+        public synchronized void onLocationChanged(Location location)
         {
             // switch to GPS
             if(currentProvider == ProviderType.BOTH &&
@@ -261,7 +325,8 @@ public class LocationWorker
                 map.setLocationValid(false);
                 return;
             }
-            
+            mLastFixLocation = location;
+            mLastFixTime = SystemClock.elapsedRealtime();
             locationPoint.x = location.getLongitude();
             locationPoint.y = location.getLatitude();
             locationPoint.z = location.getAltitude();
