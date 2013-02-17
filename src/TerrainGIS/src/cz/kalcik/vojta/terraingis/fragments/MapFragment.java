@@ -116,6 +116,7 @@ public class MapFragment extends Fragment
         }
         
         changeRecordButtons();
+        map.invalidate();
     }
     
     /**
@@ -145,6 +146,7 @@ public class MapFragment extends Fragment
         
         // record buttons
         mButtonRecordObject = (Button)myView.findViewById(R.id.button_record_object);
+        mButtonRecordObject.setOnClickListener(endObjectHandler);
         mButtonRecordPoint = (Button)myView.findViewById(R.id.button_record_point);
         mButtonRecordPoint.setOnClickListener(addPointHandler);
         
@@ -222,18 +224,49 @@ public class MapFragment extends Fragment
         }        
     };
     
+    /**
+     * end object
+     */
+    View.OnClickListener endObjectHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+
+            selectedLayer.endObject();
+            changeRecordButtons();
+            map.invalidate();
+        }        
+    };
+    
     // classes =================================================================
     /**
-     * task for hidding action bar
+     * run when fail getting current point
      * @author jules
      *
      */
     class RecordPointFail extends TimerTask
     {        
+        private RecordPointFailRunnable recordPointFailRunnable = new RecordPointFailRunnable();
+
+        public void run()
+        {
+            mMainActivity.runOnUiThread(recordPointFailRunnable);
+        }
+    }
+    
+    /**
+     * show message for fail getting current point
+     * @author jules
+     *
+     */
+    class RecordPointFailRunnable implements Runnable
+    {
         public void run()
         {
             mMainActivity.getLocationWorker().setLocationTaskIdle();
             Toast.makeText(mMainActivity, R.string.record_point_error, Toast.LENGTH_LONG).show();
         }
-     }
+    };
 }

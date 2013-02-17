@@ -63,9 +63,9 @@ public abstract class VectorLayer extends AbstractLayer
         this.mName = name;
         this.mSrid = srid;
         this.mSpatialite = spatialite;
-        mEnvelope = mSpatialite.getEnvelopeLayer(name);
         mColumnGeom = mSpatialite.getColumnGeom(name);
         mHaveIndex = mSpatialite.indexEnabled(name);
+        updateEnvelope();
     }
     
     // getter, setter =========================================================
@@ -125,6 +125,7 @@ public abstract class VectorLayer extends AbstractLayer
         }
         
         mSpatialite.inserGeometry(object, mName, mColumnGeom, LayerManager.EPSG_LONLAT, mSrid);
+        updateEnvelope();
         mRecordedPoints.clear();
     }
     
@@ -133,5 +134,13 @@ public abstract class VectorLayer extends AbstractLayer
     {
         return mSpatialite.getObjects(envelope, mName, mColumnGeom, mSrid,
                                       mLayerManager.getSrid(), mHaveIndex);
+    }
+    
+    /**
+     * update envelope of Layer
+     */
+    protected void updateEnvelope()
+    {
+        mEnvelope = mSpatialite.getEnvelopeLayer(mName);
     }
 }

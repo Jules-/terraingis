@@ -78,16 +78,15 @@ public class Drawer
      * @param points
      * @param paint
      */
-    public void drawCanvasPathM(Canvas canvas, Geometry object, Paint paint)
+    public void drawCanvasPathM(Canvas canvas, Coordinate[] points, Paint paint)
     {
         Path path = new Path();
-        int size = object.getNumPoints();;
+        int size = points.length;
         if(size < 2)
         {
             return;
         }
         
-        Coordinate[] points = object.getCoordinates();
         Coordinate pointPx = mNavigator.mToPx(points[0], null);
         PointF surfacePoint = mNavigator.pxToSurfacePx(pointPx, null);
         path.moveTo(surfacePoint.x, surfacePoint.y);
@@ -108,15 +107,14 @@ public class Drawer
      * @param points
      * @param paint
      */
-    public void drawLinesM(Canvas canvas, Geometry object, Paint paint)
+    public void drawLinesM(Canvas canvas, Coordinate[] points, Paint paint)
     {
-        int size = object.getNumPoints();
+        int size = points.length;
         if(size < 2)
         {
             return;
         }      
         
-        Coordinate[] points = object.getCoordinates();
         Coordinate pointPx = mNavigator.mToPx(points[0], null);
         PointF previousSurfacePoint = mNavigator.pxToSurfacePx(pointPx, null);
         PointF currentSurfacePoint = new PointF();
