@@ -124,7 +124,7 @@ public abstract class VectorLayer extends AbstractLayer
             object = new Polygon(ring, null, mGeometryFactory);
         }
         
-        mSpatialite.inserGeometry(object, mName, mColumnGeom, LayerManager.EPSG_LONLAT);
+        mSpatialite.inserGeometry(object, mName, mColumnGeom, LayerManager.EPSG_LONLAT, mSrid);
         mRecordedPoints.clear();
     }
     

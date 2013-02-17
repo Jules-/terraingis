@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 import android.content.BroadcastReceiver;
@@ -28,12 +30,12 @@ public class LocationWorker
 {
     // constants =====================================================================
     private final int MINTIME = 2000;
-    private final int SLEEPTIME = 500;
     private final int MINDIST = 3;   
     private final FixReceiver FIX_RECEIVER = new FixReceiver();
     private final IntentFilter INTENT_FILTER = new IntentFilter("android.location.GPS_FIX_CHANGE");
     
     private enum ProviderType {GPS, BOTH};
+    private enum LocationTask {IDLE, RECORD_POINT};
     
     // data =========================================================================
     public static class LocationWorkerData implements Serializable
@@ -52,29 +54,32 @@ public class LocationWorker
     // attributes ====================================================================
     private LocationManager locationManager;
     private LocationListener locationListener;
+    private MainActivity mMainActivity;
+    private MapFragment mMapFragment;
     private MapView map;
     private boolean hasGPS;
-    private Context context;
     private ProviderType currentProvider;
     private LocationWorkerData data = new LocationWorkerData(false, MINDIST);
     private boolean validGPS = true; // for external bluetooth GPS
     private int mCurrentMintime = MINTIME;
-    private int mCurrentMindist = data.currentMindist;
-    
+    private int mCurrentMindist = data.currentMindist;    
     private long mLastFixTime = 0;
     private Location mLastFixLocation = null;
+    private LocationTask mCurrentLocationTask = LocationTask.IDLE;
+    
     /**
      * constructor
      * @param context
      * @param map
      */
-    public LocationWorker(Context context, MapView map)
+    public LocationWorker(MainActivity mainActivity)
     {
-        this.map = map;
-        this.context = context;
+        mMainActivity = mainActivity;
+        map = mMainActivity.getMap();
+        mMapFragment = mMainActivity.getMapFragment();
         hasGPS = hasGPSDevice();
         locationManager = 
-                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+                (LocationManager) mainActivity.getSystemService(Context.LOCATION_SERVICE);
         
         locationListener = new MyLocationListener(map);
     }
@@ -125,6 +130,13 @@ public class LocationWorker
         }        
     }
     
+    /**
+     * set current location task to IDLE
+     */
+    public void setLocationTaskIdle()
+    {
+        mCurrentLocationTask = LocationTask.IDLE;
+    }
     // getter setter =================================================================
     
     public LocationWorkerData getData()
@@ -143,61 +155,21 @@ public class LocationWorker
     }
     
     /**
-     * @return current location
+     * run recording point
      */
-    public Coordinate getLocation()
+    public boolean recordPoint()
     {
-        Coordinate result = null;
-        // change mindist and mintime
+        if(mCurrentLocationTask != LocationTask.IDLE)
+        {
+            return false;
+        }
+        
+        mCurrentLocationTask = LocationTask.RECORD_POINT;
         mCurrentMindist = 0;
-        int oldMintime = mCurrentMintime;
         mCurrentMintime = 0;
         switchProvider();
         
-        boolean run = true;
-        boolean first = true;
-        
-        while(run)
-        {
-            long timeFromFix = SystemClock.elapsedRealtime()-mLastFixTime;
-            Log.d("TerrainGIS", Long.toString(timeFromFix));
-            
-            if(mLastFixLocation != null &&
-               SystemClock.elapsedRealtime()-mLastFixTime <= MINTIME)
-            {
-                synchronized(this)
-                {
-                    result = new Coordinate(mLastFixLocation.getLongitude(),
-                                            mLastFixLocation.getLatitude(),
-                                            mLastFixLocation.getAltitude());
-                }
-                break;
-            }
-            
-            if(first)
-            {
-                try
-                {
-                    Thread.sleep(SLEEPTIME);
-                }
-                catch (InterruptedException e)
-                {
-                    Log.e("TerrainGIS", e.getMessage());
-                }
-                first = false;
-            }
-            else
-            {
-                run = false;
-            }
-        }
-
-        // restore mindist and mintime
-        mCurrentMindist = data.currentMindist;
-        mCurrentMintime = oldMintime;
-        switchProvider();
-        
-        return result;
+        return true;
     }
     
     // private methods ===============================================================
@@ -208,7 +180,7 @@ public class LocationWorker
      */
     private boolean hasGPSDevice()
     {
-        final LocationManager mgr = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+        final LocationManager mgr = (LocationManager)mMainActivity.getSystemService(Context.LOCATION_SERVICE);
         if(mgr == null)
         {
             return false;
@@ -232,7 +204,7 @@ public class LocationWorker
         {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mCurrentMintime, mCurrentMindist, locationListener);
             
-            context.registerReceiver(FIX_RECEIVER, INTENT_FILTER);
+            mMainActivity.registerReceiver(FIX_RECEIVER, INTENT_FILTER);
         }        
     }
     
@@ -261,7 +233,7 @@ public class LocationWorker
     {
         if(hasGPS)
         {
-            context.unregisterReceiver(FIX_RECEIVER);
+            mMainActivity.unregisterReceiver(FIX_RECEIVER);
         }
         
         locationManager.removeUpdates(locationListener);
@@ -283,7 +255,24 @@ public class LocationWorker
         }
         
         Log.d("TerrainGIS", "switched to "+currentProvider.toString());
-    } 
+    }
+    
+    /**
+     * 
+     */
+    private void processRecordingPoint()
+    {
+        mMapFragment.cancelTimer();
+        mCurrentLocationTask = LocationTask.IDLE;
+        mCurrentMindist = data.currentMindist;
+        mCurrentMintime = MINTIME;
+        switchProvider();
+        
+        Location location = mLastFixLocation;
+        Coordinate point = new Coordinate(location.getLongitude(), location.getLatitude(), location.getAltitude());
+        
+        mMapFragment.recordPoint(point);
+    }
     // classes =======================================================================
     
     /**
@@ -331,6 +320,12 @@ public class LocationWorker
             locationPoint.y = location.getLatitude();
             locationPoint.z = location.getAltitude();
             map.setLonLatLocation(locationPoint);
+            
+            // check LocationTask
+            if(mCurrentLocationTask == LocationTask.RECORD_POINT)
+            {
+                processRecordingPoint();
+            }
             
             float accuracy = location.getAccuracy();
             

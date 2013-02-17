@@ -176,8 +176,8 @@ public class MainActivity extends FragmentActivity
         
         MapView map = mMapFragment.getMap();
         map.setMainActivity(this);
+        mLocationWorker = new LocationWorker(this);
         
-        mLocationWorker = new LocationWorker(this, map);
         if(mSettings.isHideActionBar())
         {
             runTimerActionBar();

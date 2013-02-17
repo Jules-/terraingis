@@ -320,13 +320,24 @@ public class SpatiaLiteManager
      * @param column
      * @param srid
      */
-    public void inserGeometry(Geometry geom, String name, String column, int srid)
+    public void inserGeometry(Geometry geom, String name, String column, int inputSrid, int tableSrid)
     {
         try
         {
-            Stmt stmt = db.prepare(String.format("INSERT INTO '%s' (%s) (GeomFromWKB(?, ?))", name, column));
+            String value;
+            
+            if(inputSrid == tableSrid)
+            {
+                value = String.format("GeomFromWKB(?, %d)", inputSrid);
+            }
+            else
+            {
+                value = String.format("Transform(GeomFromWKB(?, %d), %d)", inputSrid, tableSrid);
+            }
+            
+            Stmt stmt = db.prepare(String.format("INSERT INTO '%s' ('%s') VALUES (%s)",
+                                   name, column, value));
             stmt.bind(1, mWKBWriter.write(geom));
-            stmt.bind(2, srid);
             stmt.step();
         }
         catch (Exception e)

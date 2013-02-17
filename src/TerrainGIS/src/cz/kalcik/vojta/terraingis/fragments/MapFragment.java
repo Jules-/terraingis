@@ -1,6 +1,9 @@
 package cz.kalcik.vojta.terraingis.fragments;
 
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -19,6 +22,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import cz.kalcik.vojta.terraingis.components.LocationWorker;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
@@ -36,6 +40,7 @@ public class MapFragment extends Fragment
 {
     // constants ==========================================================
     private static String MAP_VIEW_DATA = "MapViewData";
+    private static int TIMER_TIME = 3000;
     
     // properties =========================================================
     private MapView map;
@@ -43,6 +48,8 @@ public class MapFragment extends Fragment
     private MainActivity mMainActivity;
     private Button mButtonRecordObject;
     private Button mButtonRecordPoint;
+    private VectorLayer mLastSelectedLayer;
+    private Timer timer;
 
     // public methods =====================================================
     /**
@@ -95,6 +102,33 @@ public class MapFragment extends Fragment
         }
     }
     
+    /**
+     * add point to selected layer
+     * @param location
+     */
+    public void recordPoint(Coordinate location)
+    {
+        VectorLayer selectedLayer = mLastSelectedLayer;
+        selectedLayer.addPoint(location);
+        if(selectedLayer.getType() == VectorLayerType.POINT)
+        {
+            selectedLayer.endObject();
+        }
+        
+        changeRecordButtons();
+    }
+    
+    /**
+     * cancel timer for record point
+     */
+    public void cancelTimer()
+    {
+        if(timer != null)
+        {
+            timer.cancel();
+            timer.purge();
+        }
+    }
     // getter, setter =====================================================
     
     public MapView getMap()
@@ -172,22 +206,34 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            Coordinate location = mMainActivity.getLocationWorker().getLocation();
-            if(location == null)
+            mLastSelectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+            if(!mMainActivity.getLocationWorker().recordPoint())
             {
-                Toast.makeText((Context)mMainActivity, R.string.record_point_error, Toast.LENGTH_LONG).show();
-                return;
+                Toast.makeText(mMainActivity, R.string.record_point_busy_error, Toast.LENGTH_LONG).show();
             }
-            
-            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-            
-            selectedLayer.addPoint(location);
-            if(selectedLayer.getType() == VectorLayerType.POINT)
+            // run check time
+            else
             {
-                selectedLayer.endObject();
+                cancelTimer();
+         
+                timer = new Timer();
+                timer.schedule(new RecordPointFail(), TIMER_TIME);                
             }
-            
-            changeRecordButtons();
         }        
     };
+    
+    // classes =================================================================
+    /**
+     * task for hidding action bar
+     * @author jules
+     *
+     */
+    class RecordPointFail extends TimerTask
+    {        
+        public void run()
+        {
+            mMainActivity.getLocationWorker().setLocationTaskIdle();
+            Toast.makeText(mMainActivity, R.string.record_point_error, Toast.LENGTH_LONG).show();
+        }
+     }
 }
