@@ -20,6 +20,8 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
+import cz.kalcik.vojta.terraingis.exception.TerrainGISException;
 
 import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
@@ -105,7 +107,10 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public void addPoint(Coordinate coordinate)
     {
-        mRecordedPoints.add(coordinate);
+        Coordinate newPoint =  mSpatialite.transformSRS(coordinate,
+                                                        LayerManager.EPSG_LONLAT,
+                                                        LayerManager.EPSG_SPHERICAL_MERCATOR);
+        mRecordedPoints.add(newPoint);
     }
     
     /**
@@ -114,23 +119,47 @@ public abstract class VectorLayer extends AbstractLayer
     public void endObject()
     {
         Geometry object = null;
+        
+        // for polygon add first point
+        if(mType == VectorLayerType.POLYGON)
+        {
+            mRecordedPoints.add(mRecordedPoints.get(0));
+        }
+        
         CoordinateArraySequence coordinates =
                 new CoordinateArraySequence(mRecordedPoints.toArray(new Coordinate[mRecordedPoints.size()]));
+        
         if(mType == VectorLayerType.POINT)
         {
+            if(mRecordedPoints.size() == 0)
+            {
+                throw new CreateObjectException("Few points for object.");
+            }
+            
             object = new Point(coordinates, mGeometryFactory);
         }
         else if(mType == VectorLayerType.LINE)
         {
+            if(mRecordedPoints.size() < 2)
+            {
+                throw new CreateObjectException("Few points for object.");
+            }
+            
             object = new LineString(coordinates, mGeometryFactory);
         }
         else if(mType == VectorLayerType.POLYGON)
         {
+            if(mRecordedPoints.size() < 4)
+            {
+                throw new CreateObjectException("Few points for object.");
+            }
+            
             LinearRing ring = new LinearRing(coordinates, mGeometryFactory);
             object = new Polygon(ring, null, mGeometryFactory);
         }
         
-        mSpatialite.inserGeometry(object, mName, mColumnGeom, LayerManager.EPSG_LONLAT, mSrid);
+        mSpatialite.inserGeometry(object, mName, mColumnGeom,
+                                  LayerManager.EPSG_SPHERICAL_MERCATOR, mSrid);
         updateEnvelope();
         mRecordedPoints.clear();
     }

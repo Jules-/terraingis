@@ -23,6 +23,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
+import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
@@ -234,7 +235,15 @@ public class MapFragment extends Fragment
         {
             VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
 
-            selectedLayer.endObject();
+            try
+            {
+                selectedLayer.endObject();
+            }
+            catch (CreateObjectException e)
+            {
+                Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
+            }
+            
             changeRecordButtons();
             map.invalidate();
         }        

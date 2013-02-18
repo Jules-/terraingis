@@ -7,4 +7,5 @@
     <string name="record_object">End object</string>
     <string name="record_point_error">Location service is not fix.</string>
     <string name="record_point_busy_error">Waiting for previous point.</string>
+    <string name="end_object_error">Few points for object.</string>
 </resources>
