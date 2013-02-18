@@ -18,9 +18,11 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
+import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 
 import android.graphics.Canvas;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 
 /**
@@ -30,6 +32,9 @@ import android.graphics.Paint;
  */
 public abstract class VectorLayer extends AbstractLayer
 {
+    // constants ==============================================================
+    private static final float[] DASHED_PARAMS = {10, 5};
+    
     // enum ===================================================================
     public enum VectorLayerType {POINT, LINE, POLYGON};
     
@@ -37,6 +42,7 @@ public abstract class VectorLayer extends AbstractLayer
     private boolean mHaveIndex;
 
     protected Paint mPaint;
+    protected Paint mNotSavedPaint;
     protected VectorLayerType mType;
     protected SpatiaLiteManager mSpatialite;
     protected String mColumnGeom;
@@ -142,5 +148,15 @@ public abstract class VectorLayer extends AbstractLayer
     protected void updateEnvelope()
     {
         mEnvelope = mSpatialite.getEnvelopeLayer(mName);
+    }
+    
+    /**
+     * create paint with dashed line from paint
+     * @param paint
+     * @return
+     */
+    protected void setDashedPath(Paint paint)
+    {
+        paint.setPathEffect(new DashPathEffect(DASHED_PARAMS, 0));
     }
 }

@@ -6,12 +6,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
+import cz.kalcik.vojta.terraingis.R.color;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 
 public class PolygonsLayer extends VectorLayer
 {
+    //constants ===============================================================
+    private final static int TRANCPARENCE_NOTSAVED = 64; 
+    
     // public methods =========================================================
     public PolygonsLayer(String name, int srid,
                          SpatiaLiteManager spatialite)
@@ -24,7 +29,10 @@ public class PolygonsLayer extends VectorLayer
     {
         super(VectorLayerType.POLYGON, paint, name, srid, spatialite);
         
-        this.mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setStyle(Paint.Style.FILL);
+        
+        mNotSavedPaint = new Paint(mPaint);
+        mNotSavedPaint.setAlpha(TRANCPARENCE_NOTSAVED);
     }
     
     /**
@@ -43,7 +51,7 @@ public class PolygonsLayer extends VectorLayer
         {
             mDrawer.drawCanvasPathM(canvas,
                                     mRecordedPoints.toArray(new Coordinate[mRecordedPoints.size()]),
-                                    mPaint);
+                                    mNotSavedPaint);
         }
     }
 }

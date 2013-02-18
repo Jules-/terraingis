@@ -1,6 +1,5 @@
 package cz.kalcik.vojta.terraingis.layer;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -13,6 +12,8 @@ import android.graphics.Paint;
 
 public class LinesLayer extends VectorLayer
 {
+    // attributes =============================================================
+    
     // public methods =========================================================
     public LinesLayer(String name, int srid,
                       SpatiaLiteManager spatialite)
@@ -25,7 +26,10 @@ public class LinesLayer extends VectorLayer
     {
         super(VectorLayerType.LINE, paint, name, srid, spatialite);
         
-        this.mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStyle(Paint.Style.STROKE);
+        
+        mNotSavedPaint = new Paint(mPaint);
+        setDashedPath(mNotSavedPaint);
     }
     
     /**
@@ -35,16 +39,18 @@ public class LinesLayer extends VectorLayer
     public void draw(Canvas canvas, Envelope rect)
     {
         Iterator<Geometry> iter = getObjects(rect);
+
         while(iter.hasNext())
         {
-            mDrawer.drawLinesM(canvas, iter.next().getCoordinates(), mPaint);
+            mDrawer.drawCanvasPathM(canvas, iter.next().getCoordinates(), mPaint);
         }
         
         if(mRecordedPoints.size() > 0)
         {
-            mDrawer.drawLinesM(canvas,
-                               mRecordedPoints.toArray(new Coordinate[mRecordedPoints.size()]),
-                               mPaint);
+            
+            mDrawer.drawCanvasPathM(canvas,
+                    mRecordedPoints.toArray(new Coordinate[mRecordedPoints.size()]),
+                    mNotSavedPaint);
         }
     }
 }

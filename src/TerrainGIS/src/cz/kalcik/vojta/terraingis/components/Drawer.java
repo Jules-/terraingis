@@ -102,35 +102,6 @@ public class Drawer
     }
     
     /**
-     * draw lines between points
-     * @param canvas
-     * @param points
-     * @param paint
-     */
-    public void drawLinesM(Canvas canvas, Coordinate[] points, Paint paint)
-    {
-        int size = points.length;
-        if(size < 2)
-        {
-            return;
-        }      
-        
-        Coordinate pointPx = mNavigator.mToPx(points[0], null);
-        PointF previousSurfacePoint = mNavigator.pxToSurfacePx(pointPx, null);
-        PointF currentSurfacePoint = new PointF();
-        
-        for(int i = 1; i < size; i++)
-        {
-            mNavigator.mToPx(points[i], pointPx);
-            mNavigator.pxToSurfacePx(pointPx, currentSurfacePoint);
-            
-            canvas.drawLine(previousSurfacePoint.x, previousSurfacePoint.y,
-                            currentSurfacePoint.x, currentSurfacePoint.y, paint);
-            previousSurfacePoint.set(currentSurfacePoint);
-        }
-    }
-    
-    /**
      * draw circle
      * @param canvas
      * @param paint
