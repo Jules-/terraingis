@@ -1,7 +1,5 @@
 package cz.kalcik.vojta.terraingis.components;
 
-import android.content.Context;
-import android.graphics.drawable.Drawable;
 import cz.kalcik.vojta.terraingis.R;
 
 /**
@@ -26,12 +24,12 @@ public class Settings
     private int locationIcon = R.drawable.location;
     private boolean hideActionBar = true;
     private int timeHideActionBar = 5000;
+    private int mAutoRecordMinDist = 10;
     
     // getters, setters =============================================================
     
     /**
-     * getter location icon
-     * @return
+     * @return location icon
      */
     public int getLocationIcon()
     {
@@ -56,5 +54,21 @@ public class Settings
     public void setTimeHideActionBar(int timeHideActionBar)
     {
         this.timeHideActionBar = timeHideActionBar;
+    }
+    
+    /**
+     * @return the mAutoRecordMinDist
+     */
+    public int getAutoRecordMinDist()
+    {
+        return mAutoRecordMinDist;
+    }
+
+    /**
+     * @param mAutoRecordMinDist the mAutoRecordMinDist to set
+     */
+    public void setAutoRecordMinDist(int mAutoRecordMinDist)
+    {
+        this.mAutoRecordMinDist = mAutoRecordMinDist;
     }
 }

@@ -174,9 +174,9 @@ public class MainActivity extends FragmentActivity
         mMapFragment = (MapFragment)getSupportFragmentManager().findFragmentById(R.id.map_fragment);
         mLayersFragment = (LayersFragment)getSupportFragmentManager().findFragmentById(R.id.layers_fragment);
         
+        mLocationWorker = new LocationWorker(this);
         MapView map = mMapFragment.getMap();
         map.setMainActivity(this);
-        mLocationWorker = new LocationWorker(this);
         
         if(mSettings.isHideActionBar())
         {
@@ -232,6 +232,11 @@ public class MainActivity extends FragmentActivity
             {
                 startRecord();
             }
+        }
+        // auto record
+        else if(mMenuRecord.getItemId() == id)
+        {
+
         }
         
         setActionBarIcons();

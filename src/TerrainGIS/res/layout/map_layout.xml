@@ -16,12 +16,19 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:orientation="vertical" >
-
+        
         <Button
-            android:id="@+id/button_record_object"
+            android:id="@+id/button_record_end_object"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/record_object"
+            android:text="@string/record_end_object"
+            android:visibility="gone"/>
+        
+        <Button
+            android:id="@+id/button_record_auto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/record_auto_start"
             android:visibility="gone"/>
         
         <Button

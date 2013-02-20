@@ -4,8 +4,14 @@
     <string name="location_error">Can not run location service!</string>
     <string name="not_selected_layer">It is not any layer selected!</string>
     <string name="record_point">Add point</string>
-    <string name="record_object">End object</string>
+    <string name="record_end_object">End object</string>
+    <string name="record_auto_start">Start automatic</string>
+    <string name="record_auto_stop">Stop automatic</string>
     <string name="record_point_error">Location service is not fix.</string>
     <string name="record_point_busy_error">Waiting for previous point.</string>
     <string name="end_object_error">Few points for object.</string>
+    
+    <string name="title_record">on/off recording</string>
+    <string name="title_gps">on/off location service</string>
+    <string name="title_show_gps">show location</string>
 </resources>

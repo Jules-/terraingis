@@ -2,13 +2,16 @@
     <item android:id="@+id/menu_record"
         android:checkable="true"
         android:showAsAction="always"
-        android:icon="@drawable/record_off"/>
+        android:icon="@drawable/record_off"
+        android:title="@string/title_record"/>
     <item android:id="@+id/menu_location"
         android:checkable="true"
         android:showAsAction="always"
-        android:icon="@drawable/gps_off"/>
+        android:icon="@drawable/gps_off"
+        android:title="@string/title_gps"/>
     <item android:id="@+id/menu_show_location"
           android:showAsAction="always"
-          android:icon="@drawable/show_gps"/>
+          android:icon="@drawable/show_gps"
+          android:title="@string/title_show_gps"/>
 
 </menu>

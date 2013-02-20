@@ -35,19 +35,22 @@ public class LocationWorker
     private final IntentFilter INTENT_FILTER = new IntentFilter("android.location.GPS_FIX_CHANGE");
     
     private enum ProviderType {GPS, BOTH};
-    private enum LocationTask {IDLE, RECORD_POINT};
+    public enum LocationTask {IDLE, RECORD_POINT, AUTO_RECORD};
     
     // data =========================================================================
     public static class LocationWorkerData implements Serializable
     {
-        private static final long serialVersionUID = -2490598884003552835L;
+        private static final long serialVersionUID = 1L;
         public boolean runLocation;
-        public int currentMindist;
+        public int idleMindist;
+        public LocationTask currentTask;
+        public LocationTask nextTask;
 
-        public LocationWorkerData(boolean runLocation, int currentMindist)
+        public LocationWorkerData(boolean runLocation, int idleMindist, LocationTask currentTask)
         {
             this.runLocation = runLocation;
-            this.currentMindist = currentMindist;
+            this.idleMindist = idleMindist;
+            this.currentTask = currentTask;
         }
     }
     
@@ -55,17 +58,15 @@ public class LocationWorker
     private LocationManager locationManager;
     private LocationListener locationListener;
     private MainActivity mMainActivity;
+    private Settings mSettings = Settings.getInstance();
     private MapFragment mMapFragment;
     private MapView map;
     private boolean hasGPS;
     private ProviderType currentProvider;
-    private LocationWorkerData data = new LocationWorkerData(false, MINDIST);
+    private LocationWorkerData data = new LocationWorkerData(false, MINDIST, LocationTask.IDLE);
     private boolean validGPS = true; // for external bluetooth GPS
     private int mCurrentMintime = MINTIME;
-    private int mCurrentMindist = data.currentMindist;    
-    private long mLastFixTime = 0;
-    private Location mLastFixLocation = null;
-    private LocationTask mCurrentLocationTask = LocationTask.IDLE;
+    private int mCurrentMindist = data.idleMindist;    
     
     /**
      * constructor
@@ -131,11 +132,13 @@ public class LocationWorker
     }
     
     /**
-     * set current location task to IDLE
+     * set current location task to previous task
      */
-    public void setLocationTaskIdle()
+    public void setCurrentToNextLocationTask()
     {
-        mCurrentLocationTask = LocationTask.IDLE;
+        data.currentTask = data.nextTask;
+
+        processChangeTask();
     }
     // getter setter =================================================================
     
@@ -159,19 +162,40 @@ public class LocationWorker
      */
     public boolean recordPoint()
     {
-        if(mCurrentLocationTask != LocationTask.IDLE)
+        if(data.currentTask == LocationTask.RECORD_POINT)
         {
             return false;
         }
         
-        mCurrentLocationTask = LocationTask.RECORD_POINT;
-        mCurrentMindist = 0;
-        mCurrentMintime = 0;
-        switchProvider();
+        data.nextTask = data.currentTask;
+        data.currentTask = LocationTask.RECORD_POINT;
+        
+        processChangeTask();
         
         return true;
     }
-    
+
+    public LocationTask getCurrentTask()
+    {
+        return data.currentTask;
+    }
+
+    public void setCurrentTask(LocationTask task)
+    {
+        data.currentTask = task;
+        
+        processChangeTask();
+    }
+
+    public LocationTask getNextTask()
+    {
+        return data.nextTask;
+    }
+
+    public void setNextTask(LocationTask task)
+    {
+        data.nextTask = task;
+    }
     // private methods ===============================================================
     /**
      * check if device has GPS
@@ -258,20 +282,40 @@ public class LocationWorker
     }
     
     /**
-     * 
+     * process recordin one point; cancel timer and change task
      */
-    private void processRecordingPoint()
+    private void processRecordingPoint(Location location)
     {
         mMapFragment.cancelTimer();
-        mCurrentLocationTask = LocationTask.IDLE;
-        mCurrentMindist = data.currentMindist;
-        mCurrentMintime = MINTIME;
-        switchProvider();
+        setCurrentToNextLocationTask();
         
-        Location location = mLastFixLocation;
         Coordinate point = new Coordinate(location.getLongitude(), location.getLatitude(), location.getAltitude());
         
-        mMapFragment.recordPoint(point);
+        mMapFragment.recordPointAdd(point); 
+    }
+    
+    /**
+     * process change of task
+     */
+    private void processChangeTask()
+    {
+        if(data.currentTask == LocationTask.IDLE)
+        {
+            mCurrentMindist = data.idleMindist;
+            mCurrentMintime = MINTIME;
+        }
+        else if(data.currentTask == LocationTask.RECORD_POINT)
+        {
+            mCurrentMindist = 0;
+            mCurrentMintime = 0;            
+        }
+        else if(data.currentTask == LocationTask.AUTO_RECORD)
+        {
+            mCurrentMindist = mSettings.getAutoRecordMinDist();
+            mCurrentMintime = MINTIME;            
+        }
+        
+        switchProvider();        
     }
     // classes =======================================================================
     
@@ -314,30 +358,8 @@ public class LocationWorker
                 map.setLocationValid(false);
                 return;
             }
-            mLastFixLocation = location;
-            mLastFixTime = SystemClock.elapsedRealtime();
-            locationPoint.x = location.getLongitude();
-            locationPoint.y = location.getLatitude();
-            locationPoint.z = location.getAltitude();
-            map.setLonLatLocation(locationPoint);
-            
-            // check LocationTask
-            if(mCurrentLocationTask == LocationTask.RECORD_POINT)
-            {
-                processRecordingPoint();
-            }
-            
-            float accuracy = location.getAccuracy();
-            
-            // change mindist by accuracy
-            if(accuracy < MINDIST * 2)
-            {
-                data.currentMindist = 0;
-            }
-            else
-            {
-                data.currentMindist = MINDIST;
-            }
+
+            processLocation(location);
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras)
@@ -371,6 +393,46 @@ public class LocationWorker
         public void onProviderDisabled(String provider)
         {
             Log.d("TerrainGIS", String.format("onProviderDisabled %s", provider));
+        }
+        
+        // private mthods =============
+        /**
+         * process valid location
+         * @param location
+         */
+        private void processLocation(Location location)
+        {
+            locationPoint.x = location.getLongitude();
+            locationPoint.y = location.getLatitude();
+            locationPoint.z = location.getAltitude();
+            // TODO - not when display is off
+            map.setLonLatLocation(locationPoint);
+            
+            // check LocationTask
+            if(data.currentTask == LocationTask.IDLE)
+            {
+                float accuracy = location.getAccuracy();
+                
+                // change mindist by accuracy
+                if(accuracy < MINDIST * 2)
+                {
+                    data.idleMindist = 0;
+                }
+                else
+                {
+                    data.idleMindist = MINDIST;
+                }
+            }
+            else if(data.currentTask == LocationTask.RECORD_POINT)
+            {
+                processRecordingPoint(location);
+            }
+            else if(data.currentTask == LocationTask.AUTO_RECORD)
+            {
+                Coordinate point = new Coordinate(location.getLongitude(), location.getLatitude(), location.getAltitude());
+                
+                mMapFragment.recordPointAuto(point); 
+            }
         }
     }
     

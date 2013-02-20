@@ -111,7 +111,7 @@ public class MapView extends SurfaceView
      * change position by location 
      * @return true if success
      */
-    public boolean showLocation()
+    public synchronized boolean showLocation()
     {
         if(locationValid)
         {
