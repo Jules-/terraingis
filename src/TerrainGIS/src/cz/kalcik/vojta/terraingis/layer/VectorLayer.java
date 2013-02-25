@@ -47,7 +47,7 @@ public abstract class VectorLayer extends AbstractLayer
     protected Paint mNotSavedPaint;
     protected VectorLayerType mType;
     protected SpatiaLiteManager mSpatialite;
-    protected String mColumnGeom;
+    protected String mGeometryColumn;
     protected ArrayList<Coordinate> mRecordedPoints = new ArrayList<Coordinate>();
     protected GeometryFactory mGeometryFactory = new GeometryFactory();
     
@@ -71,7 +71,7 @@ public abstract class VectorLayer extends AbstractLayer
         this.mName = name;
         this.mSrid = srid;
         this.mSpatialite = spatialite;
-        mColumnGeom = mSpatialite.getColumnGeom(name);
+        mGeometryColumn = mSpatialite.getColumnGeom(name);
         mHaveIndex = mSpatialite.indexEnabled(name);
         updateEnvelope();
     }
@@ -85,6 +85,15 @@ public abstract class VectorLayer extends AbstractLayer
         return mType;
     }
     
+    
+    /**
+     * @return the mColumnGeom
+     */
+    public String getGeometrColumn()
+    {
+        return mGeometryColumn;
+    }
+
     // public methods =========================================================    
     @Override
     public void detach()
@@ -108,8 +117,8 @@ public abstract class VectorLayer extends AbstractLayer
     public void addPoint(Coordinate coordinate)
     {
         Coordinate newPoint =  mSpatialite.transformSRS(coordinate,
-                                                        LayerManager.EPSG_LONLAT,
-                                                        LayerManager.EPSG_SPHERICAL_MERCATOR);
+                SpatiaLiteManager.EPSG_LONLAT,
+                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR);
         mRecordedPoints.add(newPoint);
     }
     
@@ -158,8 +167,8 @@ public abstract class VectorLayer extends AbstractLayer
             object = new Polygon(ring, null, mGeometryFactory);
         }
         
-        mSpatialite.inserGeometry(object, mName, mColumnGeom,
-                                  LayerManager.EPSG_SPHERICAL_MERCATOR, mSrid);
+        mSpatialite.inserGeometry(object, mName, mGeometryColumn,
+                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid);
         updateEnvelope();
         mRecordedPoints.clear();
     }
@@ -167,7 +176,7 @@ public abstract class VectorLayer extends AbstractLayer
     // protected methods ========================================================
     protected Iterator<Geometry> getObjects(Envelope envelope)
     {
-        return mSpatialite.getObjects(envelope, mName, mColumnGeom, mSrid,
+        return mSpatialite.getObjects(envelope, mName, mGeometryColumn, mSrid,
                                       mLayerManager.getSrid(), mHaveIndex);
     }
     

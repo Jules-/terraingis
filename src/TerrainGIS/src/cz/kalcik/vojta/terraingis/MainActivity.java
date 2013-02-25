@@ -1,9 +1,11 @@
 package cz.kalcik.vojta.terraingis;
 
+import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Display;
@@ -24,6 +26,9 @@ import cz.kalcik.vojta.terraingis.R;
 public class MainActivity extends FragmentActivity
 {
     // constants ==========================================================
+    public static final File APP_DIRECTORY = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS");
+    public static final File DB_FILE = new File(APP_DIRECTORY.getAbsoluteFile()+"/db.sqlite");
+    
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
     private static final String SHOWN_LAYERS = "ShownLayers";
     private static final String NEW_LAYER_DIALOG_TAG = "NewLayerDialog";
@@ -178,6 +183,7 @@ public class MainActivity extends FragmentActivity
         setContentView(R.layout.activity_main);
         
         ConvertUnits.setDensity(getResources().getDisplayMetrics().density);
+        checkAppDirectory();
         
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
         mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
@@ -379,6 +385,16 @@ public class MainActivity extends FragmentActivity
         mMapFragment.changeRecordButtons();
     }
     
+    /**
+     * make directory of application when it doesn't exist
+     */
+    private void checkAppDirectory()
+    {
+        if (!APP_DIRECTORY.exists())
+        {
+            APP_DIRECTORY.mkdir();
+        }
+    }
     // classes =================================================================
     /**
      * task for hidding action bar

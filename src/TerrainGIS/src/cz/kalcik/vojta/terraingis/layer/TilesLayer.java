@@ -11,6 +11,7 @@ import org.osmdroid.util.TileLooper;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.components.Navigator;
+import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -72,7 +73,7 @@ public class TilesLayer extends AbstractLayer
                                 LayerManager.SPHERICAL_MERCATOR_DIST,
                                 -LayerManager.SPHERICAL_MERCATOR_DIST,
                                 LayerManager.SPHERICAL_MERCATOR_DIST);
-        mSrid = LayerManager.EPSG_SPHERICAL_MERCATOR;
+        mSrid = SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR;
     }
        
 

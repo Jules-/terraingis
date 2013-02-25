@@ -25,6 +25,11 @@ import jsqlite.Stmt;
  */
 public class SpatiaLiteManager
 {    
+    // constants ==========================================================================
+    public static final int EPSG_SPHERICAL_MERCATOR = 3857;
+    public static final int EPSG_LONLAT = 4326;
+    public static final String GEOMETRY_COLUMN_NAME = "Geometry";
+    
     // attributes =========================================================================
     private Database db;
     private WKBReader wkbReader = new WKBReader();
@@ -42,11 +47,11 @@ public class SpatiaLiteManager
 
     /**
      * get all layers in spatialite database
-     * @return [name, type, srid]
+     * @return list of Layers
      */
-    public ArrayList<String[]> getLayers()
+    public ArrayList<Layer> getLayers()
     {
-    	ArrayList<String[]> list = new ArrayList<String[]>();
+    	ArrayList<Layer> list = new ArrayList<Layer>();
     	
     	String query = "SELECT f_table_name, type, srid FROM geometry_columns";
         try
@@ -54,11 +59,11 @@ public class SpatiaLiteManager
     		Stmt stmt = db.prepare(query);
     		while(stmt.step())
     		{
-    			String[] values = new String[3];
-    			values[0] = stmt.column_string(0);
-    			values[1] = stmt.column_string(1);
-    			values[2] = stmt.column_string(2);
-    			list.add(values);
+    			Layer layer = new Layer();
+    			layer.name = stmt.column_string(0);
+    			layer.type = stmt.column_string(1);
+    			layer.srid = stmt.column_int(2);
+    			list.add(layer);
     		}
     		stmt.close();
         }
@@ -359,7 +364,28 @@ public class SpatiaLiteManager
         {
             db.exec("CREATE TABLE '%q' (" +
                     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)", null, argsTable);
-            db.exec("SELECT AddGeometry('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
+            db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+    }
+    
+    /**
+     * remove layer from spatialite db
+     * @param name
+     * @param geometryColumn
+     */
+    public void removeLayer(String name, String geometryColumn)
+    {
+        String[] argsTable = {name};
+        String[] argsGeom = {name, geometryColumn};
+        
+        try
+        {
+            db.exec("SELECT DiscardGeometryColumn('%q', '%q')", null, argsGeom);
+            db.exec("DROP TABLE '%q'", null, argsTable);
         }
         catch (Exception e)
         {
@@ -450,5 +476,17 @@ public class SpatiaLiteManager
         {
             throw new UnsupportedOperationException();
         }    
+    }
+    
+    /**
+     * class for result layer values
+     * @author jules
+     *
+     */
+    public class Layer
+    {
+        public String name;
+        public String type;
+        public int srid;
     }
 }

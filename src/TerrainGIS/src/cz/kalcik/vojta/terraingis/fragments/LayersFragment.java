@@ -31,8 +31,12 @@ import com.vividsolutions.jts.geom.Envelope;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
+import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
+import cz.kalcik.vojta.terraingis.dialogs.SimpleDialog;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import cz.kalcik.vojta.terraingis.layer.TilesLayer;
+import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.LayersView;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
@@ -170,6 +174,8 @@ public class LayersFragment extends Fragment
         buttonZoomLayer.setOnClickListener(zoomLayerHandler);
         ImageButton buttonAdd = (ImageButton)myView.findViewById(R.id.button_add);
         buttonAdd.setOnClickListener(addLayerHandler);
+        ImageButton buttonRemove = (ImageButton)myView.findViewById(R.id.button_remove);
+        buttonRemove.setOnClickListener(removeLayerHandler);
         
         // main activity
         mMainActivity = (MainActivity)getActivity();
@@ -278,6 +284,30 @@ public class LayersFragment extends Fragment
         public void onClick(View v)
         {
             mMainActivity.showDialog(new NewLayerDialog());
+        }        
+    };
+    
+    /**
+     * open dialog for add layer
+     */
+    View.OnClickListener removeLayerHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            AbstractLayer selectedLayer = getSelectedLayer();
+            // check selectedLayer
+            if (selectedLayer instanceof TilesLayer)
+            {
+                Toast.makeText(getActivity(), R.string.tileslayer_remove_error, Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            RemoveLayerDialog dialog = new RemoveLayerDialog();
+            String text = getString(R.string.confirm_remove_message);
+            dialog.setMessage(String.format(text, getSelectedLayer().toString()));
+            
+            mMainActivity.showDialog(dialog);
         }        
     };
     // classes =============================================================================

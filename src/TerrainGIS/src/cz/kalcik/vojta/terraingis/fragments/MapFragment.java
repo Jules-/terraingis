@@ -6,7 +6,6 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -47,7 +46,7 @@ public class MapFragment extends Fragment
     
     // properties =========================================================
     private MapView map;
-    private LayerManager layerManager = LayerManager.getInstance();
+    private LayerManager mLayerManager = LayerManager.getInstance();
     private MainActivity mMainActivity;
     private Button mButtonRecordAuto;
     private Button mButtonRecordEndObject;
@@ -202,7 +201,7 @@ public class MapFragment extends Fragment
         
         // Map view state
         map = (MapView) myView.findViewById(R.id.map);
-        createTestingMap();
+        mLayerManager.loadLayers((Context)mMainActivity, map);
         
         return myView;
     }
@@ -236,17 +235,6 @@ public class MapFragment extends Fragment
     }
     
     // private methods ========================================================
-    
-    private void createTestingMap()
-    {
-        layerManager.loadSpatialite(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS/db.sqlite");
-         
-        // tiles layer        
-        final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
-        MapTileProviderBase tileProvider = new MapTileProviderBasic((Context)mMainActivity, tileSource);
-
-        layerManager.addTilesLayer(tileProvider, (Context)mMainActivity, map);
-    }
     
     // handlers ===============================================================
     
