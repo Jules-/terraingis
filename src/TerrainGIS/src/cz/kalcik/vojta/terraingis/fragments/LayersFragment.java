@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -28,6 +30,7 @@ import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.view.LayersView;
@@ -166,7 +169,7 @@ public class LayersFragment extends Fragment
         ImageButton buttonZoomLayer = (ImageButton)myView.findViewById(R.id.button_zoom_to_layer);
         buttonZoomLayer.setOnClickListener(zoomLayerHandler);
         ImageButton buttonAdd = (ImageButton)myView.findViewById(R.id.button_add);
-        buttonAdd.setOnClickListener(loadFileHandler);
+        buttonAdd.setOnClickListener(addLayerHandler);
         
         // main activity
         mMainActivity = (MainActivity)getActivity();
@@ -267,16 +270,14 @@ public class LayersFragment extends Fragment
     };
     
     /**
-     * open file manager for open ShapeFile
+     * open dialog for add layer
      */
-    View.OnClickListener loadFileHandler = new View.OnClickListener()
+    View.OnClickListener addLayerHandler = new View.OnClickListener()
     {
         @Override
         public void onClick(View v)
         {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("file/*");
-            startActivityForResult(intent, LOAD_REQUESTCODE);            
+            mMainActivity.showDialog(new NewLayerDialog());
         }        
     };
     // classes =============================================================================

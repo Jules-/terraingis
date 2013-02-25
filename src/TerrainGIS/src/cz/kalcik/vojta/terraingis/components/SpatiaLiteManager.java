@@ -7,13 +7,10 @@ import java.util.Iterator;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
-import com.vividsolutions.jts.io.WKTReader;
 
-import android.R.bool;
 import android.util.Log;
 
 import jsqlite.Constants;
@@ -346,6 +343,29 @@ public class SpatiaLiteManager
         }    
     }
     
+    /**
+     * create layer in spatialite db
+     * @param name
+     * @param geometryColumn
+     * @param type
+     * @param srid
+     */
+    public void createEmptyLayer(String name, String geometryColumn, String type, int srid)
+    {
+        String[] argsTable = {name};
+        String[] argsGeom = {name, geometryColumn, Integer.toString(srid), type};
+        
+        try
+        {
+            db.exec("CREATE TABLE '%q' (" +
+                    "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)", null, argsTable);
+            db.exec("SELECT AddGeometry('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+    }
     // private methods =======================================================================
     /**
      * open spatialite database

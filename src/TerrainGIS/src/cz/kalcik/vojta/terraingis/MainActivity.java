@@ -4,6 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Display;
 import android.view.Menu;
@@ -25,6 +26,7 @@ public class MainActivity extends FragmentActivity
     // constants ==========================================================
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
     private static final String SHOWN_LAYERS = "ShownLayers";
+    private static final String NEW_LAYER_DIALOG_TAG = "NewLayerDialog";
     private static final float MIN_WIDTH_PANEL_DP = 300;
     
     // properties =========================================================
@@ -100,6 +102,15 @@ public class MainActivity extends FragmentActivity
             
             mLayersLayout.setVisibility(View.VISIBLE);
         }
+    }
+    
+    /**
+     * show dialog
+     * @param dialog
+     */
+    public void showDialog(DialogFragment dialog)
+    {
+        dialog.show(getSupportFragmentManager(), NEW_LAYER_DIALOG_TAG);
     }
     // getter, setter =====================================================
     
