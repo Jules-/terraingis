@@ -17,9 +17,10 @@ public class DefaultPaints
     private static final float HUE_STEP = 80;
     private static final float VALUE_STEP = 0.2f;
     private static final float MIN_VALUE = 0.3f;
+    private static final float[] DEFAULT_HSV = {0, 1, 1};
     
     // static atributes ============================================================
-    private static float[] mCurrentHSV = {0, 1, 1};
+    private static float[] mCurrentHSV = DEFAULT_HSV.clone();
     
     // public static methods =======================================================
     /**
@@ -54,7 +55,15 @@ public class DefaultPaints
         Paint result = commonAttrs();
         
         return result;
-    }    
+    }
+    
+    /**
+     * set default colors
+     */
+    public static void resetColors()
+    {
+        mCurrentHSV = DEFAULT_HSV.clone();
+    }
     // private static methods ======================================================
     /**
      * common settings of paint
