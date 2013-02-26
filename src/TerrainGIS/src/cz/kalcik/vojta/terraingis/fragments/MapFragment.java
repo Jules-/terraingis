@@ -63,9 +63,12 @@ public class MapFragment extends Fragment
         boolean showPointButton = false;
         boolean showAutoButton = false;
         
+        LocationWorker locationWorker = mMainActivity.getLocationWorker();
+        
         if(mMainActivity.isRecordMode())
         {
             AbstractLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayer();
+            // is selected layer
             if(selectedLayer != null)
             {
                 if(selectedLayer instanceof VectorLayer)
@@ -85,6 +88,14 @@ public class MapFragment extends Fragment
                         }
                     }
                 }
+            }
+            
+            //run automatic recording
+            if(locationWorker.getCurrentTask() == LocationTask.AUTO_RECORD ||
+                    (locationWorker.getCurrentTask() == LocationTask.RECORD_POINT &&
+                    locationWorker.getNextTask() == LocationTask.AUTO_RECORD))
+            {
+                showAutoButton = true;
             }
         }
         
@@ -108,8 +119,6 @@ public class MapFragment extends Fragment
         
         if(showAutoButton)
         {
-            LocationWorker locationWorker = mMainActivity.getLocationWorker();
-            
             mButtonRecordAuto.setVisibility(View.VISIBLE);
             if(locationWorker.getCurrentTask() == LocationTask.AUTO_RECORD)
             {
@@ -153,16 +162,30 @@ public class MapFragment extends Fragment
         map.invalidate();
     }
     
+    /**
+     * record manual one point
+     * @param location
+     */
     public void recordPointAdd(Coordinate location)
     {
         VectorLayer layer = mAddPointSelectedLayer;
-        recordPoint(location, layer);
+        if(layer != null)
+        {
+            recordPoint(location, layer);
+        }
     }
 
+    /**
+     * record automatic one point
+     * @param location
+     */
     public void recordPointAuto(Coordinate location)
     {
-        VectorLayer layer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-        recordPoint(location, layer);
+        VectorLayer layer = mAutoRecordLayer;
+        if(layer != null)
+        {
+            recordPoint(location, layer);
+        }
     }
     
     /**
@@ -309,6 +332,8 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
+            boolean runAutoRecord = false;
+            
             LocationWorker locationWorker = mMainActivity.getLocationWorker();
             // stop recording
             if(locationWorker.getCurrentTask() == LocationTask.AUTO_RECORD)
@@ -319,6 +344,7 @@ public class MapFragment extends Fragment
             else if(locationWorker.getCurrentTask() == LocationTask.IDLE)
             {
                 locationWorker.setCurrentTask(LocationTask.AUTO_RECORD);
+                runAutoRecord = true;
             }
             else if(locationWorker.getCurrentTask() == LocationTask.RECORD_POINT)
             {
@@ -331,7 +357,17 @@ public class MapFragment extends Fragment
                 else if(locationWorker.getNextTask() == LocationTask.IDLE)
                 {
                     locationWorker.setNextTask(LocationTask.AUTO_RECORD);
+                    runAutoRecord = true;
                 }
+            }
+            
+            if(runAutoRecord)
+            {
+                mAutoRecordLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+            }
+            else
+            {
+                mAutoRecordLayer = null;
             }
             
             changeRecordButtons();
