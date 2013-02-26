@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis.layer;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.exception.TerrainGISException;
+import cz.kalcik.vojta.terraingis.layer.AbstractLayer.AbstractLayerData;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 import android.R.bool;
@@ -142,6 +144,11 @@ public class LayerManager
         }
     }
     
+    /**
+     * load tile layer and spatialite
+     * @param context
+     * @param map
+     */
     public void loadLayers(Context context, MapView map)
     {
         loadSpatialite();
@@ -191,6 +198,43 @@ public class LayerManager
         }
         
         return false;
+    }
+    
+    /**
+     * @return data for serialization
+     */
+    public ArrayList<AbstractLayerData> getData()
+    {
+        ArrayList<AbstractLayerData> result = new ArrayList<AbstractLayerData>();
+        
+        for(AbstractLayer layer: layers)
+        {
+            result.add(layer.getData());
+        }
+        
+        return result;
+    }
+    
+    /**
+     * @param data
+     */
+    public void setData(ArrayList<AbstractLayerData> data)
+    {
+        Map<String, AbstractLayer> mapLayers = new TreeMap<String, AbstractLayer>();
+        
+        for(AbstractLayer layer: layers)
+        {
+            mapLayers.put(layer.toString(), layer);
+        }
+        
+        layers.clear();
+        
+        for(AbstractLayerData dataLayer: data)
+        {
+            AbstractLayer layer = mapLayers.get(dataLayer.name);
+            layer.setData(dataLayer);
+            layers.add(layer);
+        }
     }
     // getter setter =======================================================================
     

@@ -1,10 +1,11 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import java.io.Serializable;
+
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.components.Drawer;
 
-import android.R.bool;
 import android.graphics.Canvas;
 
 /**
@@ -15,13 +16,25 @@ import android.graphics.Canvas;
 public abstract class AbstractLayer
 {
     // attributes ==============================================================
-    protected String mName;
+    public static class AbstractLayerData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        public boolean visible;
+        public String name;
+        public Serializable childData;
+
+        public AbstractLayerData(boolean mVisible)
+        {
+            this.visible = mVisible;
+        }
+    }
+    
     protected Envelope mEnvelope;
     protected int mSrid;
     protected Drawer mDrawer = Drawer.getInstance();
     protected LayerManager mLayerManager = LayerManager.getInstance();
-    protected boolean mVisible = true;
-    
+    protected AbstractLayerData data = new AbstractLayerData(true);
+
     // abstract methods ========================================================
     public abstract void draw(final Canvas canvas, Envelope rect);
     public abstract void detach();
@@ -43,14 +56,29 @@ public abstract class AbstractLayer
      */
     public boolean isVisible()
     {
-        return mVisible;
+        return data.visible;
     }
     
+    /**
+     * @return the data
+     */
+    public AbstractLayerData getData()
+    {
+        return data;
+    }
+
+    /**
+     * @param data the data to set
+     */
+    public void setData(AbstractLayerData data)
+    {
+        this.data = data;
+    }    
     // public methods =========================================================
     @Override
     public String toString()
     {
-        return mName;
+        return data.name;
     }
     
     /**
@@ -58,6 +86,6 @@ public abstract class AbstractLayer
      */
     public void toggleVisibility()
     {
-        mVisible = !mVisible;
+        data.visible = !data.visible;
     }
 }

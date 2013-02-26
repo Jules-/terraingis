@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis.fragments;
 
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,6 +23,7 @@ import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
+import cz.kalcik.vojta.terraingis.layer.AbstractLayer.AbstractLayerData;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer.VectorLayerType;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.MainActivity;
@@ -36,6 +38,7 @@ public class MapFragment extends Fragment
 {
     // constants ==========================================================
     private static String MAP_VIEW_DATA = "MapViewData";
+    private static String LAYERS_DATA = "LayersData";
     private static int TIMER_TIME = 3000;
     
     // properties =========================================================
@@ -207,7 +210,10 @@ public class MapFragment extends Fragment
 
         if(savedInstanceState != null)
         {
+            // map view
             map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
+            // layers data
+            mLayerManager.setData((ArrayList<AbstractLayerData>)savedInstanceState.getSerializable(LAYERS_DATA));
         }
     }
 
@@ -216,6 +222,8 @@ public class MapFragment extends Fragment
     {        
         // Map view state
         outState.putSerializable(MAP_VIEW_DATA, map.getData());
+        // Layers data
+        outState.putSerializable(LAYERS_DATA, mLayerManager.getData());
         
         super.onSaveInstanceState(outState);
     }

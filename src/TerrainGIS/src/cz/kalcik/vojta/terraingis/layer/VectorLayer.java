@@ -1,29 +1,22 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateFilter;
-import com.vividsolutions.jts.geom.CoordinateSequenceComparator;
-import com.vividsolutions.jts.geom.CoordinateSequenceFilter;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryComponentFilter;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.GeometryFilter;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
-import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
-import cz.kalcik.vojta.terraingis.exception.TerrainGISException;
 
-import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 
@@ -41,6 +34,18 @@ public abstract class VectorLayer extends AbstractLayer
     public enum VectorLayerType {POINT, LINE, POLYGON};
     
     // attributes ==============================================================
+    public static class VectorLayerData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        
+        public ArrayList<Coordinate> mRecordedPoints;
+
+        public VectorLayerData(ArrayList<Coordinate> mRecordedPoints)
+        {
+            this.mRecordedPoints = mRecordedPoints;
+        }
+    }
+    
     private boolean mHaveIndex;
 
     protected Paint mPaint;
@@ -48,7 +53,8 @@ public abstract class VectorLayer extends AbstractLayer
     protected VectorLayerType mType;
     protected SpatiaLiteManager mSpatialite;
     protected String mGeometryColumn;
-    protected ArrayList<Coordinate> mRecordedPoints = new ArrayList<Coordinate>();
+    protected VectorLayerData data = new VectorLayerData(new ArrayList<Coordinate>());
+
     protected GeometryFactory mGeometryFactory = new GeometryFactory();
     
     // constructors ============================================================
@@ -68,7 +74,7 @@ public abstract class VectorLayer extends AbstractLayer
         }
         
         this.mPaint = paint;        
-        this.mName = name;
+        super.data.name = name;
         this.mSrid = srid;
         this.mSpatialite = spatialite;
         mGeometryColumn = mSpatialite.getColumnGeom(name);
@@ -94,6 +100,25 @@ public abstract class VectorLayer extends AbstractLayer
         return mGeometryColumn;
     }
 
+    
+    /**
+     * @return the data
+     */
+    public AbstractLayerData getData()
+    {
+        AbstractLayerData result = super.getData();
+        result.childData = data;
+        return result;
+    }
+
+    /**
+     * @param data the data to set
+     */
+    public void setData(AbstractLayerData inData)
+    {
+        super.setData(inData);
+        data = (VectorLayerData)super.data.childData;
+    }
     // public methods =========================================================    
     @Override
     public void detach()
@@ -107,7 +132,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public boolean haveOpenedRecordObject()
     {
-        return (mRecordedPoints.size() != 0);
+        return (data.mRecordedPoints.size() != 0);
     }
     
     /**
@@ -119,7 +144,7 @@ public abstract class VectorLayer extends AbstractLayer
         Coordinate newPoint =  mSpatialite.transformSRS(coordinate,
                 SpatiaLiteManager.EPSG_LONLAT,
                 SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR);
-        mRecordedPoints.add(newPoint);
+        data.mRecordedPoints.add(newPoint);
     }
     
     /**
@@ -132,15 +157,15 @@ public abstract class VectorLayer extends AbstractLayer
         // for polygon add first point
         if(mType == VectorLayerType.POLYGON)
         {
-            mRecordedPoints.add(mRecordedPoints.get(0));
+            data.mRecordedPoints.add(data.mRecordedPoints.get(0));
         }
         
         CoordinateArraySequence coordinates =
-                new CoordinateArraySequence(mRecordedPoints.toArray(new Coordinate[mRecordedPoints.size()]));
+                new CoordinateArraySequence(data.mRecordedPoints.toArray(new Coordinate[data.mRecordedPoints.size()]));
         
         if(mType == VectorLayerType.POINT)
         {
-            if(mRecordedPoints.size() == 0)
+            if(data.mRecordedPoints.size() == 0)
             {
                 throw new CreateObjectException("Few points for object.");
             }
@@ -149,7 +174,7 @@ public abstract class VectorLayer extends AbstractLayer
         }
         else if(mType == VectorLayerType.LINE)
         {
-            if(mRecordedPoints.size() < 2)
+            if(data.mRecordedPoints.size() < 2)
             {
                 throw new CreateObjectException("Few points for object.");
             }
@@ -158,7 +183,7 @@ public abstract class VectorLayer extends AbstractLayer
         }
         else if(mType == VectorLayerType.POLYGON)
         {
-            if(mRecordedPoints.size() < 4)
+            if(data.mRecordedPoints.size() < 4)
             {
                 throw new CreateObjectException("Few points for object.");
             }
@@ -167,16 +192,16 @@ public abstract class VectorLayer extends AbstractLayer
             object = new Polygon(ring, null, mGeometryFactory);
         }
         
-        mSpatialite.inserGeometry(object, mName, mGeometryColumn,
+        mSpatialite.inserGeometry(object, super.data.name, mGeometryColumn,
                 SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid);
         updateEnvelope();
-        mRecordedPoints.clear();
+        data.mRecordedPoints.clear();
     }
     
     // protected methods ========================================================
     protected Iterator<Geometry> getObjects(Envelope envelope)
     {
-        return mSpatialite.getObjects(envelope, mName, mGeometryColumn, mSrid,
+        return mSpatialite.getObjects(envelope, super.data.name, mGeometryColumn, mSrid,
                                       mLayerManager.getSrid(), mHaveIndex);
     }
     
@@ -185,7 +210,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     protected void updateEnvelope()
     {
-        mEnvelope = mSpatialite.getEnvelopeLayer(mName);
+        mEnvelope = mSpatialite.getEnvelopeLayer(super.data.name);
     }
     
     /**
