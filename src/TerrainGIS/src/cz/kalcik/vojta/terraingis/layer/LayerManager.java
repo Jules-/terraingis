@@ -134,7 +134,7 @@ public class LayerManager
         {
             AbstractLayer layer = layers.get(i);
             
-            if(!mapLayers.get(layer.toString()))
+            if(layer instanceof VectorLayer && !mapLayers.get(layer.toString()))
             {
                 layer.detach();
                 layers.remove(i);

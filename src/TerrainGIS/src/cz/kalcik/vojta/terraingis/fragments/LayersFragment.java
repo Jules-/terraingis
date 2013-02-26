@@ -2,26 +2,18 @@ package cz.kalcik.vojta.terraingis.fragments;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import android.app.Activity;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.view.GestureDetector;
-import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,13 +24,10 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
-import cz.kalcik.vojta.terraingis.dialogs.SimpleDialog;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.TilesLayer;
-import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.LayersView;
-import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
 
 /**
@@ -114,7 +103,14 @@ public class LayersFragment extends Fragment
             return mArrayAdapter.getItem(position);
         }
     }
-            
+    
+    /**
+     * invalidate listView
+     */
+    public void invalidateListView()
+    {
+        mListView.invalidateViews();
+    }
     // on methods =========================================================
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -296,6 +292,11 @@ public class LayersFragment extends Fragment
         public void onClick(View v)
         {
             AbstractLayer selectedLayer = getSelectedLayer();
+            if(selectedLayer == null)
+            {
+                Toast.makeText(getActivity(), R.string.not_selected_layer, Toast.LENGTH_LONG).show();
+                return;               
+            }
             // check selectedLayer
             if (selectedLayer instanceof TilesLayer)
             {

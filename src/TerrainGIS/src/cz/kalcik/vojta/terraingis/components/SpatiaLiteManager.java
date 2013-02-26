@@ -34,6 +34,7 @@ public class SpatiaLiteManager
     private Database db;
     private WKBReader wkbReader = new WKBReader();
     private WKBWriter mWKBWriter = new WKBWriter();
+    private String mPath;
     
     // public methods ======================================================================
     /**
@@ -42,6 +43,7 @@ public class SpatiaLiteManager
      */
     public SpatiaLiteManager(String path)
     {
+        mPath = path;
     	open(path);
     }
 
@@ -385,7 +387,9 @@ public class SpatiaLiteManager
         try
         {
             db.exec("SELECT DiscardGeometryColumn('%q', '%q')", null, argsGeom);
-            db.exec("DROP TABLE '%q'", null, argsTable);
+            db.close();
+            open(mPath);
+            db.exec("DROP TABLE '%q'", null, argsTable);            
         }
         catch (Exception e)
         {

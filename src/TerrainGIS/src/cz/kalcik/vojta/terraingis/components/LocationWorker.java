@@ -125,7 +125,7 @@ public class LocationWorker
      */
     public void pause()
     {
-        if(data.runLocation)
+        if(data.runLocation && data.currentTask != LocationTask.AUTO_RECORD)
         {
             stopLocation();
         }        

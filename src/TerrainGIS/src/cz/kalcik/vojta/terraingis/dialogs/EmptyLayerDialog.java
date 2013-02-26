@@ -78,6 +78,7 @@ public class EmptyLayerDialog extends DialogFragment
             spatialite.createEmptyLayer(name, SpatiaLiteManager.GEOMETRY_COLUMN_NAME,
                                         layerType, SpatiaLiteManager.EPSG_LONLAT);
             LayerManager.getInstance().loadSpatialite();
+            ((MainActivity)getActivity()).getLayersFragment().invalidateListView();
         }        
     };
 
