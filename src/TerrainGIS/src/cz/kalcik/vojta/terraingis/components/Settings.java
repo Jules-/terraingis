@@ -20,6 +20,9 @@ public class Settings
         return instance;
     }
     
+    // constants ==========================================================================
+    public static final double MIN_M_DISTANCE = 0.000001;
+        
     // attributes ===================================================================
     private int locationIcon = R.drawable.location;
     private boolean hideActionBar = true;

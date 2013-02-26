@@ -44,7 +44,14 @@ public class LayersView extends DragSortListView
         mMainActivity = (MainActivity)getContext();
         setOnItemClickListener(itemClickHandler);
     }
-    
+
+    /**
+     * remove selection
+     */
+    public void deselect()
+    {
+        mMySelectedPosition = -1;
+    }
     // getter, setter ======================================================================
     /**
      * @return the mMySelectedPosition

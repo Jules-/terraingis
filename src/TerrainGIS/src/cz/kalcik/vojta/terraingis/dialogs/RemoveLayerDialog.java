@@ -28,6 +28,7 @@ public class RemoveLayerDialog extends SimpleDialog
         spatialite.removeLayer(selectedVectorLayer.toString(),
                 selectedVectorLayer.getGeometrColumn());
         layerManager.loadSpatialite();
+        layersFragment.deselect();
         layersFragment.invalidateListView();
     }
 

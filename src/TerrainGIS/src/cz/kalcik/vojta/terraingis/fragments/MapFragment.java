@@ -49,7 +49,9 @@ public class MapFragment extends Fragment
     private Button mButtonRecordEndObject;
     private Button mButtonRecordPoint;
     private VectorLayer mAddPointSelectedLayer;
+    private VectorLayer mAutoRecordLayer = null;
     private Timer timer;
+    
 
     // public methods =====================================================
     /**
@@ -308,20 +310,24 @@ public class MapFragment extends Fragment
         public void onClick(View v)
         {
             LocationWorker locationWorker = mMainActivity.getLocationWorker();
+            // stop recording
             if(locationWorker.getCurrentTask() == LocationTask.AUTO_RECORD)
             {
                 locationWorker.setCurrentTask(LocationTask.IDLE);
             }
+            // start recording
             else if(locationWorker.getCurrentTask() == LocationTask.IDLE)
             {
                 locationWorker.setCurrentTask(LocationTask.AUTO_RECORD);
             }
             else if(locationWorker.getCurrentTask() == LocationTask.RECORD_POINT)
             {
+                // stop recording
                 if(locationWorker.getNextTask() == LocationTask.AUTO_RECORD)
                 {
                     locationWorker.setNextTask(LocationTask.IDLE);
                 }
+                // start recording
                 else if(locationWorker.getNextTask() == LocationTask.IDLE)
                 {
                     locationWorker.setNextTask(LocationTask.AUTO_RECORD);

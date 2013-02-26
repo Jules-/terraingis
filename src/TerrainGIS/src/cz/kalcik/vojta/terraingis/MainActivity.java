@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,11 +31,23 @@ public class MainActivity extends FragmentActivity
     public static final File DB_FILE = new File(APP_DIRECTORY.getAbsoluteFile()+"/db.sqlite");
     
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
+    private static final String MAIN_ACTIVITY_DATA = "MainActivityData";
     private static final String SHOWN_LAYERS = "ShownLayers";
     private static final String NEW_LAYER_DIALOG_TAG = "NewLayerDialog";
     private static final float MIN_WIDTH_PANEL_DP = 300;
     
     // properties =========================================================
+    public static class MainActivityData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        public boolean mRecordMode;
+
+        public MainActivityData(boolean mRecordMode)
+        {
+            this.mRecordMode = mRecordMode;
+        }
+    }
+    
     private MenuItem mMenuRunLocation;
     private MenuItem mMenuShowLocation;
     private MenuItem mMenuRecord;
@@ -45,7 +58,7 @@ public class MainActivity extends FragmentActivity
     private LayersFragment mLayersFragment;
     private LinearLayout mMapLayout;
     private LinearLayout mLayersLayout;
-    private boolean mRecordMode = false;
+    private MainActivityData data = new MainActivityData(false);
     
     // public methods =====================================================
     
@@ -149,7 +162,7 @@ public class MainActivity extends FragmentActivity
      */
     public boolean isRecordMode()
     {
-        return mRecordMode;
+        return data.mRecordMode;
     }
     
     /**
@@ -241,7 +254,7 @@ public class MainActivity extends FragmentActivity
         // record
         else if(mMenuRecord.getItemId() == id)
         {
-            if(mRecordMode)
+            if(data.mRecordMode)
             {
                 stopRecord();
             }
@@ -249,11 +262,6 @@ public class MainActivity extends FragmentActivity
             {
                 startRecord();
             }
-        }
-        // auto record
-        else if(mMenuRecord.getItemId() == id)
-        {
-
         }
         
         setActionBarIcons();
@@ -286,6 +294,9 @@ public class MainActivity extends FragmentActivity
         // gps state
         outState.putSerializable(LOCATION_WORKER_DATA, mLocationWorker.getData());
         
+        //MainActivity state
+        outState.putSerializable(MAIN_ACTIVITY_DATA, data);
+        
         super.onSaveInstanceState(outState);
     }
     
@@ -302,6 +313,10 @@ public class MainActivity extends FragmentActivity
         
         // GPS state
         mLocationWorker.setData(savedInstanceState.getSerializable(LOCATION_WORKER_DATA));
+        
+        //MainActivity state
+        data = (MainActivityData) savedInstanceState.getSerializable(MAIN_ACTIVITY_DATA);
+        
         setActionBarIcons();
     }
     
@@ -340,7 +355,7 @@ public class MainActivity extends FragmentActivity
         }
         
         // record icon
-        if(mRecordMode)
+        if(data.mRecordMode)
         {
             mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.record_on));
         }
@@ -355,7 +370,7 @@ public class MainActivity extends FragmentActivity
      */
     private void stopLocation()
     {
-        if(mRecordMode)
+        if(data.mRecordMode)
         {
             stopRecord();
         }
@@ -368,7 +383,7 @@ public class MainActivity extends FragmentActivity
      */
     private void startRecord()
     {
-        mRecordMode = true;
+        data.mRecordMode = true;
         if(!mLocationWorker.isRunLocation())
         {
             mLocationWorker.start();
@@ -381,7 +396,7 @@ public class MainActivity extends FragmentActivity
      */
     private void stopRecord()
     {
-        mRecordMode = false;
+        data.mRecordMode = false;
         mMapFragment.changeRecordButtons();
     }
     

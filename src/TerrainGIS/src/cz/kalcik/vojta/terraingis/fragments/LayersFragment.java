@@ -21,6 +21,7 @@ import com.mobeta.android.dslv.DragSortListView;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
@@ -94,7 +95,7 @@ public class LayersFragment extends Fragment
     {
         int position = mListView.getMySelectedPosition();
         
-        if(position < 0)
+        if(position < 0 || position >= mArrayAdapter.getCount())
         {
             return null;
         }
@@ -102,6 +103,14 @@ public class LayersFragment extends Fragment
         {
             return mArrayAdapter.getItem(position);
         }
+    }
+    
+    /**
+     * remove selection
+     */
+    public void deselect()
+    {
+        mListView.deselect();
     }
     
     /**
@@ -222,23 +231,31 @@ public class LayersFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            int selectedPosition = mListView.getMySelectedPosition();
-            if(selectedPosition < 0)
+            AbstractLayer selectedLayer = getSelectedLayer();
+            if(selectedLayer == null)
             {
                 Toast.makeText(mMainActivity, R.string.not_selected_layer, Toast.LENGTH_LONG).show();
                 return;
             }
             
-            AbstractLayer layer = (AbstractLayer)mListView.getItemAtPosition(selectedPosition);
             SpatiaLiteManager spatialite = mLayerManager.getSpatialiteManager();
             
-            int from = layer.getSrid();
+            int from = selectedLayer.getSrid();
             int to = mLayerManager.getSrid();
-            Envelope envelope = layer.getEnvelope();
+            Envelope envelope = selectedLayer.getEnvelope();
             
             if(from != to)
             {
                 envelope = spatialite.transformSRSEnvelope(envelope, from, to);
+            }
+            
+            // empty layer
+            if(envelope.getWidth() < Settings.MIN_M_DISTANCE)
+            {
+                String message = getString(R.string.empty_layer_error);
+                Toast.makeText(mMainActivity, String.format(message, selectedLayer.toString()),
+                        Toast.LENGTH_LONG).show();
+                return;
             }
             
             mMainActivity.getMap().zoomToEnvelopeM(envelope);
