@@ -22,12 +22,14 @@ public class Settings
     
     // constants ==========================================================================
     public static final double MIN_M_DISTANCE = 0.000001;
-        
+    public static final int LOCATION_MINDIST_DEFAULT = 3; 
+    
     // attributes ===================================================================
     private int locationIcon = R.drawable.location;
     private boolean hideActionBar = true;
     private int timeHideActionBar = 5000;
     private int mAutoRecordMinDist = 10;
+    private int mLocationMinTime = 2000;
     
     // getters, setters =============================================================
     
@@ -70,8 +72,24 @@ public class Settings
     /**
      * @param mAutoRecordMinDist the mAutoRecordMinDist to set
      */
-    public void setAutoRecordMinDist(int mAutoRecordMinDist)
+    public void setAutoRecordMinDist(int autoRecordMinDist)
     {
-        this.mAutoRecordMinDist = mAutoRecordMinDist;
+        this.mAutoRecordMinDist = autoRecordMinDist;
+    }
+    
+    /**
+     * @return the mLocationMinTime
+     */
+    public int getLocationMinTime()
+    {
+        return mLocationMinTime;
+    }
+
+    /**
+     * @param mLocationMinTime the mLocationMinTime to set
+     */
+    public void setLocationMinTime(int locationMinTime)
+    {
+        this.mLocationMinTime = locationMinTime;
     }
 }

@@ -18,7 +18,6 @@ import android.widget.Toast;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import cz.kalcik.vojta.terraingis.components.LocationWorker;
-import cz.kalcik.vojta.terraingis.components.LocationWorker.LocationTask;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
@@ -92,9 +91,7 @@ public class MapFragment extends Fragment
             }
             
             //run automatic recording
-            if(locationWorker.getCurrentTask() == LocationTask.AUTO_RECORD ||
-                    (locationWorker.getCurrentTask() == LocationTask.RECORD_POINT &&
-                    locationWorker.getNextTask() == LocationTask.AUTO_RECORD))
+            if(locationWorker.isRunAutoRecord())
             {
                 showAutoButton = true;
             }
@@ -121,20 +118,9 @@ public class MapFragment extends Fragment
         if(showAutoButton)
         {
             mButtonRecordAuto.setVisibility(View.VISIBLE);
-            if(locationWorker.getCurrentTask() == LocationTask.AUTO_RECORD)
+            if(locationWorker.isRunAutoRecord())
             {
                 mButtonRecordAuto.setText(R.string.record_auto_stop);
-            }
-            else if(locationWorker.getCurrentTask() == LocationTask.RECORD_POINT)
-            {
-                if(locationWorker.getNextTask() == LocationTask.AUTO_RECORD)
-                {
-                    mButtonRecordAuto.setText(R.string.record_auto_stop);
-                }
-                else if(locationWorker.getNextTask() == LocationTask.IDLE)
-                {
-                    mButtonRecordAuto.setText(R.string.record_auto_start);
-                }
             }
             else
             {
@@ -187,6 +173,22 @@ public class MapFragment extends Fragment
         {
             recordPoint(location, layer);
         }
+    }
+
+    /**
+     * add recorded points
+     * @param points
+     */
+    public void recordPointsAuto(ArrayList<Coordinate> points)
+    {
+        VectorLayer layer = mAutoRecordLayer;
+        if(layer != null)
+        {
+            layer.addPoints(points);
+        }
+        
+        changeRecordButtons();
+        map.invalidate();
     }
     
     /**
@@ -315,14 +317,9 @@ public class MapFragment extends Fragment
                 selectedLayer.endObject();
                 
                 LocationWorker locationWorker = mMainActivity.getLocationWorker();
-                if(locationWorker.getCurrentTask() == LocationTask.AUTO_RECORD)
+                if(locationWorker.equals(mAutoRecordLayer) && locationWorker.isRunAutoRecord())
                 {
-                    locationWorker.setCurrentTask(LocationTask.IDLE);
-                }
-                else if(locationWorker.getCurrentTask() == LocationTask.RECORD_POINT)
-                {
-                    cancelTimer();
-                    locationWorker.setNextTask(LocationTask.IDLE);
+                    locationWorker.setRunAutoRecord(false);
                 }
             }
             catch (CreateObjectException e)
@@ -343,34 +340,9 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            boolean runAutoRecord = false;
-            
             LocationWorker locationWorker = mMainActivity.getLocationWorker();
-            // stop recording
-            if(locationWorker.getCurrentTask() == LocationTask.AUTO_RECORD)
-            {
-                locationWorker.setCurrentTask(LocationTask.IDLE);
-            }
-            // start recording
-            else if(locationWorker.getCurrentTask() == LocationTask.IDLE)
-            {
-                locationWorker.setCurrentTask(LocationTask.AUTO_RECORD);
-                runAutoRecord = true;
-            }
-            else if(locationWorker.getCurrentTask() == LocationTask.RECORD_POINT)
-            {
-                // stop recording
-                if(locationWorker.getNextTask() == LocationTask.AUTO_RECORD)
-                {
-                    locationWorker.setNextTask(LocationTask.IDLE);
-                }
-                // start recording
-                else if(locationWorker.getNextTask() == LocationTask.IDLE)
-                {
-                    locationWorker.setNextTask(LocationTask.AUTO_RECORD);
-                    runAutoRecord = true;
-                }
-            }
+            boolean runAutoRecord = !locationWorker.isRunAutoRecord();
+            locationWorker.setRunAutoRecord(runAutoRecord);
             
             if(runAutoRecord)
             {
@@ -410,7 +382,7 @@ public class MapFragment extends Fragment
     {
         public void run()
         {
-            mMainActivity.getLocationWorker().setCurrentToNextLocationTask();
+            mMainActivity.getLocationWorker().stopRecordingPoint();
             Toast.makeText(mMainActivity, R.string.record_point_error, Toast.LENGTH_LONG).show();
         }
     };

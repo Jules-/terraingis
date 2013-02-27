@@ -135,6 +135,53 @@ public class SpatiaLiteManager
     
     /**
      * transform coordinates between two srs
+     * @param points
+     * @param from
+     * @param to
+     * @return
+     */
+    public ArrayList<Coordinate> transformSRS(ArrayList<Coordinate> points, int from, int to)
+    {
+        if(from == to)
+        {
+            return (ArrayList<Coordinate>)points.clone();
+        }
+        
+        try
+        {            
+            Stmt stmt = db.prepare("SELECT AsBinary(Transform(MakePoint(?, ?, ?), ?))");
+            
+            ArrayList<Coordinate> result = new ArrayList<Coordinate>();
+            for(Coordinate point: points)
+            {
+                stmt.bind(1, point.x);
+                stmt.bind(2, point.y);
+                stmt.bind(3, from);
+                stmt.bind(4, to);
+                if(stmt.step())
+                {
+                    result.add(wkbReader.read(stmt.column_bytes(0)).getCoordinate());
+                }
+                
+                stmt.clear_bindings();
+                stmt.reset();
+            }
+            return result;
+        }
+        catch (ParseException e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return null;         
+    }
+ 
+    /**
+     * transform coordinates between two srs
      * @param point
      * @param from
      * @param to

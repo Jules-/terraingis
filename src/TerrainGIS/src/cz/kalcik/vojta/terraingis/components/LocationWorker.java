@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis.components;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -9,6 +10,7 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +20,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -26,47 +30,47 @@ import android.util.Log;
  * @author jules
  *
  */
-public class LocationWorker
+public class LocationWorker extends Service
 {
     // constants =====================================================================
-    private final int MINTIME = 2000;
-    private final int MINDIST = 3;   
     private final FixReceiver FIX_RECEIVER = new FixReceiver();
     private final IntentFilter INTENT_FILTER = new IntentFilter("android.location.GPS_FIX_CHANGE");
     
     private enum ProviderType {GPS, BOTH};
-    public enum LocationTask {IDLE, RECORD_POINT, AUTO_RECORD};
-    
     // data =========================================================================
     public static class LocationWorkerData implements Serializable
     {
         private static final long serialVersionUID = 1L;
         public boolean runLocation;
-        public int idleMindist;
-        public LocationTask currentTask;
-        public LocationTask nextTask;
+        public int currentMindist;
+        public boolean runAutoRecord;
+        public boolean runAddPointRecord;
 
-        public LocationWorkerData(boolean runLocation, int idleMindist, LocationTask currentTask)
+        public LocationWorkerData(boolean runLocation, int currentMindist,
+                boolean runAutoRecord, boolean runAddPointRecord)
         {
             this.runLocation = runLocation;
-            this.idleMindist = idleMindist;
-            this.currentTask = currentTask;
+            this.currentMindist = currentMindist;
+            this.runAutoRecord = runAutoRecord;
+            this.runAddPointRecord = runAddPointRecord;
         }
     }
     
     // attributes ====================================================================
     private LocationManager locationManager;
-    private LocationListener locationListener;
+    private LocationListener mDefaultLocationListener;
+    private LocationListener mAutoRecordLocationListener;
+    private LocationListener mRecordPointLocationListener;
     private MainActivity mMainActivity;
     private Settings mSettings = Settings.getInstance();
     private MapFragment mMapFragment;
     private MapView map;
     private boolean hasGPS;
     private ProviderType currentProvider;
-    private LocationWorkerData data = new LocationWorkerData(false, MINDIST, LocationTask.IDLE);
+    private LocationWorkerData data = new LocationWorkerData(false, Settings.LOCATION_MINDIST_DEFAULT, false, false);
     private boolean validGPS = true; // for external bluetooth GPS
-    private int mCurrentMintime = MINTIME;
-    private int mCurrentMindist = data.idleMindist;    
+    private boolean isPaused = false;
+    private ArrayList<Coordinate> mRecordedPoints = new ArrayList<Coordinate>();
     
     /**
      * constructor
@@ -82,7 +86,9 @@ public class LocationWorker
         locationManager = 
                 (LocationManager) mainActivity.getSystemService(Context.LOCATION_SERVICE);
         
-        locationListener = new MyLocationListener(map);
+        mDefaultLocationListener = new DefaultLocationListener(map);
+        mAutoRecordLocationListener = new AutoRecordLocationListener();
+        mRecordPointLocationListener = new RecordPointLocationListener();
     }
     
     // public methods ================================================================
@@ -112,9 +118,16 @@ public class LocationWorker
     /**
      * resume location service
      */
-    public void resume()
+    public synchronized void resume()
     {
-        if(data.runLocation)
+        isPaused = false;
+        if(mRecordedPoints.size() > 0)
+        {
+            mMapFragment.recordPointsAuto(mRecordedPoints);
+            mRecordedPoints.clear();
+        }
+        
+        if(!data.runAutoRecord && data.runLocation)
         {
             startLocation();
         }
@@ -125,21 +138,13 @@ public class LocationWorker
      */
     public void pause()
     {
-        if(data.runLocation && data.currentTask != LocationTask.AUTO_RECORD)
+        isPaused = true;
+        if(!data.runAutoRecord && data.runLocation)
         {
             stopLocation();
-        }        
+        }
     }
     
-    /**
-     * set current location task to previous task
-     */
-    public void setCurrentToNextLocationTask()
-    {
-        data.currentTask = data.nextTask;
-
-        processChangeTask();
-    }
     // getter setter =================================================================
     
     public LocationWorkerData getData()
@@ -162,40 +167,53 @@ public class LocationWorker
      */
     public boolean recordPoint()
     {
-        if(data.currentTask == LocationTask.RECORD_POINT)
+        if(data.runAddPointRecord)
         {
             return false;
         }
         
-        data.nextTask = data.currentTask;
-        data.currentTask = LocationTask.RECORD_POINT;
-        
-        processChangeTask();
+        data.runAddPointRecord = true;        
+        switchProvider();
         
         return true;
     }
 
-    public LocationTask getCurrentTask()
+    /**
+     * stop recording point
+     */
+    public void stopRecordingPoint()
     {
-        return data.currentTask;
+        data.runAddPointRecord = false;
+        switchProvider();
     }
+    
+    /**
+     * @return data.runAutoRecord
+     */
+    public boolean isRunAutoRecord()
+    {
+        return data.runAutoRecord;
+    }
+    
+    /**
+     * set auto recording
+     * @param runAutoRecord
+     */
+    public void setRunAutoRecord(boolean runAutoRecord)
+    {
+        data.runAutoRecord = runAutoRecord;
 
-    public void setCurrentTask(LocationTask task)
-    {
-        data.currentTask = task;
-        
-        processChangeTask();
+        switchProvider();
     }
-
-    public LocationTask getNextTask()
+    
+    // on methods ====================================================================
+    @Override
+    public IBinder onBind(Intent intent)
     {
-        return data.nextTask;
+        // TODO Auto-generated method stub
+        return null;
     }
-
-    public void setNextTask(LocationTask task)
-    {
-        data.nextTask = task;
-    }
+    
     // private methods ===============================================================
     /**
      * check if device has GPS
@@ -226,7 +244,20 @@ public class LocationWorker
     {
         if(hasGPS)
         {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mCurrentMintime, mCurrentMindist, locationListener);
+            // default
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mSettings.getLocationMinTime(),
+                    data.currentMindist, mDefaultLocationListener);
+            // auto record
+            if(data.runAutoRecord)
+            {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mSettings.getLocationMinTime(),
+                        mSettings.getAutoRecordMinDist(), mAutoRecordLocationListener);
+            }
+            // add point record
+            if(data.runAddPointRecord)
+            {
+                locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, mRecordPointLocationListener, Looper.getMainLooper());
+            }
             
             mMainActivity.registerReceiver(FIX_RECEIVER, INTENT_FILTER);
         }        
@@ -237,7 +268,20 @@ public class LocationWorker
      */
     private void runNetwork()
     {
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mCurrentMintime, mCurrentMindist, locationListener);       
+        // default
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mSettings.getLocationMinTime(),
+                data.currentMindist, mDefaultLocationListener);
+        // auto record
+        if(data.runAutoRecord)
+        {
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mSettings.getLocationMinTime(),
+                    mSettings.getAutoRecordMinDist(), mAutoRecordLocationListener);
+        }
+        // add point record
+        if(data.runAddPointRecord)
+        {
+            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, mRecordPointLocationListener, Looper.getMainLooper());
+        }
     }
 
     /**
@@ -260,7 +304,9 @@ public class LocationWorker
             mMainActivity.unregisterReceiver(FIX_RECEIVER);
         }
         
-        locationManager.removeUpdates(locationListener);
+        locationManager.removeUpdates(mDefaultLocationListener);
+        locationManager.removeUpdates(mAutoRecordLocationListener);
+        locationManager.removeUpdates(mRecordPointLocationListener);
     }
     
     /**
@@ -282,49 +328,27 @@ public class LocationWorker
     }
     
     /**
-     * process recordin one point; cancel timer and change task
+     * process manual recording one point; cancel timer and change task
      */
     private void processRecordingPoint(Location location)
     {
         mMapFragment.cancelTimer();
-        setCurrentToNextLocationTask();
+        data.runAddPointRecord = false;
+        switchProvider();
         
         Coordinate point = new Coordinate(location.getLongitude(), location.getLatitude(), location.getAltitude());
         
         mMapFragment.recordPointAdd(point); 
     }
     
-    /**
-     * process change of task
-     */
-    private void processChangeTask()
-    {
-        if(data.currentTask == LocationTask.IDLE)
-        {
-            mCurrentMindist = data.idleMindist;
-            mCurrentMintime = MINTIME;
-        }
-        else if(data.currentTask == LocationTask.RECORD_POINT)
-        {
-            mCurrentMindist = 0;
-            mCurrentMintime = 0;            
-        }
-        else if(data.currentTask == LocationTask.AUTO_RECORD)
-        {
-            mCurrentMindist = mSettings.getAutoRecordMinDist();
-            mCurrentMintime = MINTIME;            
-        }
-        
-        switchProvider();        
-    }
     // classes =======================================================================
     
     /**
-     * Location listener
+     * Location listener for default communication with Location services
      * @author jules
      *
      */
-    class MyLocationListener implements LocationListener
+    class DefaultLocationListener implements LocationListener
     {
         private MapView map;
         private Coordinate locationPoint = new Coordinate();
@@ -333,7 +357,7 @@ public class LocationWorker
          * constructor
          * @param map
          */
-        public MyLocationListener(MapView map)
+        public DefaultLocationListener(MapView map)
         {
             this.map = map;
         }
@@ -358,13 +382,35 @@ public class LocationWorker
                 map.setLocationValid(false);
                 return;
             }
+            
 
-            processLocation(location);
+            float accuracy = location.getAccuracy();
+            
+            // change mindist by accuracy
+            if(accuracy < Settings.LOCATION_MINDIST_DEFAULT * 2)
+            {
+                data.currentMindist = 0;
+            }
+            else
+            {
+                data.currentMindist = Settings.LOCATION_MINDIST_DEFAULT;
+            }
+            
+            // if paused
+            if(isPaused)
+            {
+                return;
+            }
+            
+            locationPoint.x = location.getLongitude();
+            locationPoint.y = location.getLatitude();
+            locationPoint.z = location.getAltitude();
+            
+            map.setLonLatLocation(locationPoint);
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras)
         {
-            Log.d("TerrainGIS", String.format("onStatusChanged %d %s", status, provider));
             if(provider.equals(LocationManager.GPS_PROVIDER) && status != LocationProvider.AVAILABLE)
             {
                 validGPS = false;
@@ -382,7 +428,6 @@ public class LocationWorker
 
         public void onProviderEnabled(String provider)
         {
-            Log.d("TerrainGIS", String.format("onProviderEnabled %s", provider));
             if(provider.equals(LocationManager.GPS_PROVIDER))
             {
                 currentProvider = ProviderType.BOTH;
@@ -392,48 +437,84 @@ public class LocationWorker
 
         public void onProviderDisabled(String provider)
         {
-            Log.d("TerrainGIS", String.format("onProviderDisabled %s", provider));
+            
+        }
+    }
+
+    /**
+     * Location listener for automatic recording
+     * @author jules
+     *
+     */
+    class AutoRecordLocationListener implements LocationListener
+    {
+
+        @Override
+        public synchronized void onLocationChanged(Location location)
+        {
+            Coordinate point = new Coordinate(location.getLongitude(), location.getLatitude(), location.getAltitude());
+            if(isPaused)
+            {
+                mRecordedPoints.add(point);
+            }
+            else
+            {
+                mMapFragment.recordPointAuto(point);
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras)
+        {
+            
+        }
+
+        @Override
+        public void onProviderEnabled(String provider)
+        {
+            
+        }
+
+        @Override
+        public void onProviderDisabled(String provider)
+        {
+            
         }
         
-        // private methods =============
-        /**
-         * process valid location
-         * @param location
-         */
-        private void processLocation(Location location)
+    }
+    
+    /**
+     * Location listener for automatic recording
+     * @author jules
+     *
+     */
+    class RecordPointLocationListener implements LocationListener
+    {
+
+        @Override
+        public synchronized void onLocationChanged(Location location)
         {
-            locationPoint.x = location.getLongitude();
-            locationPoint.y = location.getLatitude();
-            locationPoint.z = location.getAltitude();
-            // TODO - not when display is off
-            map.setLonLatLocation(locationPoint);
-            
-            // check LocationTask
-            if(data.currentTask == LocationTask.IDLE)
-            {
-                float accuracy = location.getAccuracy();
-                
-                // change mindist by accuracy
-                if(accuracy < MINDIST * 2)
-                {
-                    data.idleMindist = 0;
-                }
-                else
-                {
-                    data.idleMindist = MINDIST;
-                }
-            }
-            else if(data.currentTask == LocationTask.RECORD_POINT)
-            {
-                processRecordingPoint(location);
-            }
-            else if(data.currentTask == LocationTask.AUTO_RECORD)
-            {
-                Coordinate point = new Coordinate(location.getLongitude(), location.getLatitude(), location.getAltitude());
-                
-                mMapFragment.recordPointAuto(point); 
-            }
+            processRecordingPoint(location);           
         }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras)
+        {
+            
+        }
+
+        @Override
+        public void onProviderEnabled(String provider)
+        {
+            
+        }
+
+        @Override
+        public void onProviderDisabled(String provider)
+        {
+            
+        }
+        
     }
     
     /**
