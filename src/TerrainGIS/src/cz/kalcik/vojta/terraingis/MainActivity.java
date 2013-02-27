@@ -317,6 +317,7 @@ public class MainActivity extends FragmentActivity
         //MainActivity state
         data = (MainActivityData) savedInstanceState.getSerializable(MAIN_ACTIVITY_DATA);
         
+        mMapFragment.changeRecordButtons();
         setActionBarIcons();
     }
     

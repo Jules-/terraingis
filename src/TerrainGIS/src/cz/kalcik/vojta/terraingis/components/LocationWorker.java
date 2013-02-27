@@ -395,7 +395,7 @@ public class LocationWorker
             Log.d("TerrainGIS", String.format("onProviderDisabled %s", provider));
         }
         
-        // private mthods =============
+        // private methods =============
         /**
          * process valid location
          * @param location

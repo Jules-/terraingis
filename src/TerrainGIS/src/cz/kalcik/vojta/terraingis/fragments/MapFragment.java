@@ -30,15 +30,16 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 
 /**
- * fragment with MapView
  * @author jules
- *
+ * fragment with MapView
  */
 public class MapFragment extends Fragment
 {
     // constants ==========================================================
-    private static String MAP_VIEW_DATA = "MapViewData";
-    private static String LAYERS_DATA = "LayersData";
+    private static String MAP_VIEW_DATA = "cz.kalcik.vojta.terraingis.MapViewData";
+    private static String LAYERS_DATA = "cz.kalcik.vojta.terraingis.LayersData";
+    private static String ADD_POINT_LAYER = "cz.kalcik.vojta.terraingis.AddPointLayer";
+    private static String AUTO_RECORD_LAYER = "cz.kalcik.vojta.terraingis.AutoRecordLayer";
     private static int TIMER_TIME = 3000;
     
     // properties =========================================================
@@ -48,7 +49,7 @@ public class MapFragment extends Fragment
     private Button mButtonRecordAuto;
     private Button mButtonRecordEndObject;
     private Button mButtonRecordPoint;
-    private VectorLayer mAddPointSelectedLayer;
+    private VectorLayer mAddPointLayer = null;
     private VectorLayer mAutoRecordLayer = null;
     private Timer timer;
     
@@ -168,7 +169,7 @@ public class MapFragment extends Fragment
      */
     public void recordPointAdd(Coordinate location)
     {
-        VectorLayer layer = mAddPointSelectedLayer;
+        VectorLayer layer = mAddPointLayer;
         if(layer != null)
         {
             recordPoint(location, layer);
@@ -239,6 +240,11 @@ public class MapFragment extends Fragment
             map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
             // layers data
             mLayerManager.setData((ArrayList<AbstractLayerData>)savedInstanceState.getSerializable(LAYERS_DATA));
+            // recording layers
+            String autoRecordString = savedInstanceState.getString(AUTO_RECORD_LAYER);
+            mAutoRecordLayer = autoRecordString.isEmpty() ? null : mLayerManager.getLayerByName(autoRecordString);
+            String addPointString = savedInstanceState.getString(ADD_POINT_LAYER);
+            mAddPointLayer = addPointString.isEmpty() ? null : mLayerManager.getLayerByName(addPointString);
         }
     }
 
@@ -249,6 +255,11 @@ public class MapFragment extends Fragment
         outState.putSerializable(MAP_VIEW_DATA, map.getData());
         // Layers data
         outState.putSerializable(LAYERS_DATA, mLayerManager.getData());
+        // recording layers
+        String autoRecordString = mAutoRecordLayer != null ? mAutoRecordLayer.toString() : "" ;
+        outState.putString(AUTO_RECORD_LAYER, autoRecordString);
+        String addPointString = mAddPointLayer != null ? mAddPointLayer.toString() : "" ;
+        outState.putString(ADD_POINT_LAYER, addPointString);
         
         super.onSaveInstanceState(outState);
     }
@@ -273,7 +284,7 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            mAddPointSelectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+            mAddPointLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
             if(!mMainActivity.getLocationWorker().recordPoint())
             {
                 Toast.makeText(mMainActivity, R.string.record_point_busy_error, Toast.LENGTH_LONG).show();

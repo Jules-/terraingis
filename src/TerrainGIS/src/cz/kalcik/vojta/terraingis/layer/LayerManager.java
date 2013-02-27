@@ -164,11 +164,21 @@ public class LayerManager
         spatialiteManager.createVirtualShape(path, name, encoding, srid);
     }
 
+    /**
+     * convert lon lat coordinates to meters
+     * @param input
+     * @return
+     */
     public Coordinate lonLatWGS84ToM(Coordinate input)
     {        
         return spatialiteManager.transformSRS(input, SpatiaLiteManager.EPSG_LONLAT, srid);
     }
     
+    /**
+     * convert meters coordinates to lon lat
+     * @param input
+     * @return
+     */
     public Coordinate mToLonLatWGS84(Coordinate input)
     {
         return spatialiteManager.transformSRS(input, srid, SpatiaLiteManager.EPSG_LONLAT);
@@ -227,6 +237,24 @@ public class LayerManager
             layer.setData(dataLayer);
             layers.add(layer);
         }
+    }
+    
+    /**
+     * find layer with name
+     * @param name
+     * @return
+     */
+    public VectorLayer getLayerByName(String name)
+    {
+        for(AbstractLayer layer: layers)
+        {
+            if(layer.toString().equals(name) && layer instanceof VectorLayer)
+            {
+                return (VectorLayer)layer;
+            }
+        }
+        
+        return null;
     }
     // getter setter =======================================================================
     
