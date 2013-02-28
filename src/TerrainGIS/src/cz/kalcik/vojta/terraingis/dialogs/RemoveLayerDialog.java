@@ -21,7 +21,8 @@ public class RemoveLayerDialog extends SimpleDialog
     @Override
     protected void execute()
     {
-        LayersFragment layersFragment = ((MainActivity)getActivity()).getLayersFragment();
+        MainActivity mainActivity = (MainActivity)getActivity();
+        LayersFragment layersFragment = mainActivity.getLayersFragment();
         VectorLayer selectedVectorLayer = (VectorLayer)layersFragment.getSelectedLayer();       
         LayerManager layerManager = LayerManager.getInstance();
         SpatiaLiteManager spatialite = layerManager.getSpatialiteManager();
@@ -29,7 +30,9 @@ public class RemoveLayerDialog extends SimpleDialog
                 selectedVectorLayer.getGeometrColumn());
         layerManager.loadSpatialite();
         layersFragment.deselect();
+        
         layersFragment.invalidateListView();
+        mainActivity.getMap().invalidate();
     }
 
 }

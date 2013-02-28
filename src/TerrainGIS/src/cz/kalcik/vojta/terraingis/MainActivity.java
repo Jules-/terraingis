@@ -248,7 +248,7 @@ public class MainActivity extends FragmentActivity
         {
             if(!mMapFragment.getMap().showLocation())
             {
-                Toast.makeText(this, R.string.warning_location_fix, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.location_fix_error, Toast.LENGTH_LONG).show();
             }
         }
         // record

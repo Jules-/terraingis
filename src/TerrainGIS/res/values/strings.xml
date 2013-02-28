@@ -5,7 +5,7 @@
     <string name="positive_button">OK</string>
     <string name="negative_button">Cancel</string>
     <!-- error messages -->
-    <string name="warning_location_fix">Location is not fix!</string>
+    <string name="location_fix_error">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>
     <string name="name_error">Name can not be empty!</string>
     <string name="name_exist_error">The layer %s exist!</string>
@@ -18,8 +18,6 @@
     <string name="record_end_object">End object</string>
     <string name="record_auto_start">Start automatic</string>
     <string name="record_auto_stop">Stop automatic</string>
-    <string name="record_point_error">Location service is not fix.</string>
-    <string name="record_point_busy_error">Waiting for previous point.</string>
     <!-- icon titles -->
     <string name="title_record">on/off recording</string>
     <string name="title_gps">on/off location service</string>

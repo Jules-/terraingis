@@ -111,6 +111,8 @@ public class LayersFragment extends Fragment
     public void deselect()
     {
         mListView.deselect();
+        
+        mMainActivity.getMapFragment().changeRecordButtons();
     }
     
     /**
@@ -301,7 +303,7 @@ public class LayersFragment extends Fragment
     };
     
     /**
-     * open dialog for add layer
+     * open dialog for remove layer
      */
     View.OnClickListener removeLayerHandler = new View.OnClickListener()
     {

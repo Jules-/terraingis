@@ -37,9 +37,6 @@ public class MapFragment extends Fragment
     // constants ==========================================================
     private static String MAP_VIEW_DATA = "cz.kalcik.vojta.terraingis.MapViewData";
     private static String LAYERS_DATA = "cz.kalcik.vojta.terraingis.LayersData";
-    private static String ADD_POINT_LAYER = "cz.kalcik.vojta.terraingis.AddPointLayer";
-    private static String AUTO_RECORD_LAYER = "cz.kalcik.vojta.terraingis.AutoRecordLayer";
-    private static int TIMER_TIME = 3000;
     
     // properties =========================================================
     private MapView map;
@@ -48,9 +45,6 @@ public class MapFragment extends Fragment
     private Button mButtonRecordAuto;
     private Button mButtonRecordEndObject;
     private Button mButtonRecordPoint;
-    private VectorLayer mAddPointLayer = null;
-    private VectorLayer mAutoRecordLayer = null;
-    private Timer timer;
     
 
     // public methods =====================================================
@@ -62,8 +56,6 @@ public class MapFragment extends Fragment
         boolean showObjectButton = false;
         boolean showPointButton = false;
         boolean showAutoButton = false;
-        
-        LocationWorker locationWorker = mMainActivity.getLocationWorker();
         
         if(mMainActivity.isRecordMode())
         {
@@ -81,7 +73,7 @@ public class MapFragment extends Fragment
                     // object button
                     if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
                     {
-                        showAutoButton = true;
+//                        showAutoButton = true;
                         if (selectedVectorLayer.haveOpenedRecordObject())
                         {
                             showObjectButton = true;
@@ -91,10 +83,10 @@ public class MapFragment extends Fragment
             }
             
             //run automatic recording
-            if(locationWorker.isRunAutoRecord())
-            {
-                showAutoButton = true;
-            }
+//            if(locationWorker.isRunAutoRecord())
+//            {
+//                showAutoButton = true;
+//            }
         }
         
         if(showObjectButton)
@@ -117,89 +109,19 @@ public class MapFragment extends Fragment
         
         if(showAutoButton)
         {
-            mButtonRecordAuto.setVisibility(View.VISIBLE);
-            if(locationWorker.isRunAutoRecord())
-            {
-                mButtonRecordAuto.setText(R.string.record_auto_stop);
-            }
-            else
-            {
-                mButtonRecordAuto.setText(R.string.record_auto_start);
-            }
+//            mButtonRecordAuto.setVisibility(View.VISIBLE);
+//            if(locationWorker.isRunAutoRecord())
+//            {
+//                mButtonRecordAuto.setText(R.string.record_auto_stop);
+//            }
+//            else
+//            {
+//                mButtonRecordAuto.setText(R.string.record_auto_start);
+//            }
         }
         else
         {
             mButtonRecordAuto.setVisibility(View.GONE);
-        }
-    }
-    
-    /**
-     * add point to selected layer
-     * @param location
-     */
-    public void recordPoint(Coordinate location, VectorLayer layer)
-    {
-        layer.addPoint(location);
-        if(layer.getType() == VectorLayerType.POINT)
-        {
-            layer.endObject();
-        }
-        
-        changeRecordButtons();
-        map.invalidate();
-    }
-    
-    /**
-     * record manual one point
-     * @param location
-     */
-    public void recordPointAdd(Coordinate location)
-    {
-        VectorLayer layer = mAddPointLayer;
-        if(layer != null)
-        {
-            recordPoint(location, layer);
-        }
-    }
-
-    /**
-     * record automatic one point
-     * @param location
-     */
-    public void recordPointAuto(Coordinate location)
-    {
-        VectorLayer layer = mAutoRecordLayer;
-        if(layer != null)
-        {
-            recordPoint(location, layer);
-        }
-    }
-
-    /**
-     * add recorded points
-     * @param points
-     */
-    public void recordPointsAuto(ArrayList<Coordinate> points)
-    {
-        VectorLayer layer = mAutoRecordLayer;
-        if(layer != null)
-        {
-            layer.addPoints(points);
-        }
-        
-        changeRecordButtons();
-        map.invalidate();
-    }
-    
-    /**
-     * cancel timer for record point
-     */
-    public void cancelTimer()
-    {
-        if(timer != null)
-        {
-            timer.cancel();
-            timer.purge();
         }
     }
     // getter, setter =====================================================
@@ -242,11 +164,6 @@ public class MapFragment extends Fragment
             map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
             // layers data
             mLayerManager.setData((ArrayList<AbstractLayerData>)savedInstanceState.getSerializable(LAYERS_DATA));
-            // recording layers
-            String autoRecordString = savedInstanceState.getString(AUTO_RECORD_LAYER);
-            mAutoRecordLayer = autoRecordString.isEmpty() ? null : mLayerManager.getLayerByName(autoRecordString);
-            String addPointString = savedInstanceState.getString(ADD_POINT_LAYER);
-            mAddPointLayer = addPointString.isEmpty() ? null : mLayerManager.getLayerByName(addPointString);
         }
     }
 
@@ -257,11 +174,6 @@ public class MapFragment extends Fragment
         outState.putSerializable(MAP_VIEW_DATA, map.getData());
         // Layers data
         outState.putSerializable(LAYERS_DATA, mLayerManager.getData());
-        // recording layers
-        String autoRecordString = mAutoRecordLayer != null ? mAutoRecordLayer.toString() : "" ;
-        outState.putString(AUTO_RECORD_LAYER, autoRecordString);
-        String addPointString = mAddPointLayer != null ? mAddPointLayer.toString() : "" ;
-        outState.putString(ADD_POINT_LAYER, addPointString);
         
         super.onSaveInstanceState(outState);
     }
@@ -286,19 +198,22 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            mAddPointLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-            if(!mMainActivity.getLocationWorker().recordPoint())
+            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+            Coordinate location = map.getLocation();
+            if(location == null)
             {
-                Toast.makeText(mMainActivity, R.string.record_point_busy_error, Toast.LENGTH_LONG).show();
-            }
-            // run check time
-            else
+                Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
+                return;
+            }            
+            
+            selectedLayer.addPoint(location, mLayerManager.getSrid());
+            if(selectedLayer.getType() == VectorLayerType.POINT)
             {
-                cancelTimer();
-         
-                timer = new Timer();
-                timer.schedule(new RecordPointFail(), TIMER_TIME);                
+                selectedLayer.endObject();
             }
+            
+            changeRecordButtons();
+            map.invalidate();
         }        
     };
     
@@ -316,11 +231,11 @@ public class MapFragment extends Fragment
             {
                 selectedLayer.endObject();
                 
-                LocationWorker locationWorker = mMainActivity.getLocationWorker();
-                if(locationWorker.equals(mAutoRecordLayer) && locationWorker.isRunAutoRecord())
-                {
-                    locationWorker.setRunAutoRecord(false);
-                }
+//                LocationWorker locationWorker = mMainActivity.getLocationWorker();
+//                if(locationWorker.equals(mAutoRecordLayer) && locationWorker.isRunAutoRecord())
+//                {
+//                    locationWorker.setRunAutoRecord(false);
+//                }
             }
             catch (CreateObjectException e)
             {
@@ -340,50 +255,22 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            LocationWorker locationWorker = mMainActivity.getLocationWorker();
-            boolean runAutoRecord = !locationWorker.isRunAutoRecord();
-            locationWorker.setRunAutoRecord(runAutoRecord);
-            
-            if(runAutoRecord)
-            {
-                mAutoRecordLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-            }
-            else
-            {
-                mAutoRecordLayer = null;
-            }
-            
-            changeRecordButtons();
+//            LocationWorker locationWorker = mMainActivity.getLocationWorker();
+//            boolean runAutoRecord = !locationWorker.isRunAutoRecord();
+//            locationWorker.setRunAutoRecord(runAutoRecord);
+//            
+//            if(runAutoRecord)
+//            {
+//                mAutoRecordLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+//            }
+//            else
+//            {
+//                mAutoRecordLayer = null;
+//            }
+//            
+//            changeRecordButtons();
         }        
     };
     
     // classes =================================================================
-    /**
-     * run when fail getting current point
-     * @author jules
-     *
-     */
-    class RecordPointFail extends TimerTask
-    {        
-        private RecordPointFailRunnable recordPointFailRunnable = new RecordPointFailRunnable();
-
-        public void run()
-        {
-            mMainActivity.runOnUiThread(recordPointFailRunnable);
-        }
-    }
-    
-    /**
-     * show message for fail getting current point
-     * @author jules
-     *
-     */
-    class RecordPointFailRunnable implements Runnable
-    {
-        public void run()
-        {
-            mMainActivity.getLocationWorker().stopRecordingPoint();
-            Toast.makeText(mMainActivity, R.string.record_point_error, Toast.LENGTH_LONG).show();
-        }
-    };
 }

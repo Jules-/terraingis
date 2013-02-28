@@ -218,6 +218,7 @@ public class LayerManager
     }
     
     /**
+     * set data to layers and sort by previous order
      * @param data
      */
     public void setData(ArrayList<AbstractLayerData> data)

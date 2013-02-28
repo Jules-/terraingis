@@ -139,11 +139,11 @@ public abstract class VectorLayer extends AbstractLayer
      * add lon lat point to recorded object
      * @param coordinate
      */
-    public void addPoint(Coordinate coordinate)
+    public void addPoint(Coordinate coordinate, int srid)
     {
         Coordinate newPoint =  mSpatialite.transformSRS(coordinate,
-                SpatiaLiteManager.EPSG_LONLAT,
-                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR);
+                srid,
+                mLayerManager.getSrid());
         data.mRecordedPoints.add(newPoint);
     }
 
@@ -155,7 +155,7 @@ public abstract class VectorLayer extends AbstractLayer
     {
         ArrayList<Coordinate> newPoints =  mSpatialite.transformSRS(points,
                 SpatiaLiteManager.EPSG_LONLAT,
-                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR);
+                mLayerManager.getSrid());
         data.mRecordedPoints.addAll(newPoints);
     }
     

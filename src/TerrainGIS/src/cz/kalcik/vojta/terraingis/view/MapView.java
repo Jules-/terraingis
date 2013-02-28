@@ -55,7 +55,6 @@ public class MapView extends SurfaceView
     private GestureDetector gestureDetector;
     private MainActivity mainActivity;
     
-    private boolean runLocation = false;
     private Coordinate locationM = new Coordinate(0,0); // location from GPS or Wi-Fi
     private boolean freezLocation = false;
     private boolean locationValid = false;
@@ -94,7 +93,6 @@ public class MapView extends SurfaceView
      */
     public void startLocation()
     {
-        runLocation = true;
     }
 
     /**
@@ -102,7 +100,6 @@ public class MapView extends SurfaceView
      */
     public void stopLocation()
     {
-        runLocation = false;
         setLocationValid(false);
         invalidate();
     }
@@ -162,6 +159,10 @@ public class MapView extends SurfaceView
         locationValid = value;
     }
     
+    /**
+     * set zoom of canvas
+     * @param zoom
+     */
     public void setZoom(double zoom)
     {
         navigator.setZoom(zoom);
@@ -203,6 +204,22 @@ public class MapView extends SurfaceView
         this.mainActivity = mainActivity;
     }
      
+    /**
+     * if location is valid return location coordinates in meters
+     * else return null
+     * @return
+     */
+    public synchronized Coordinate getLocation()
+    {
+        if(locationValid)
+        {
+            return (Coordinate) locationM.clone();
+        }
+        else
+        {
+            return null;
+        }
+    }
     // on methods ==========================================================================
     
     @Override
