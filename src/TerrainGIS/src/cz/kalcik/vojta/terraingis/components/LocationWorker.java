@@ -18,6 +18,7 @@ import android.location.GpsStatus;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * class for manage GPS and other location services
@@ -27,8 +28,6 @@ import android.util.Log;
 public class LocationWorker implements LocationListener
 {
     // constants =====================================================================
-    public final FixReceiver FIX_RECEIVER = new FixReceiver();
-    public final IntentFilter INTENT_FILTER = new IntentFilter("android.location.GPS_FIX_CHANGE");
     
     private enum ProviderType {GPS, BOTH};
     // data =========================================================================
@@ -184,8 +183,6 @@ public class LocationWorker implements LocationListener
             mCommon.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mSettings.getLocationMinTime(),
                     Settings.LOCATION_MINDIST_DEFAULT, this);
             mCommon.locationManager.addGpsStatusListener(mGPSStatusListener);
-            
-            mMainActivity.registerReceiver(FIX_RECEIVER, INTENT_FILTER);
         }        
     }
     
@@ -216,7 +213,6 @@ public class LocationWorker implements LocationListener
     {
         if(hasGPS)
         {
-            mMainActivity.unregisterReceiver(FIX_RECEIVER);
             mCommon.locationManager.removeGpsStatusListener(mGPSStatusListener);
         }
         
@@ -237,30 +233,9 @@ public class LocationWorker implements LocationListener
         {
             runNetwork();
         }
-        
-        Log.d("TerrainGIS", "switched to "+currentProvider.toString());
     }
     
     // classes =======================================================================
-    
-    /**
-     * Fix GPS receiver
-     * @author jules
-     *
-     */
-    class FixReceiver extends BroadcastReceiver
-    {
-        @Override
-        public void onReceive(Context context, Intent intent)
-        {
-            Bundle b = intent.getExtras();
-            boolean isFix = b.getBoolean("enabled");
-            currentProvider = isFix ? ProviderType.GPS : ProviderType.BOTH;
-            Log.d("TerrainGIS", String.format("Fix Receiver: onReceive fix %s", currentProvider.toString()));
-            
-            switchProvider();
-        }        
-    }
     
     /**
      * listener for GPS status
@@ -285,10 +260,13 @@ public class LocationWorker implements LocationListener
                 isGPSFix = true;
             }
             
+            ProviderType previousType = currentProvider;
             currentProvider = isGPSFix ? ProviderType.GPS : ProviderType.BOTH;
-            Log.d("TerrainGIS", String.format("GPSStatus: onReceive fix %s", currentProvider.toString()));
             
-            switchProvider();
+            if(previousType != currentProvider)
+            {
+                switchProvider();
+            }
         }
     }
 }
