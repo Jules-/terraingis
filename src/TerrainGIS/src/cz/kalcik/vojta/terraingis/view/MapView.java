@@ -2,9 +2,6 @@ package cz.kalcik.vojta.terraingis.view;
 
 import java.io.Serializable;
 
-import org.osmdroid.tileprovider.MapTileProviderBase;
-import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
-
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -12,14 +9,12 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.Settings;
-import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.view.GestureDetector;

@@ -1,7 +1,6 @@
 package cz.kalcik.vojta.terraingis.components;
 
 import java.io.Serializable;
-import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -15,8 +14,9 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
+import android.location.GpsStatus;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 
 /**
@@ -27,8 +27,8 @@ import android.util.Log;
 public class LocationWorker implements LocationListener
 {
     // constants =====================================================================
-    private final FixReceiver FIX_RECEIVER = new FixReceiver();
-    private final IntentFilter INTENT_FILTER = new IntentFilter("android.location.GPS_FIX_CHANGE");
+    public final FixReceiver FIX_RECEIVER = new FixReceiver();
+    public final IntentFilter INTENT_FILTER = new IntentFilter("android.location.GPS_FIX_CHANGE");
     
     private enum ProviderType {GPS, BOTH};
     // data =========================================================================
@@ -36,26 +36,24 @@ public class LocationWorker implements LocationListener
     {
         private static final long serialVersionUID = 1L;
         public boolean runLocation;
-        public int currentMindist;
 
         public LocationWorkerData(boolean runLocation, int currentMindist)
         {
             this.runLocation = runLocation;
-            this.currentMindist = currentMindist;
         }
     }
     
     // attributes ====================================================================
-    private LocationManager locationManager;
     private MainActivity mMainActivity;
     private Settings mSettings = Settings.getInstance();
     private MapView map;
     private Coordinate locationPoint = new Coordinate();
-    private boolean hasGPS;
+    private CommonLocationListener mCommon;
+    private GPSStatusListener mGPSStatusListener = new GPSStatusListener();
     private ProviderType currentProvider;
     private LocationWorkerData data = new LocationWorkerData(false, Settings.LOCATION_MINDIST_DEFAULT);
-    private boolean isPaused = false;
-    private CommonLocationListener mCommon;
+    private boolean hasGPS;
+    private long mLastLocationMillis = 0;
     
     /**
      * constructor
@@ -68,8 +66,6 @@ public class LocationWorker implements LocationListener
         mCommon = new CommonLocationListener(mMainActivity);
         map = mMainActivity.getMap();
         hasGPS = mCommon.hasGPSDevice();
-        locationManager = 
-                (LocationManager) mainActivity.getSystemService(Context.LOCATION_SERVICE);
     }
     
     // public methods ================================================================
@@ -99,10 +95,8 @@ public class LocationWorker implements LocationListener
     /**
      * resume location service
      */
-    public synchronized void resume()
+    public void resume()
     {
-        isPaused = false;
-        
         if(data.runLocation)
         {
             startLocation();
@@ -114,7 +108,6 @@ public class LocationWorker implements LocationListener
      */
     public void pause()
     {
-        isPaused = true;
         if(data.runLocation)
         {
             stopLocation();
@@ -147,39 +140,12 @@ public class LocationWorker implements LocationListener
     {
         // switch to GPS
         if(currentProvider == ProviderType.BOTH &&
-           location.getProvider().equals(LocationManager.GPS_PROVIDER) &&
-           mCommon.validGPS)
+           location.getProvider().equals(LocationManager.GPS_PROVIDER))
         {
             currentProvider = ProviderType.GPS;
             switchProvider();
-        }
-        
-        // not show not valid GPS
-        if(location.getProvider().equals(LocationManager.GPS_PROVIDER) && !mCommon.validGPS)
-        {
-            map.setLocationValid(false);
-            return;
-        }
-        
+        }        
 
-        float accuracy = location.getAccuracy();
-        
-        // change mindist by accuracy
-        if(accuracy < Settings.LOCATION_MINDIST_DEFAULT * 2)
-        {
-            data.currentMindist = 0;
-        }
-        else
-        {
-            data.currentMindist = Settings.LOCATION_MINDIST_DEFAULT;
-        }
-        
-        // if paused
-        if(isPaused)
-        {
-            return;
-        }
-        
         locationPoint.x = location.getLongitude();
         locationPoint.y = location.getLatitude();
         locationPoint.z = location.getAltitude();
@@ -189,22 +155,12 @@ public class LocationWorker implements LocationListener
 
     public void onStatusChanged(String provider, int status, Bundle extras)
     {
-        mCommon.statusChanged(provider, status, extras);
-        
-        if(!mCommon.validGPS && currentProvider != ProviderType.BOTH)
-        {
-            currentProvider = ProviderType.BOTH;
-            switchProvider();
-        }
+
     }
 
     public void onProviderEnabled(String provider)
     {
-        if(provider.equals(LocationManager.GPS_PROVIDER))
-        {
-            currentProvider = ProviderType.BOTH;
-            switchProvider();
-        }
+
     }
 
     public void onProviderDisabled(String provider)
@@ -221,8 +177,9 @@ public class LocationWorker implements LocationListener
         if(hasGPS)
         {
             // default
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mSettings.getLocationMinTime(),
-                    data.currentMindist, this);
+            mCommon.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mSettings.getLocationMinTime(),
+                    Settings.LOCATION_MINDIST_DEFAULT, this);
+            mCommon.locationManager.addGpsStatusListener(mGPSStatusListener);
             
             mMainActivity.registerReceiver(FIX_RECEIVER, INTENT_FILTER);
         }        
@@ -234,8 +191,8 @@ public class LocationWorker implements LocationListener
     private void runNetwork()
     {
         // default
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mSettings.getLocationMinTime(),
-                data.currentMindist, this);
+        mCommon.locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mSettings.getLocationMinTime(),
+                Settings.LOCATION_MINDIST_DEFAULT, this);
     }
 
     /**
@@ -256,9 +213,10 @@ public class LocationWorker implements LocationListener
         if(hasGPS)
         {
             mMainActivity.unregisterReceiver(FIX_RECEIVER);
+            mCommon.locationManager.removeGpsStatusListener(mGPSStatusListener);
         }
         
-        locationManager.removeUpdates(this);
+        mCommon.locationManager.removeUpdates(this);
     }
     
     /**
@@ -294,9 +252,39 @@ public class LocationWorker implements LocationListener
             Bundle b = intent.getExtras();
             boolean isFix = b.getBoolean("enabled");
             currentProvider = isFix ? ProviderType.GPS : ProviderType.BOTH;
-            Log.d("TerrainGIS", String.format("onReceive fix %s", currentProvider.toString()));
+            Log.d("TerrainGIS", String.format("Fix Receiver: onReceive fix %s", currentProvider.toString()));
             
             switchProvider();
         }        
+    }
+    
+    /**
+     * listener for GPS status
+     * @author jules
+     *
+     */
+    private class GPSStatusListener implements GpsStatus.Listener
+    {
+        private boolean isGPSFix = false;
+        
+        public synchronized void onGpsStatusChanged(int event)
+        {
+            if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS)
+            {
+                if (mLastLocationMillis != 0)
+                {
+                    isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < mSettings.getLocationMinTime() * 2;
+                }
+            }
+            else if (event == GpsStatus.GPS_EVENT_FIRST_FIX)
+            {
+                isGPSFix = true;
+            }
+            
+            currentProvider = isGPSFix ? ProviderType.GPS : ProviderType.BOTH;
+            Log.d("TerrainGIS", String.format("GPSStatus: onReceive fix %s", currentProvider.toString()));
+            
+            switchProvider();
+        }
     }
 }

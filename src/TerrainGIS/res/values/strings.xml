@@ -11,8 +11,9 @@
     <string name="name_exist_error">The layer %s exist!</string>
     <string name="tileslayer_remove_error">Can not remove tiles layer!</string>
     <string name="not_selected_layer">It is not any layer selected!</string>
-    <string name="end_object_error">Few points for object.</string>
-    <string name="empty_layer_error">Layer %s is empty.</string>
+    <string name="end_object_error">Few points for object!</string>
+    <string name="empty_layer_error">Layer %s is empty!</string>
+    <string name="device_no_gps_error">Device does not have GPS!</string>
     <!-- record buttons -->
     <string name="record_point">Add point</string>
     <string name="record_end_object">End object</string>

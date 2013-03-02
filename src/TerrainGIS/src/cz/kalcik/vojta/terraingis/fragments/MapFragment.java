@@ -1,12 +1,12 @@
 package cz.kalcik.vojta.terraingis.fragments;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -17,7 +17,9 @@ import android.widget.Toast;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-import cz.kalcik.vojta.terraingis.components.LocationWorker;
+import cz.kalcik.vojta.terraingis.components.AutoRecordService;
+import cz.kalcik.vojta.terraingis.components.AutoRecordServiceConnection;
+import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
@@ -37,15 +39,31 @@ public class MapFragment extends Fragment
     // constants ==========================================================
     private static String MAP_VIEW_DATA = "cz.kalcik.vojta.terraingis.MapViewData";
     private static String LAYERS_DATA = "cz.kalcik.vojta.terraingis.LayersData";
+    private static String MAP_FRAGMENT_DATA = "cz.kalcik.vojta.terraingis.MapFragmentData";
     
     // properties =========================================================
+    public static class MapFragmentData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        public boolean isRunAutoRecord;
+        public String autoRecordLayerString;
+
+        public MapFragmentData(boolean isRunAutoRecord)
+        {
+            this.isRunAutoRecord = isRunAutoRecord;
+        }
+    }
+    
     private MapView map;
     private LayerManager mLayerManager = LayerManager.getInstance();
     private MainActivity mMainActivity;
     private Button mButtonRecordAuto;
     private Button mButtonRecordEndObject;
     private Button mButtonRecordPoint;
-    
+    private VectorLayer mAutoRecordLayer = null;
+    private Intent mServiceIntent;
+    private AutoRecordServiceConnection mServiceConnection = new AutoRecordServiceConnection(this);
+    private MapFragmentData data = new MapFragmentData(false);
 
     // public methods =====================================================
     /**
@@ -73,7 +91,7 @@ public class MapFragment extends Fragment
                     // object button
                     if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
                     {
-//                        showAutoButton = true;
+                        showAutoButton = true;
                         if (selectedVectorLayer.haveOpenedRecordObject())
                         {
                             showObjectButton = true;
@@ -83,10 +101,10 @@ public class MapFragment extends Fragment
             }
             
             //run automatic recording
-//            if(locationWorker.isRunAutoRecord())
-//            {
-//                showAutoButton = true;
-//            }
+            if(data.isRunAutoRecord)
+            {
+                showAutoButton = true;
+            }
         }
         
         if(showObjectButton)
@@ -109,21 +127,49 @@ public class MapFragment extends Fragment
         
         if(showAutoButton)
         {
-//            mButtonRecordAuto.setVisibility(View.VISIBLE);
-//            if(locationWorker.isRunAutoRecord())
-//            {
-//                mButtonRecordAuto.setText(R.string.record_auto_stop);
-//            }
-//            else
-//            {
-//                mButtonRecordAuto.setText(R.string.record_auto_start);
-//            }
+            mButtonRecordAuto.setVisibility(View.VISIBLE);
+            if(data.isRunAutoRecord)
+            {
+                mButtonRecordAuto.setText(R.string.record_auto_stop);
+            }
+            else
+            {
+                mButtonRecordAuto.setText(R.string.record_auto_start);
+            }
         }
         else
         {
             mButtonRecordAuto.setVisibility(View.GONE);
         }
     }
+    
+    /**
+     * add recorded points
+     * @param points
+     */
+    public void recordPointsAuto(ArrayList<Coordinate> points)
+    {
+        if(mAutoRecordLayer != null)
+        {
+            mAutoRecordLayer.addPoints(points, SpatiaLiteManager.EPSG_LONLAT);
+        }
+        
+        changeRecordButtons();
+        map.invalidate();
+    }
+
+    /**
+     * record one point
+     * @param point
+     */
+    public void recordPointAuto(Coordinate point)
+    {
+        if(mAutoRecordLayer != null)
+        {
+            recordPoint(point, mAutoRecordLayer, SpatiaLiteManager.EPSG_LONLAT);
+        }
+    }
+    
     // getter, setter =====================================================
     
     public MapView getMap()
@@ -164,30 +210,146 @@ public class MapFragment extends Fragment
             map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
             // layers data
             mLayerManager.setData((ArrayList<AbstractLayerData>)savedInstanceState.getSerializable(LAYERS_DATA));
+            restoreData(savedInstanceState);
         }
     }
 
     @Override
     public void onSaveInstanceState (Bundle outState)
     {        
+        super.onSaveInstanceState(outState);
+
         // Map view state
         outState.putSerializable(MAP_VIEW_DATA, map.getData());
         // Layers data
         outState.putSerializable(LAYERS_DATA, mLayerManager.getData());
-        
-        super.onSaveInstanceState(outState);
+        saveData(outState);
     }
     
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        
+        if(data.isRunAutoRecord)
+        {
+            bindAutoRecordService();
+        }
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        
+        if(data.isRunAutoRecord)
+        {
+            unbindAutoRecordService();
+        }        
+    }
+
     @Override
     public void onAttach(Activity activity)
     {
         super.onAttach(activity);
         
         mMainActivity = (MainActivity)activity;
+        mServiceIntent = new Intent(mMainActivity, AutoRecordService.class);
     }
     
     // private methods ========================================================
+
+    /**
+     * add point to layer
+     * @param location
+     */
+    private void recordPoint(Coordinate location, VectorLayer layer, int srid)
+    {
+        layer.addPoint(location, srid);
+        if(layer.getType() == VectorLayerType.POINT)
+        {
+            layer.endObject();
+        }
+        
+        changeRecordButtons();
+        map.invalidate();
+    }
+
+    /**
+     * start automatic recording of points
+     */
+    private void startAutoRecord()
+    {
+        mAutoRecordLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+        
+        mMainActivity.startService(mServiceIntent);
+        bindAutoRecordService();
+        data.isRunAutoRecord = true;
+        changeRecordButtons();
+    }
     
+    /**
+     * stop automatic recording of points
+     */
+    private void stopAutoRecord()
+    {
+        mMainActivity.stopService(mServiceIntent);
+        mAutoRecordLayer = null;
+        data.isRunAutoRecord = false;
+        changeRecordButtons();
+    }
+    
+    /**
+     * bind to auto record serice
+     */
+    private void bindAutoRecordService()
+    {
+        mMainActivity.bindService(mServiceIntent, mServiceConnection, 0);       
+    }
+    
+    /**
+     * unbind to auto record serice
+     */
+    private void unbindAutoRecordService()
+    {
+        mMainActivity.unbindService(mServiceConnection);
+    }
+    
+    /**
+     * save data of MapFragment
+     * @param savedInstanceState
+     */
+    private void saveData(Bundle outState)
+    {
+        if(data.isRunAutoRecord)
+        {
+            unbindAutoRecordService();
+        }
+        // autorecordlayer
+        if(mAutoRecordLayer != null)
+        {
+            data.autoRecordLayerString = mAutoRecordLayer.toString();
+        }
+        else
+        {
+            data.autoRecordLayerString = null;
+        }
+        
+        outState.putSerializable(MAP_FRAGMENT_DATA, data);
+    }
+    
+    /**
+     * restore saved data
+     * @param outState
+     */
+    private void restoreData(Bundle savedInstanceState)
+    {
+        data = (MapFragmentData)savedInstanceState.getSerializable(MAP_FRAGMENT_DATA);
+        if(data.autoRecordLayerString != null)
+        {
+            mAutoRecordLayer = mLayerManager.getLayerByName(data.autoRecordLayerString);
+        }
+    }
     // handlers ===============================================================
     
     /**
@@ -206,14 +368,7 @@ public class MapFragment extends Fragment
                 return;
             }            
             
-            selectedLayer.addPoint(location, mLayerManager.getSrid());
-            if(selectedLayer.getType() == VectorLayerType.POINT)
-            {
-                selectedLayer.endObject();
-            }
-            
-            changeRecordButtons();
-            map.invalidate();
+            recordPoint(location, selectedLayer, mLayerManager.getSrid());
         }        
     };
     
@@ -231,11 +386,10 @@ public class MapFragment extends Fragment
             {
                 selectedLayer.endObject();
                 
-//                LocationWorker locationWorker = mMainActivity.getLocationWorker();
-//                if(locationWorker.equals(mAutoRecordLayer) && locationWorker.isRunAutoRecord())
-//                {
-//                    locationWorker.setRunAutoRecord(false);
-//                }
+                if(selectedLayer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
+                {
+                    stopAutoRecord();
+                }
             }
             catch (CreateObjectException e)
             {
@@ -255,20 +409,16 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-//            LocationWorker locationWorker = mMainActivity.getLocationWorker();
-//            boolean runAutoRecord = !locationWorker.isRunAutoRecord();
-//            locationWorker.setRunAutoRecord(runAutoRecord);
-//            
-//            if(runAutoRecord)
-//            {
-//                mAutoRecordLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-//            }
-//            else
-//            {
-//                mAutoRecordLayer = null;
-//            }
-//            
-//            changeRecordButtons();
+            if(data.isRunAutoRecord)
+            {
+                stopAutoRecord();
+            }
+            else
+            {
+                startAutoRecord();
+            }
+            
+            changeRecordButtons();
         }        
     };
     

@@ -5,7 +5,10 @@ package cz.kalcik.vojta.terraingis.components;
 
 import java.util.List;
 
+import cz.kalcik.vojta.terraingis.components.LocationWorker.FixReceiver;
+
 import android.content.Context;
+import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
@@ -16,12 +19,20 @@ import android.os.Bundle;
  */
 public class CommonLocationListener
 {
-    public boolean validGPS = true; // for external bluetooth GPS
+    // constants ======================================================================================
+    
+    // attributes =====================================================================================
+    public LocationManager locationManager;
     public Context context;
+    
+    // public methods =================================================================================
     
     public CommonLocationListener(Context context)
     {
         this.context = context;
+        
+        locationManager = 
+                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
     }
     
     /**
@@ -44,17 +55,5 @@ public class CommonLocationListener
         }
         
         return providers.contains(LocationManager.GPS_PROVIDER);
-    }
-    
-    public void statusChanged(String provider, int status, Bundle extras)
-    {
-        if(provider.equals(LocationManager.GPS_PROVIDER) && status != LocationProvider.AVAILABLE)
-        {
-            validGPS = false;
-        }
-        else if(provider.equals(LocationManager.GPS_PROVIDER) && status == LocationProvider.AVAILABLE)
-        {
-            validGPS = true;
-        }
     }
 }
