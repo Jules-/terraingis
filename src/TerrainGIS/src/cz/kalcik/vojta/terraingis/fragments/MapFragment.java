@@ -312,6 +312,7 @@ public class MapFragment extends Fragment
      */
     private void unbindAutoRecordService()
     {
+        mServiceConnection.unsetMapFragment();
         mMainActivity.unbindService(mServiceConnection);
     }
     
@@ -321,10 +322,6 @@ public class MapFragment extends Fragment
      */
     private void saveData(Bundle outState)
     {
-        if(data.isRunAutoRecord)
-        {
-            unbindAutoRecordService();
-        }
         // autorecordlayer
         if(mAutoRecordLayer != null)
         {

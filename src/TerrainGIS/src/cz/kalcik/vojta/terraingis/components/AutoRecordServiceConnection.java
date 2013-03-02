@@ -28,6 +28,10 @@ public class AutoRecordServiceConnection implements ServiceConnection
         mMapFragment = mapFragment;
     }
     
+    public void unsetMapFragment()
+    {
+        serviceReference.unsetMapFragment();
+    }
     // on methods =====================================================================
     @Override
     public void onServiceConnected(ComponentName name, IBinder service)
@@ -39,6 +43,5 @@ public class AutoRecordServiceConnection implements ServiceConnection
     @Override
     public void onServiceDisconnected(ComponentName name)
     {
-        serviceReference.unsetMapFragment();
     }
 }

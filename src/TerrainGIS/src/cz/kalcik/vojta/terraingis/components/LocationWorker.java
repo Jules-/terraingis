@@ -53,7 +53,7 @@ public class LocationWorker implements LocationListener
     private ProviderType currentProvider;
     private LocationWorkerData data = new LocationWorkerData(false, Settings.LOCATION_MINDIST_DEFAULT);
     private boolean hasGPS;
-    private long mLastLocationMillis = 0;
+    private long mLastGPSMillis = 0;
     
     /**
      * constructor
@@ -139,12 +139,16 @@ public class LocationWorker implements LocationListener
     public synchronized void onLocationChanged(Location location)
     {
         // switch to GPS
-        if(currentProvider == ProviderType.BOTH &&
-           location.getProvider().equals(LocationManager.GPS_PROVIDER))
+        if(location.getProvider().equals(LocationManager.GPS_PROVIDER))
         {
-            currentProvider = ProviderType.GPS;
-            switchProvider();
-        }        
+            mLastGPSMillis = SystemClock.elapsedRealtime();
+            
+            if(currentProvider == ProviderType.BOTH)
+            {
+                currentProvider = ProviderType.GPS;
+                switchProvider();
+            }
+        }
 
         locationPoint.x = location.getLongitude();
         locationPoint.y = location.getLatitude();
@@ -271,9 +275,9 @@ public class LocationWorker implements LocationListener
         {
             if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS)
             {
-                if (mLastLocationMillis != 0)
+                if (mLastGPSMillis != 0)
                 {
-                    isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < mSettings.getLocationMinTime() * 2;
+                    isGPSFix = (SystemClock.elapsedRealtime() - mLastGPSMillis) < mSettings.getLocationMinTime() * 2;
                 }
             }
             else if (event == GpsStatus.GPS_EVENT_FIRST_FIX)
