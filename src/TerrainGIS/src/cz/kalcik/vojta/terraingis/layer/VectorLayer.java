@@ -31,7 +31,28 @@ public abstract class VectorLayer extends AbstractLayer
     private static final float[] DASHED_PARAMS = {10, 5};
     
     // enum ===================================================================
-    public enum VectorLayerType {POINT, LINE, POLYGON};
+    public enum VectorLayerType
+    {
+        POINT, LINE, POLYGON;
+        
+        public String getSpatialiteType()
+        {
+            if(this == POINT)
+            {
+                return "POINT";
+            }
+            else if(this == LINE)
+            {
+                return "LINESTRING";
+            }
+            else if(this == POLYGON)
+            {
+                return "POLYGON";
+            }
+            
+            return null;
+        }
+    };
     
     // attributes ==============================================================
     public static class VectorLayerData implements Serializable
@@ -166,7 +187,7 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * end recorded object
      */
-    public void endObject()
+    public void endObject(boolean reopnDB)
     {
         Geometry object = null;
         
@@ -209,7 +230,7 @@ public abstract class VectorLayer extends AbstractLayer
         }
         
         mSpatialite.inserGeometry(object, super.data.name, mGeometryColumn,
-                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid);
+                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid, reopnDB);
         updateEnvelope();
         data.mRecordedPoints.clear();
     }

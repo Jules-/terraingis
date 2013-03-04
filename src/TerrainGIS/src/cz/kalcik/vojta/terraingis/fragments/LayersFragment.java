@@ -24,6 +24,7 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
+import cz.kalcik.vojta.terraingis.io.ShapeFile;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
@@ -40,7 +41,7 @@ public class LayersFragment extends Fragment
 {
     // constants =========================================================
     private static String SELECTED_POSITION = "SelectedPosition";
-    private static int LOAD_REQUESTCODE = 0;
+    public static int LOAD_REQUESTCODE = 0;
     
     // properties =========================================================
     private ArrayAdapter<AbstractLayer> mArrayAdapter;
@@ -121,6 +122,16 @@ public class LayersFragment extends Fragment
     public void invalidateListView()
     {
         mListView.invalidateViews();
+    }
+    
+    /**
+     * load shapefile
+     */
+    public void loadShapeFile()
+    {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("file/*");
+        startActivityForResult(intent, LOAD_REQUESTCODE);        
     }
     // on methods =========================================================
     @Override
@@ -218,6 +229,7 @@ public class LayersFragment extends Fragment
             if(resultCode == Activity.RESULT_OK)
             {
                 File shapefile = new File(data.getData().getPath());
+                ShapeFile.getInstance().load(getActivity(), shapefile);
             }            
         }
     }

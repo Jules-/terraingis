@@ -3,13 +3,18 @@
  */
 package cz.kalcik.vojta.terraingis.dialogs;
 
+import java.io.File;
+
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 
@@ -20,8 +25,12 @@ import android.support.v4.app.DialogFragment;
  */
 public class NewLayerDialog extends DialogFragment implements OnClickListener
 {
+    // constants ======================================================================
+    
+    // attributes =====================================================================
     private String[] ITEMS;
     
+    // on methods =====================================================================
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
@@ -48,7 +57,7 @@ public class NewLayerDialog extends DialogFragment implements OnClickListener
         // import shapefile
         else if(which == 1)
         {
-            
+            ((MainActivity)getActivity()).getLayersFragment().loadShapeFile();
         }
     }
 }

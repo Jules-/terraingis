@@ -48,6 +48,16 @@ public class SpatiaLiteManager
     }
 
     /**
+     * close and open db
+     * @throws Exception 
+     */
+    public void reopen() throws Exception
+    {
+        db.close();
+        open(mPath);        
+    }
+    
+    /**
      * get all layers in spatialite database
      * @return list of Layers
      */
@@ -360,7 +370,7 @@ public class SpatiaLiteManager
      * @param column
      * @param srid
      */
-    public void inserGeometry(Geometry geom, String name, String column, int inputSrid, int tableSrid)
+    public void inserGeometry(Geometry geom, String name, String column, int inputSrid, int tableSrid, boolean reopen)
     {
         try
         {
@@ -379,7 +389,11 @@ public class SpatiaLiteManager
                                    name, column, value));
             stmt.bind(1, mWKBWriter.write(geom));
             stmt.step();
-            resetDB();
+            
+            if(reopen)
+            {
+                reopen();
+            }
         }
         catch (Exception e)
         {
@@ -394,7 +408,7 @@ public class SpatiaLiteManager
      * @param type
      * @param srid
      */
-    public void createEmptyLayer(String name, String geometryColumn, String type, int srid)
+    public boolean createEmptyLayer(String name, String geometryColumn, String type, int srid)
     {
         String[] argsTable = {name};
         String[] argsGeom = {name, geometryColumn, Integer.toString(srid), type};
@@ -406,11 +420,15 @@ public class SpatiaLiteManager
                     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)", null, argsTable);
             db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
             db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
-            resetDB();
+            reopen();
+            
+            return true;
         }
         catch (Exception e)
         {
             Log.e("TerrainGIS", e.getMessage());
+            
+            return false;
         }
     }
     
@@ -427,7 +445,7 @@ public class SpatiaLiteManager
         try
         {
             db.exec("SELECT DiscardGeometryColumn('%q', '%q')", null, argsGeom);
-            resetDB();
+            reopen();
             db.exec("DROP TABLE '%q'", null, argsTable);            
         }
         catch (Exception e)
@@ -453,16 +471,6 @@ public class SpatiaLiteManager
         {
             Log.e("TerrainGIS", e.getMessage());
         }
-    }
-    
-    /**
-     * function close and open db
-     * @throws Exception 
-     */
-    private void resetDB() throws Exception
-    {
-        db.close();
-        open(mPath);        
     }
     // classes ===============================================================================
     /**
