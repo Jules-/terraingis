@@ -22,9 +22,9 @@ import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Settings;
-import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.TilesLayer;
@@ -218,7 +218,6 @@ public class LayersFragment extends Fragment
             if(resultCode == Activity.RESULT_OK)
             {
                 File shapefile = new File(data.getData().getPath());
-                mLayerManager.addVirtualShape(shapefile);
             }            
         }
     }

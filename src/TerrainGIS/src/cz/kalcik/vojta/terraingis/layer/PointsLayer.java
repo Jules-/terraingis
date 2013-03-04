@@ -7,7 +7,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
-import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 

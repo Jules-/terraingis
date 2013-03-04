@@ -13,7 +13,7 @@ import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
-import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 
 

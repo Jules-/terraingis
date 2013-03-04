@@ -1,10 +1,11 @@
-package cz.kalcik.vojta.terraingis.components;
+package cz.kalcik.vojta.terraingis.location;
 
 import java.io.Serializable;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 import android.content.BroadcastReceiver;

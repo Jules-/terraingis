@@ -14,8 +14,8 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
-import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
@@ -226,7 +226,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     protected void updateEnvelope()
     {
-        mEnvelope = mSpatialite.getEnvelopeLayer(super.data.name);
+        mEnvelope = mSpatialite.getEnvelopeLayer(super.data.name, mGeometryColumn, mHaveIndex);
     }
     
     /**

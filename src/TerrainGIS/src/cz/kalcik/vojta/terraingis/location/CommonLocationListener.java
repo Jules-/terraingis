@@ -1,17 +1,12 @@
 /**
  * 
  */
-package cz.kalcik.vojta.terraingis.components;
+package cz.kalcik.vojta.terraingis.location;
 
 import java.util.List;
 
-import cz.kalcik.vojta.terraingis.components.LocationWorker.FixReceiver;
-
 import android.content.Context;
-import android.content.IntentFilter;
 import android.location.LocationManager;
-import android.location.LocationProvider;
-import android.os.Bundle;
 
 /**
  * @author jules

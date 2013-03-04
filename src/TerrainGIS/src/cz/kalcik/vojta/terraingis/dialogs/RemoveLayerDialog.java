@@ -4,8 +4,8 @@
 package cz.kalcik.vojta.terraingis.dialogs;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
-import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 

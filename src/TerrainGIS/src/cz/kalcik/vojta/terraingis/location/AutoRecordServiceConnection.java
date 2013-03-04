@@ -1,10 +1,10 @@
 /**
  * 
  */
-package cz.kalcik.vojta.terraingis.components;
+package cz.kalcik.vojta.terraingis.location;
 
-import cz.kalcik.vojta.terraingis.components.AutoRecordService.AutoRecordBinder;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
+import cz.kalcik.vojta.terraingis.location.AutoRecordService.AutoRecordBinder;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;

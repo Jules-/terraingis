@@ -11,7 +11,7 @@ import org.osmdroid.util.TileLooper;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.components.Navigator;
-import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 
 import android.content.Context;
 import android.graphics.Bitmap;

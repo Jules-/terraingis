@@ -17,10 +17,10 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
-import cz.kalcik.vojta.terraingis.components.LocationWorker;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
+import cz.kalcik.vojta.terraingis.location.LocationWorker;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
 

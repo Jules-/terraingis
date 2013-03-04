@@ -1,4 +1,4 @@
-package cz.kalcik.vojta.terraingis.components;
+package cz.kalcik.vojta.terraingis.io;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -105,18 +105,31 @@ public class SpatiaLiteManager
      * @param name
      * @return
      */
-    public Envelope getEnvelopeLayer(String name)
+    public Envelope getEnvelopeLayer(String name, String column, boolean useRTree)
     {
         try
         {
             String[] args = {name};
             
-            db.exec("SELECT UpdateLayerStatistics('%q')", null, args);
-            
             Stmt stmt;
-            stmt = db.prepare("SELECT extent_min_x, extent_max_x, extent_min_y, extent_max_y " +
-                              "from LAYER_STATISTICS where table_name=?");
-            stmt.bind(1, name);
+
+            if(useRTree)
+            {
+                // TODO use idx_table_column_node
+                String cmd = String.format("SELECT MIN(xmin) As xmin, MAX(xmax) As xmax, " +
+                        "MIN(ymin) As ymin, MAX(ymax) As ymax "+
+                        "FROM 'idx_%s_%s'", name, column);
+                stmt = db.prepare(cmd);
+            }
+            else
+            {
+                db.exec("SELECT UpdateLayerStatistics('%q')", null, args);
+                
+                stmt = db.prepare("SELECT extent_min_x, extent_max_x, extent_min_y, extent_max_y " +
+                                  "from LAYER_STATISTICS where table_name=?");
+                stmt.bind(1, name);
+            }
+            
             if(stmt.step())
             {
                 return new Envelope(stmt.column_double(0),
@@ -341,30 +354,6 @@ public class SpatiaLiteManager
     }
     
     /**
-     * create virtual shape
-     * @param path
-     * @param name
-     * @param encoding
-     * @param srid
-     */
-    public void createVirtualShape(String path, String name, String encoding, int srid)
-    {
-        try
-        {
-            // TODO virtual shape
-            Stmt stmt = db.prepare(String.format("CREATE VIRTUAL TABLE '%s_virtual' USING VirtualShape('%s', '%s', %d)", name, path, encoding, srid));
-//            stmt.bind(1, path);
-//            stmt.bind(2, encoding);
-//            stmt.bind(3, srid);
-            stmt.step();
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }        
-    }
-    
-    /**
      * insert geometry to db
      * @param geom
      * @param name
@@ -390,6 +379,7 @@ public class SpatiaLiteManager
                                    name, column, value));
             stmt.bind(1, mWKBWriter.write(geom));
             stmt.step();
+            resetDB();
         }
         catch (Exception e)
         {
@@ -408,12 +398,15 @@ public class SpatiaLiteManager
     {
         String[] argsTable = {name};
         String[] argsGeom = {name, geometryColumn, Integer.toString(srid), type};
+        String[] argsIndex = {name, geometryColumn};
         
         try
         {
             db.exec("CREATE TABLE '%q' (" +
                     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)", null, argsTable);
             db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
+            db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
+            resetDB();
         }
         catch (Exception e)
         {
@@ -434,8 +427,7 @@ public class SpatiaLiteManager
         try
         {
             db.exec("SELECT DiscardGeometryColumn('%q', '%q')", null, argsGeom);
-            db.close();
-            open(mPath);
+            resetDB();
             db.exec("DROP TABLE '%q'", null, argsTable);            
         }
         catch (Exception e)
@@ -463,6 +455,15 @@ public class SpatiaLiteManager
         }
     }
     
+    /**
+     * function close and open db
+     * @throws Exception 
+     */
+    private void resetDB() throws Exception
+    {
+        db.close();
+        open(mPath);        
+    }
     // classes ===============================================================================
     /**
      * Iterator returned from db

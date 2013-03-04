@@ -15,7 +15,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
-import cz.kalcik.vojta.terraingis.components.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer.AbstractLayerData;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
@@ -145,23 +145,6 @@ public class LayerManager
     {
         loadSpatialite();
         addTilesLayer(context, map);
-    }
-    
-    /**
-     * add virtual shape file layer
-     * @param shapefile
-     */
-    public void addVirtualShape(File shapefile)
-    {
-        // FIXME
-        String name = shapefile.getName();
-        int dotIndex = name.lastIndexOf('.');
-        name = name.substring(0, dotIndex);
-        String path = String.format("%s/%s", shapefile.getParent(), name);
-        // !!!!!!!!!!!!!!!!!!!!!!!!!
-        String encoding = "utf8";
-        int srid = 32633;
-        spatialiteManager.createVirtualShape(path, name, encoding, srid);
     }
 
     /**

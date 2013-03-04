@@ -1,13 +1,14 @@
 /**
  * 
  */
-package cz.kalcik.vojta.terraingis.components;
+package cz.kalcik.vojta.terraingis.location;
 
 import java.util.ArrayList;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import android.app.Service;
 import android.content.Intent;
