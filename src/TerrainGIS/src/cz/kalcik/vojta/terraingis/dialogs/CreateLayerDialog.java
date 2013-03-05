@@ -2,7 +2,7 @@ package cz.kalcik.vojta.terraingis.dialogs;
 
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
-import android.support.v4.app.DialogFragment;
+import android.app.DialogFragment;
 import android.widget.Toast;
 
 public abstract class CreateLayerDialog extends DialogFragment

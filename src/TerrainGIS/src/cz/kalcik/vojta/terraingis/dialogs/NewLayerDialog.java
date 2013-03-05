@@ -3,20 +3,15 @@
  */
 package cz.kalcik.vojta.terraingis.dialogs;
 
-import java.io.File;
-
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 
 /**
  * Dialog select type of new layer

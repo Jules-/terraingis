@@ -6,10 +6,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Display;
 import android.view.Menu;
@@ -120,6 +120,8 @@ public class MainActivity extends FragmentActivity
                 i--;
             }
             
+            cancelTimer();
+            hideActionBar();
             mLayersLayout.setVisibility(View.VISIBLE);
         }
     }
@@ -130,7 +132,7 @@ public class MainActivity extends FragmentActivity
      */
     public void showDialog(DialogFragment dialog)
     {
-        dialog.show(getSupportFragmentManager(), DIALOG_TAG);
+        dialog.show(getFragmentManager(), DIALOG_TAG);
     }
     // getter, setter =====================================================
     
@@ -330,14 +332,22 @@ public class MainActivity extends FragmentActivity
      */
     private void runTimerActionBar()
     {
+        cancelTimer();
+        
+        timer = new Timer();
+        timer.schedule(new HideActionBarTask(), mSettings.getTimeHideActionBar());
+    }
+    
+    /**
+     * cancel timer for hidding action bar
+     */
+    private void cancelTimer()
+    {
         if(timer != null)
         {
             timer.cancel();
             timer.purge();
-        }
-        
-        timer = new Timer();
-        timer.schedule(new HideActionBarTask(), mSettings.getTimeHideActionBar());
+        }        
     }
     
     /**
@@ -413,6 +423,14 @@ public class MainActivity extends FragmentActivity
             APP_DIRECTORY.mkdir();
         }
     }
+    
+    /**
+     * hide action bar
+     */
+    private void hideActionBar()
+    {
+        getActionBar().hide();
+    }
     // classes =================================================================
     /**
      * task for hidding action bar
@@ -438,7 +456,7 @@ public class MainActivity extends FragmentActivity
     {
         public void run()
         {
-            getActionBar().hide();
+            hideActionBar();
         }
     };
 }

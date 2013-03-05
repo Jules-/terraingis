@@ -12,6 +12,7 @@ import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 
 public class ShapefileDialog extends CreateLayerDialog
@@ -63,8 +64,9 @@ public class ShapefileDialog extends CreateLayerDialog
          dialogBuilder.setTitle(mFile.getName());
          
          LayoutInflater inflater = getActivity().getLayoutInflater();
-         dialogBuilder.setView(inflater.inflate(R.layout.shapefile_dialog, null));
-         mNameEditText = (EditText)getDialog().findViewById(R.id.edit_text_name_shapefile);
+         View dialogView = inflater.inflate(R.layout.shapefile_dialog, null);
+         dialogBuilder.setView(dialogView);
+         mNameEditText = (EditText)dialogView.findViewById(R.id.edit_text_name_shapefile);
          mNameEditText.setText(mNameNoSuffix);
          
          dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
@@ -72,7 +74,6 @@ public class ShapefileDialog extends CreateLayerDialog
          
          return dialogBuilder.create();
     }
-    
     // private methods ================================================================================
     
     // handlers =======================================================================================
