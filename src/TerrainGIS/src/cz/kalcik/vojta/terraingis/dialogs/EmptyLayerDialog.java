@@ -24,7 +24,7 @@ import android.widget.Toast;
  * @author jules
  *
  */
-public class EmptyLayerDialog extends DialogFragment
+public class EmptyLayerDialog extends CreateLayerDialog
 {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
@@ -53,22 +53,9 @@ public class EmptyLayerDialog extends DialogFragment
         public void onClick(DialogInterface dialog, int id)
         {
             // name
-            EditText nameEditText = (EditText)getDialog().findViewById(R.id.edit_text_name);
+            EditText nameEditText = (EditText)getDialog().findViewById(R.id.edit_text_name_empty);
             String name = nameEditText.getText().toString();
-            if(name.isEmpty())
-            {
-                Toast.makeText(getActivity(), R.string.name_error, Toast.LENGTH_LONG).show();
-                return;
-            }
-            //check exist name
-            LayerManager layerManager = LayerManager.getInstance();
-            if(layerManager.hasLayer(name))
-            {
-                String errorMessage = getString(R.string.name_exist_error);
-                Toast.makeText(getActivity(), 
-                        String.format(errorMessage, name), Toast.LENGTH_LONG).show();
-                return;
-            }            
+            checkName(name);        
             // type
             Spinner spinnerLayerType = (Spinner)getDialog().findViewById(R.id.spinner_layer_type);
             String layerType = (String)spinnerLayerType.getSelectedItem();

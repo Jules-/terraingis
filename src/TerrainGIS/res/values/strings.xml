@@ -4,6 +4,10 @@
     <!-- UI -->
     <string name="positive_button">OK</string>
     <string name="negative_button">Cancel</string>
+    <!-- form components -->
+    <string name="name_form">Name</string>
+    <string name="type_form">Type</string>
+    <string name="srid_form">SRS EPSG</string>
     <!-- error messages -->
     <string name="location_fix_error">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>
@@ -14,7 +18,7 @@
     <string name="end_object_error">Few points for object!</string>
     <string name="empty_layer_error">Layer %s is empty!</string>
     <string name="device_no_gps_error">Device does not have GPS!</string>
-    <string name="load_shapefile_error">Can not load shapefile!</string>
+    <string name="bad_shapefile_error">Bad shapefile name!</string>
     <!-- record buttons -->
     <string name="record_point">Add point</string>
     <string name="record_end_object">End object</string>
@@ -29,7 +33,6 @@
     <string name="empty_layer">Empty layer</string>
     <string name="import_shapefile">Import Shapefile</string>
     <!-- empty layer dialog -->
-    <string name="name_form">Name</string>
     <string name="empty_layer_message">New empty layer</string>
     <string-array name="layer_type">
         <item>POINT</item>

@@ -5,14 +5,14 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/name_form"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	<EditText
-	    android:id="@+id/edit_text_name_empty"
+	    android:id="@+id/edit_text_name_shapefile"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
 	    android:hint="@string/name_form" >
@@ -21,16 +21,18 @@
 	</EditText>
 
 	<TextView
-	    android:id="@+id/textView2"
+	    android:id="@+id/textView4"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:text="@string/type_form"
+	    android:text="@string/srid_form"
 	    android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	<Spinner
-	    android:id="@+id/spinner_layer_type"
+	<EditText
+	    android:id="@+id/edit_text_srid_shapefile"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-	    android:entries="@array/layer_type"/>
+	    android:hint="@string/srid_form"
+	    android:inputType="number" >
+	</EditText>
 
 </LinearLayout>

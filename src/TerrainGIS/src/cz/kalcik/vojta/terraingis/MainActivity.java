@@ -35,7 +35,7 @@ public class MainActivity extends FragmentActivity
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
     private static final String MAIN_ACTIVITY_DATA = "MainActivityData";
     private static final String SHOWN_LAYERS = "ShownLayers";
-    private static final String NEW_LAYER_DIALOG_TAG = "NewLayerDialog";
+    private static final String DIALOG_TAG = "DialogTag";
     private static final float MIN_WIDTH_PANEL_DP = 300;
     
     // properties =========================================================
@@ -130,7 +130,7 @@ public class MainActivity extends FragmentActivity
      */
     public void showDialog(DialogFragment dialog)
     {
-        dialog.show(getSupportFragmentManager(), NEW_LAYER_DIALOG_TAG);
+        dialog.show(getSupportFragmentManager(), DIALOG_TAG);
     }
     // getter, setter =====================================================
     

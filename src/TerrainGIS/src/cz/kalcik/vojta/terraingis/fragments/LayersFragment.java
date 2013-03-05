@@ -24,6 +24,7 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
+import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialog;
 import cz.kalcik.vojta.terraingis.io.ShapeFile;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
@@ -229,7 +230,17 @@ public class LayersFragment extends Fragment
             if(resultCode == Activity.RESULT_OK)
             {
                 File shapefile = new File(data.getData().getPath());
-                ShapeFile.getInstance().load(getActivity(), shapefile);
+
+                ShapefileDialog dialog = new ShapefileDialog();
+                
+                if(!dialog.setFile(shapefile))
+                {
+                    Toast.makeText(mMainActivity, R.string.bad_shapefile_error, Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    mMainActivity.showDialog(dialog);
+                }
             }            
         }
     }
