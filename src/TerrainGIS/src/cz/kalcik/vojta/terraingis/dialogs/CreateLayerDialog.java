@@ -3,7 +3,6 @@ package cz.kalcik.vojta.terraingis.dialogs;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.app.DialogFragment;
-import android.widget.Toast;
 
 public abstract class CreateLayerDialog extends DialogFragment
 {
@@ -13,17 +12,14 @@ public abstract class CreateLayerDialog extends DialogFragment
         // name
         if(name.isEmpty())
         {
-            Toast.makeText(getActivity(), R.string.name_error, Toast.LENGTH_LONG).show();
-            return;
+            throw new RuntimeException(getString(R.string.name_error));
         }
         //check exist name
         LayerManager layerManager = LayerManager.getInstance();
         if(layerManager.hasLayer(name))
         {
             String errorMessage = getString(R.string.name_exist_error);
-            Toast.makeText(getActivity(), 
-                    String.format(errorMessage, name), Toast.LENGTH_LONG).show();
-            return;
+            throw new RuntimeException(String.format(errorMessage, name));
         }     
     }
 }

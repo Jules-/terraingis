@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.io.ShapeFileIO;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.AlertDialog.Builder;
@@ -14,6 +16,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class ShapefileDialog extends CreateLayerDialog
 {
@@ -23,6 +26,7 @@ public class ShapefileDialog extends CreateLayerDialog
     private File mFile;
     private String mNameNoSuffix;
     EditText mNameEditText;
+    EditText mSridEditText;
     
     // public methods ================================================================================
     
@@ -33,7 +37,7 @@ public class ShapefileDialog extends CreateLayerDialog
      * @param file
      * @return
      */
-    public boolean setFile(File file)
+    public void setFile(File file)
     {
         mFile = file;
         String name = file.getName();
@@ -41,18 +45,16 @@ public class ShapefileDialog extends CreateLayerDialog
         
         if(dotIndex == -1)
         {
-            return false;
+            throw new RuntimeException();
         }
         
         String suffix = name.substring(dotIndex);
         if(!SUFFIXS.contains(suffix))
         {
-            return false;
+            throw new RuntimeException();
         }
         
         mNameNoSuffix = name.substring(0, dotIndex);
-        
-        return true;
     }
     
     // on methods ====================================================================================
@@ -68,6 +70,7 @@ public class ShapefileDialog extends CreateLayerDialog
          dialogBuilder.setView(dialogView);
          mNameEditText = (EditText)dialogView.findViewById(R.id.edit_text_name_shapefile);
          mNameEditText.setText(mNameNoSuffix);
+         mSridEditText = (EditText)dialogView.findViewById(R.id.edit_text_srid_shapefile);
          
          dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
          dialogBuilder.setNegativeButton(R.string.negative_button, negativeHandler);
@@ -87,8 +90,21 @@ public class ShapefileDialog extends CreateLayerDialog
         public void onClick(DialogInterface dialog, int id)
         {
             String name = mNameEditText.getText().toString();
-            checkName(name);
-//            ShapeFile.getInstance().load(getActivity(), mFile);
+            try
+            {
+                checkName(name);
+                String sridString = mSridEditText.getText().toString();
+                if(sridString.isEmpty())
+                {
+                    throw new RuntimeException(getString(R.string.srid_empty_error));
+                }
+                ShapeFileIO.getInstance().load(mFile.getParent(), mNameNoSuffix, name, Integer.parseInt(sridString));
+                ((MainActivity)getActivity()).getLayersFragment().invalidateListView();
+            }
+            catch(RuntimeException e)
+            {
+                Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }        
     };
 

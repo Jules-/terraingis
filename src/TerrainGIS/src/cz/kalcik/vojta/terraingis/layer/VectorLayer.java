@@ -29,6 +29,7 @@ public abstract class VectorLayer extends AbstractLayer
 {
     // constants ==============================================================
     private static final float[] DASHED_PARAMS = {10, 5};
+    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     
     // enum ===================================================================
     public enum VectorLayerType
@@ -67,7 +68,7 @@ public abstract class VectorLayer extends AbstractLayer
         }
     }
     
-    private boolean mHaveIndex;
+    private boolean mHasIndex;
 
     protected Paint mPaint;
     protected Paint mNotSavedPaint;
@@ -76,7 +77,6 @@ public abstract class VectorLayer extends AbstractLayer
     protected String mGeometryColumn;
     protected VectorLayerData data = new VectorLayerData(new ArrayList<Coordinate>());
 
-    protected GeometryFactory mGeometryFactory = new GeometryFactory();
     
     // constructors ============================================================
     
@@ -99,7 +99,7 @@ public abstract class VectorLayer extends AbstractLayer
         this.mSrid = srid;
         this.mSpatialite = spatialite;
         mGeometryColumn = mSpatialite.getColumnGeom(name);
-        mHaveIndex = mSpatialite.indexEnabled(name);
+        mHasIndex = mSpatialite.indexEnabled(name);
         updateEnvelope();
     }
     
@@ -187,59 +187,92 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * end recorded object
      */
-    public void endObject(boolean reopnDB)
+    public void endObject()
     {
-        Geometry object = null;
+        mSpatialite.inserGeometry(createGeometry(), super.data.name, mGeometryColumn,
+                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid, true);
+        updateEnvelope();
+        data.mRecordedPoints.clear();
+    }
+    
+    public void importGeometries(Iterator<Geometry> iterGeometries)
+    {
+        while(iterGeometries.hasNext())
+        {
+            mSpatialite.inserGeometry(iterGeometries.next(), super.data.name, mGeometryColumn,
+                    mSrid, mSrid, false);
+        }
+        
+        mSpatialite.reopen();
+        updateEnvelope();
+    }
+    
+    /**
+     * remove layer from db
+     */
+    public void remove()
+    {
+        mSpatialite.removeLayer(super.data.name, mGeometryColumn, mHasIndex);
+    }    
+    // public static ============================================================
+    
+    /**
+     * convert points to geometry
+     * @param points
+     * @param type
+     * @param geometryFactory
+     * @return
+     */
+    public static Geometry createGeometry(ArrayList<Coordinate> points, VectorLayerType type)
+    {
+        Geometry result = null;
         
         // for polygon add first point
-        if(mType == VectorLayerType.POLYGON)
+        if(type == VectorLayerType.POLYGON)
         {
-            data.mRecordedPoints.add(data.mRecordedPoints.get(0));
+            points.add(points.get(0));
         }
         
         CoordinateArraySequence coordinates =
-                new CoordinateArraySequence(data.mRecordedPoints.toArray(new Coordinate[data.mRecordedPoints.size()]));
+                new CoordinateArraySequence(points.toArray(new Coordinate[points.size()]));
         
-        if(mType == VectorLayerType.POINT)
+        if(type == VectorLayerType.POINT)
         {
-            if(data.mRecordedPoints.size() == 0)
+            if(points.size() == 0)
             {
                 throw new CreateObjectException("Few points for object.");
             }
             
-            object = new Point(coordinates, mGeometryFactory);
+            result = new Point(coordinates, GEOMETRY_FACTORY);
         }
-        else if(mType == VectorLayerType.LINE)
+        else if(type == VectorLayerType.LINE)
         {
-            if(data.mRecordedPoints.size() < 2)
+            if(points.size() < 2)
             {
                 throw new CreateObjectException("Few points for object.");
             }
             
-            object = new LineString(coordinates, mGeometryFactory);
+            result = new LineString(coordinates, GEOMETRY_FACTORY);
         }
-        else if(mType == VectorLayerType.POLYGON)
+        else if(type == VectorLayerType.POLYGON)
         {
-            if(data.mRecordedPoints.size() < 4)
+            if(points.size() < 4)
             {
                 throw new CreateObjectException("Few points for object.");
             }
             
-            LinearRing ring = new LinearRing(coordinates, mGeometryFactory);
-            object = new Polygon(ring, null, mGeometryFactory);
+            LinearRing ring = new LinearRing(coordinates, GEOMETRY_FACTORY);
+            result = new Polygon(ring, null, GEOMETRY_FACTORY);
         }
         
-        mSpatialite.inserGeometry(object, super.data.name, mGeometryColumn,
-                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid, reopnDB);
-        updateEnvelope();
-        data.mRecordedPoints.clear();
+        return result;
     }
     
     // protected methods ========================================================
     protected Iterator<Geometry> getObjects(Envelope envelope)
     {
         return mSpatialite.getObjects(envelope, super.data.name, mGeometryColumn, mSrid,
-                                      mLayerManager.getSrid(), mHaveIndex);
+                                      mLayerManager.getSrid(), mHasIndex);
     }
     
     /**
@@ -247,7 +280,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     protected void updateEnvelope()
     {
-        mEnvelope = mSpatialite.getEnvelopeLayer(super.data.name, mGeometryColumn, mHaveIndex);
+        mEnvelope = mSpatialite.getEnvelopeLayer(super.data.name, mGeometryColumn, mHasIndex);
     }
     
     /**
@@ -258,5 +291,16 @@ public abstract class VectorLayer extends AbstractLayer
     protected void setDashedPath(Paint paint)
     {
         paint.setPathEffect(new DashPathEffect(DASHED_PARAMS, 0));
+    }
+    
+    // private methods ===========================================================
+    
+    /**
+     * onvert points to geometry
+     * @return
+     */
+    private Geometry createGeometry()
+    {
+        return createGeometry(data.mRecordedPoints, mType);
     }
 }

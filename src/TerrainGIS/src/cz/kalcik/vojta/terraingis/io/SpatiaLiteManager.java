@@ -51,9 +51,16 @@ public class SpatiaLiteManager
      * close and open db
      * @throws Exception 
      */
-    public void reopen() throws Exception
+    public void reopen()
     {
-        db.close();
+        try
+        {
+            db.close();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
         open(mPath);        
     }
     
@@ -437,16 +444,25 @@ public class SpatiaLiteManager
      * @param name
      * @param geometryColumn
      */
-    public void removeLayer(String name, String geometryColumn)
+    public void removeLayer(String name, String geometryColumn, boolean hasIndex)
     {
         String[] argsTable = {name};
         String[] argsGeom = {name, geometryColumn};
         
         try
         {
+            // FIXME problems
+            if(hasIndex)
+            {
+                db.exec("SELECT DisableSpatialIndex('%q', '%q')", null, argsGeom);
+            }
             db.exec("SELECT DiscardGeometryColumn('%q', '%q')", null, argsGeom);
             reopen();
             db.exec("DROP TABLE '%q'", null, argsTable);            
+            if(hasIndex)
+            {
+                db.exec("DROP TABLE 'idx_%q_%q'", null, argsGeom);
+            }
         }
         catch (Exception e)
         {

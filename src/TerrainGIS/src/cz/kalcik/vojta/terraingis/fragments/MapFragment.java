@@ -268,7 +268,7 @@ public class MapFragment extends Fragment
         layer.addPoint(location, srid);
         if(layer.getType() == VectorLayerType.POINT)
         {
-            layer.endObject(true);
+            layer.endObject();
         }
         
         changeRecordButtons();
@@ -381,7 +381,7 @@ public class MapFragment extends Fragment
 
             try
             {
-                selectedLayer.endObject(true);
+                selectedLayer.endObject();
                 
                 if(selectedLayer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
                 {

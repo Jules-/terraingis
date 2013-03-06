@@ -55,7 +55,15 @@ public class EmptyLayerDialog extends CreateLayerDialog
             // name
             EditText nameEditText = (EditText)getDialog().findViewById(R.id.edit_text_name_empty);
             String name = nameEditText.getText().toString();
-            checkName(name);        
+            try
+            {
+                checkName(name);
+            }
+            catch(RuntimeException e)
+            {
+                Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+                return;
+            }
             // type
             Spinner spinnerLayerType = (Spinner)getDialog().findViewById(R.id.spinner_layer_type);
             String layerType = (String)spinnerLayerType.getSelectedItem();

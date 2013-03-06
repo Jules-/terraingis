@@ -23,12 +23,11 @@ public class RemoveLayerDialog extends SimpleDialog
     {
         MainActivity mainActivity = (MainActivity)getActivity();
         LayersFragment layersFragment = mainActivity.getLayersFragment();
-        VectorLayer selectedVectorLayer = (VectorLayer)layersFragment.getSelectedLayer();       
-        LayerManager layerManager = LayerManager.getInstance();
-        SpatiaLiteManager spatialite = layerManager.getSpatialiteManager();
-        spatialite.removeLayer(selectedVectorLayer.toString(),
-                selectedVectorLayer.getGeometrColumn());
-        layerManager.loadSpatialite();
+        VectorLayer selectedVectorLayer = (VectorLayer)layersFragment.getSelectedLayer();
+        selectedVectorLayer.remove();
+        
+        LayerManager.getInstance().loadSpatialite();
+
         layersFragment.deselect();
         
         layersFragment.invalidateListView();
