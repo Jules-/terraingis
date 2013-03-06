@@ -235,6 +235,10 @@ public class MapFragment extends Fragment
         {
             bindAutoRecordService();
         }
+        
+        // disable old location
+        map.setLocationValid(false);
+        map.invalidate();
     }
 
     @Override

@@ -28,7 +28,7 @@
             </intent-filter>
         </activity>
         
-		<service android:name=".components.AutoRecordService">
+		<service android:name=".location.AutoRecordService">
 		</service>
     </application>
 
