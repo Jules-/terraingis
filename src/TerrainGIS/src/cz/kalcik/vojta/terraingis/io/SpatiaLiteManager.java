@@ -3,6 +3,7 @@ package cz.kalcik.vojta.terraingis.io;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Locale;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -34,7 +35,6 @@ public class SpatiaLiteManager
     private Database db;
     private WKBReader wkbReader = new WKBReader();
     private WKBWriter mWKBWriter = new WKBWriter();
-    private String mPath;
     
     // public methods ======================================================================
     /**
@@ -43,25 +43,7 @@ public class SpatiaLiteManager
      */
     public SpatiaLiteManager(String path)
     {
-        mPath = path;
     	open(path);
-    }
-
-    /**
-     * close and open db
-     * @throws Exception 
-     */
-    public void reopen()
-    {
-        try
-        {
-            db.close();
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
-        open(mPath);        
     }
     
     /**
@@ -101,20 +83,25 @@ public class SpatiaLiteManager
      */
     public boolean indexEnabled(String name)
     {
+        boolean result = false;
+        
+        Stmt stmt;
         try
         {
-            Stmt stmt = db.prepare("SELECT spatial_index_enabled FROM geometry_columns WHERE f_table_name = ?");
+            stmt = db.prepare("SELECT spatial_index_enabled FROM geometry_columns WHERE f_table_name = ?");
             stmt.bind(1, name);
             if(stmt.step())
             {
-                return (stmt.column_int(0) == 1);
+                result = (stmt.column_int(0) == 1);
             }
+            stmt.close();
         }
         catch (Exception e)
         {
             Log.e("TerrainGIS", e.getMessage());
         }
-        return false;
+        
+        return result;
     }
     
     /**
@@ -124,6 +111,8 @@ public class SpatiaLiteManager
      */
     public Envelope getEnvelopeLayer(String name, String column, boolean useRTree)
     {
+        Envelope result = null;
+        
         try
         {
             String[] args = {name};
@@ -149,18 +138,20 @@ public class SpatiaLiteManager
             
             if(stmt.step())
             {
-                return new Envelope(stmt.column_double(0),
-                                    stmt.column_double(1),
-                                    stmt.column_double(2),
-                                    stmt.column_double(3));
+                result = new Envelope(stmt.column_double(0),
+                        stmt.column_double(1),
+                        stmt.column_double(2),
+                        stmt.column_double(3));
             }
+            
+            stmt.close();
         }
         catch (Exception e)
         {
             Log.e("TerrainGIS", e.getMessage());
         }
         
-        return null;        
+        return result;        
     }
     
     /**
@@ -196,6 +187,9 @@ public class SpatiaLiteManager
                 stmt.clear_bindings();
                 stmt.reset();
             }
+            
+            stmt.close();
+            
             return result;
         }
         catch (ParseException e)
@@ -219,6 +213,8 @@ public class SpatiaLiteManager
      */
     public Coordinate transformSRS(Coordinate point, int from, int to)
     {
+        Coordinate result = null;
+        
         if(from == to)
         {
             return (Coordinate)point.clone();
@@ -234,8 +230,9 @@ public class SpatiaLiteManager
             stmt.bind(4, to);
             if(stmt.step())
             {
-                return wkbReader.read(stmt.column_bytes(0)).getCoordinate();
+                result = wkbReader.read(stmt.column_bytes(0)).getCoordinate();
             }
+            stmt.close();
         }
         catch (ParseException e)
         {
@@ -246,7 +243,7 @@ public class SpatiaLiteManager
             Log.e("TerrainGIS", e.getMessage());
         }
         
-        return null;         
+        return result;         
     }
     
     /**
@@ -258,6 +255,8 @@ public class SpatiaLiteManager
      */
     public Envelope transformSRSEnvelope(Envelope envelope, int from, int to)
     {
+        Envelope result = null;
+        
         if(from == to)
         {
             return new Envelope(envelope.getMinX(), envelope.getMaxX(),
@@ -277,8 +276,10 @@ public class SpatiaLiteManager
             
             if(stmt.step())
             {
-                return wkbReader.read(stmt.column_bytes(0)).getEnvelope().getEnvelopeInternal();
+                result = wkbReader.read(stmt.column_bytes(0)).getEnvelope().getEnvelopeInternal();
             }
+            
+            stmt.close();
         }
         catch (ParseException e)
         {
@@ -289,7 +290,7 @@ public class SpatiaLiteManager
             Log.e("TerrainGIS", e.getMessage());
         }
         
-        return null;
+        return result;
     }
     
     /**
@@ -353,21 +354,24 @@ public class SpatiaLiteManager
      */
     public String getColumnGeom(String name)
     {
+        String result = null;
+        
         try
         {
             Stmt stmt = db.prepare("SELECT f_geometry_column FROM geometry_columns WHERE f_table_name = ?");
             stmt.bind(1, name);
             if(stmt.step())
             {
-                return stmt.column_string(0);
+                result = stmt.column_string(0);
             }
+            stmt.close();
         }
         catch (Exception e)
         {
             Log.e("TerrainGIS", e.getMessage());
         }
         
-        return null;        
+        return result;        
     }
     
     /**
@@ -377,35 +381,67 @@ public class SpatiaLiteManager
      * @param column
      * @param srid
      */
-    public void inserGeometry(Geometry geom, String name, String column, int inputSrid, int tableSrid, boolean reopen)
+    public void inserGeometry(Geometry geom, String name, String column, int inputSrid, int tableSrid)
     {
         try
         {
-            String value;
+            Stmt stmt = prepareInsert(name, column, inputSrid, tableSrid);
+            inserGeometry(stmt, geom);
             
-            if(inputSrid == tableSrid)
-            {
-                value = String.format("GeomFromWKB(?, %d)", inputSrid);
-            }
-            else
-            {
-                value = String.format("Transform(GeomFromWKB(?, %d), %d)", inputSrid, tableSrid);
-            }
-            
-            Stmt stmt = db.prepare(String.format("INSERT INTO '%s' ('%s') VALUES (%s)",
-                                   name, column, value));
-            stmt.bind(1, mWKBWriter.write(geom));
-            stmt.step();
-            
-            if(reopen)
-            {
-                reopen();
-            }
+            stmt.close();
         }
         catch (Exception e)
         {
             Log.e("TerrainGIS", e.getMessage());
         }    
+    }
+
+    /**
+     * insert geometry (can be reused)
+     * @param stmt
+     * @param geom
+     */
+    public void inserGeometry(Stmt stmt, Geometry geom)
+    {
+        try
+        {
+            stmt.bind(1, mWKBWriter.write(geom));
+            stmt.step();
+            
+            stmt.clear_bindings();
+            stmt.reset();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }    
+    }
+    
+    /**
+     * create compiled SQL for insert more queries
+     * @param name
+     * @param column
+     * @param inputSrid
+     * @param tableSrid
+     * @return
+     * @throws Exception
+     */
+    public Stmt prepareInsert(String name, String column, int inputSrid, int tableSrid) throws Exception
+    {
+        String value;
+        
+        if(inputSrid == tableSrid)
+        {
+            value = String.format(Locale.UK, "GeomFromWKB(?, %d)", inputSrid);
+        }
+        else
+        {
+            value = String.format(Locale.UK, "Transform(GeomFromWKB(?, %d), %d)", inputSrid, tableSrid);
+        }
+        
+
+        return db.prepare(String.format("INSERT INTO '%s' ('%s') VALUES (%s)",
+                          name, column, value));
     }
     
     /**
@@ -415,7 +451,7 @@ public class SpatiaLiteManager
      * @param type
      * @param srid
      */
-    public boolean createEmptyLayer(String name, String geometryColumn, String type, int srid)
+    public void createEmptyLayer(String name, String geometryColumn, String type, int srid)
     {
         String[] argsTable = {name};
         String[] argsGeom = {name, geometryColumn, Integer.toString(srid), type};
@@ -427,15 +463,10 @@ public class SpatiaLiteManager
                     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)", null, argsTable);
             db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
             db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
-            reopen();
-            
-            return true;
         }
         catch (Exception e)
         {
             Log.e("TerrainGIS", e.getMessage());
-            
-            return false;
         }
     }
     
@@ -451,18 +482,15 @@ public class SpatiaLiteManager
         
         try
         {
-            // FIXME problems
             if(hasIndex)
             {
-                db.exec("SELECT DisableSpatialIndex('%q', '%q')", null, argsGeom);
+                db.exec("SELECT DisableSpatialIndex('%q', '%q');", null, argsGeom);
+                // FIXME can not drop idx table
+                db.exec("DROP TABLE 'idx_%q_%q';", null, argsGeom);
             }
-            db.exec("SELECT DiscardGeometryColumn('%q', '%q')", null, argsGeom);
-            reopen();
-            db.exec("DROP TABLE '%q'", null, argsTable);            
-            if(hasIndex)
-            {
-                db.exec("DROP TABLE 'idx_%q_%q'", null, argsGeom);
-            }
+            db.exec("SELECT DiscardGeometryColumn('%q', '%q');", null, argsGeom);
+            db.exec("DROP TABLE '%q';", null, argsTable);
+            db.exec("VACUUM;", null, argsTable);
         }
         catch (Exception e)
         {
@@ -482,6 +510,7 @@ public class SpatiaLiteManager
         try
         {
             db.open(spatialDbFile.getAbsolutePath(), Constants.SQLITE_OPEN_READWRITE | Constants.SQLITE_OPEN_CREATE);
+            db.exec("PRAGMA temp_store = 2;", null, null);
         }
         catch (Exception e)
         {
@@ -513,6 +542,10 @@ public class SpatiaLiteManager
                 try
                 {
                     mHasNext = mStmt.step();
+                    if(!mHasNext)
+                    {
+                        mStmt.close();
+                    }
                 }
                 catch (Exception e)
                 {

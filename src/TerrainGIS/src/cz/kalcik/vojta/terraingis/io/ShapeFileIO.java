@@ -43,36 +43,27 @@ public class ShapeFileIO
      * load shapefile layer
      * @param context
      * @param file
+     * @throws Exception 
      */
-    public void load(String folder, String filename, String layerName, int srid)
+    public void load(String folder, String filename, String layerName, int srid) throws Exception
     {
         ShapeFile shapeFile = null;
-        try
-        {
-            shapeFile = new ShapeFile(folder, filename);
-            shapeFile.READ();
-            
-            ShpShape.Type type = shapeFile.getSHP_shapeType();
-            
-            LayerManager layerManager = LayerManager.getInstance();
-            SpatiaLiteManager spatialiteManager = layerManager.getSpatialiteManager();
-            
-            // FIXME srid
-            if(!spatialiteManager.createEmptyLayer(
-                    layerName, SpatiaLiteManager.GEOMETRY_COLUMN_NAME,
-                    getTypeString(type), srid))
-            {
-                throw new Exception("Can not create table.");
-            }
-            
-            layerManager.loadSpatialite();
-            VectorLayer layer = layerManager.getLayerByName(layerName);
-            layer.importGeometries(new ObjectIterator(shapeFile));
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+
+        shapeFile = new ShapeFile(folder, filename);
+        shapeFile.READ();
+        
+        ShpShape.Type type = shapeFile.getSHP_shapeType();
+        
+        LayerManager layerManager = LayerManager.getInstance();
+        SpatiaLiteManager spatialiteManager = layerManager.getSpatialiteManager();
+        
+        spatialiteManager.createEmptyLayer(
+                layerName, SpatiaLiteManager.GEOMETRY_COLUMN_NAME,
+                getTypeString(type), srid);
+        
+        layerManager.loadSpatialite();
+        VectorLayer layer = layerManager.getLayerByName(layerName);
+        layer.importGeometries(new ObjectIterator(shapeFile));
     }
     
     // private methods =====================================================================

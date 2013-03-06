@@ -13,6 +13,7 @@ import android.app.Dialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -98,7 +99,17 @@ public class ShapefileDialog extends CreateLayerDialog
                 {
                     throw new RuntimeException(getString(R.string.srid_empty_error));
                 }
-                ShapeFileIO.getInstance().load(mFile.getParent(), mNameNoSuffix, name, Integer.parseInt(sridString));
+                
+                try
+                {
+                    ShapeFileIO.getInstance().load(mFile.getParent(), mNameNoSuffix, name, Integer.parseInt(sridString));
+                }
+                catch (Exception e)
+                {
+                    Log.e("TerrainGIS", e.getMessage());
+                    throw new RuntimeException(getString(R.string.load_shapefile_error));
+                }
+                
                 ((MainActivity)getActivity()).getLayersFragment().invalidateListView();
             }
             catch(RuntimeException e)

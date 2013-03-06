@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import jsqlite.Exception;
+import jsqlite.Stmt;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -190,20 +193,21 @@ public abstract class VectorLayer extends AbstractLayer
     public void endObject()
     {
         mSpatialite.inserGeometry(createGeometry(), super.data.name, mGeometryColumn,
-                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid, true);
+                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid);
         updateEnvelope();
         data.mRecordedPoints.clear();
     }
     
-    public void importGeometries(Iterator<Geometry> iterGeometries)
+    public void importGeometries(Iterator<Geometry> iterGeometries) throws Exception
     {
+        Stmt stmt = mSpatialite.prepareInsert(super.data.name, mGeometryColumn, mSrid, mSrid);
+        
         while(iterGeometries.hasNext())
         {
-            mSpatialite.inserGeometry(iterGeometries.next(), super.data.name, mGeometryColumn,
-                    mSrid, mSrid, false);
+            mSpatialite.inserGeometry(stmt, iterGeometries.next());
         }
         
-        mSpatialite.reopen();
+        stmt.close();
         updateEnvelope();
     }
     
