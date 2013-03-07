@@ -79,7 +79,7 @@ public abstract class VectorLayer extends AbstractLayer
     protected SpatiaLiteManager mSpatialite;
     protected String mGeometryColumn;
     protected VectorLayerData data = new VectorLayerData(new ArrayList<Coordinate>());
-
+    protected AttributeTable mAttributes;
     
     // constructors ============================================================
     
@@ -103,6 +103,7 @@ public abstract class VectorLayer extends AbstractLayer
         this.mSpatialite = spatialite;
         mGeometryColumn = mSpatialite.getColumnGeom(name);
         mHasIndex = mSpatialite.indexEnabled(name);
+        mAttributes = mSpatialite.getAttributeTable(name);
         updateEnvelope();
     }
     

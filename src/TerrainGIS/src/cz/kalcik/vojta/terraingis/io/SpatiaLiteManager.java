@@ -12,6 +12,9 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
 
+import cz.kalcik.vojta.terraingis.layer.AttributeTable;
+import cz.kalcik.vojta.terraingis.layer.AttributeTable.AttributeType;
+
 import android.util.Log;
 
 import jsqlite.Constants;
@@ -485,7 +488,6 @@ public class SpatiaLiteManager
             if(hasIndex)
             {
                 db.exec("SELECT DisableSpatialIndex('%q', '%q');", null, argsGeom);
-                // FIXME can not drop idx table
                 db.exec("DROP TABLE 'idx_%q_%q';", null, argsGeom);
             }
             db.exec("SELECT DiscardGeometryColumn('%q', '%q');", null, argsGeom);
@@ -496,6 +498,49 @@ public class SpatiaLiteManager
         {
             Log.e("TerrainGIS", e.getMessage());
         }
+    }
+    
+    /**
+     * @param name of table
+     * @return attribute table
+     */
+    public AttributeTable getAttributeTable(String name)
+    {
+        AttributeTable result = new AttributeTable();
+
+        try
+        {
+            Stmt stmt = db.prepare("PRAGMA table_info(?);");
+            stmt.bind(1, name);
+            
+            while(stmt.step())
+            {
+                //  0  |  1   |   2  |    3    |     4      | 5
+                // cid | name | type | notnull | dflt_value | pk
+                
+                boolean isPK = (stmt.column_int(5) == 1);
+                AttributeType type = AttributeType.getType(stmt.column_string(2));
+                if(type != null && !isPK)
+                {
+                    String nameColumn = stmt.column_string(1);
+                    if(nameColumn == "datetime" && 
+                            (type == AttributeType.TEXT || type == AttributeType.NUMBER))
+                    {
+                        type = AttributeType.DATETIME;
+                    }
+                    
+                    result.addColumn(nameColumn, type);
+                }
+            }
+            
+            stmt.close();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return result;
     }
     // private methods =======================================================================
     /**
