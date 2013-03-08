@@ -25,7 +25,6 @@ import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialog;
-import cz.kalcik.vojta.terraingis.io.ShapeFileIO;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;

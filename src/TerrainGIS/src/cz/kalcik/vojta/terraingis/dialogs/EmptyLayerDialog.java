@@ -3,9 +3,12 @@
  */
 package cz.kalcik.vojta.terraingis.dialogs;
 
+import java.util.ArrayList;
+
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.layer.AttributeTable.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -16,7 +19,10 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -26,6 +32,14 @@ import android.widget.Toast;
  */
 public class EmptyLayerDialog extends CreateLayerDialog
 {
+    // attributes =====================================================================================
+    MainActivity mMainActivity;
+    LinearLayout mLayout;
+    LayoutInflater mInflater;
+    ArrayList<LinearLayout> mAttributes = new ArrayList<LinearLayout>();
+    int attributeId = 0;
+    
+    // on methods =====================================================================================
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
@@ -33,14 +47,37 @@ public class EmptyLayerDialog extends CreateLayerDialog
          
          dialogBuilder.setTitle(R.string.empty_layer_message);
          
-         LayoutInflater inflater = getActivity().getLayoutInflater();
-         dialogBuilder.setView(inflater.inflate(R.layout.empty_layer_dialog, null));
+         mMainActivity = (MainActivity)getActivity();
+         mInflater = mMainActivity.getLayoutInflater();
+         View view = mInflater.inflate(R.layout.empty_layer_dialog, null);
+         mLayout = (LinearLayout)view.findViewById(R.id.empty_layer_dialog_layout);
+         addAttribute();
+         dialogBuilder.setView(view);
          
          dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
          dialogBuilder.setNegativeButton(R.string.negative_button, negativeHandler);
          
          return dialogBuilder.create();
     }
+    
+    // private methods ================================================================================
+    /**
+     * add attribute to form
+     */
+    private void addAttribute()
+    {
+        LinearLayout item = (LinearLayout)mInflater.inflate(R.layout.attribute_column, null);
+        // set spinner
+        Spinner spinner = (Spinner)item.findViewById(R.id.spinner_attribute_type);
+        ArrayAdapter<AttributeType> adapter = new ArrayAdapter<AttributeType>(mMainActivity,
+                android.R.layout.simple_spinner_dropdown_item, AttributeType.values());
+        spinner.setAdapter(adapter);
+        
+        mLayout.addView(item);
+        
+        mAttributes.add(item);
+    }
+    
     
     // handlers =======================================================================================
  
@@ -89,4 +126,6 @@ public class EmptyLayerDialog extends CreateLayerDialog
             
         }        
     };
+    
+    // classes ======================================================================================
 }

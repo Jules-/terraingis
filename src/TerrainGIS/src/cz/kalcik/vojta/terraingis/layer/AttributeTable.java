@@ -12,9 +12,14 @@ import java.util.ArrayList;
 public class AttributeTable
 {
     // constants ==============================================================
+    /**
+     * Data type of attribute
+     * @author jules
+     *
+     */
     public enum AttributeType
     {
-        TEXT, NUMBER, DATETIME;
+        TEXT, INTEGER, REAL;
         
         public static AttributeType getType(String spatialiteType)
         {
@@ -22,9 +27,13 @@ public class AttributeTable
             {
                 return TEXT;
             }
-            else if(spatialiteType.equals("INTEGER") || spatialiteType.equals("REAL"))
+            else if(spatialiteType.equals("INTEGER"))
             {
-                return NUMBER;
+                return INTEGER;
+            }
+            else if(spatialiteType.equals("REAL"))
+            {
+                return REAL;
             }
             else
             {
@@ -34,9 +43,12 @@ public class AttributeTable
     };
     // attributes =============================================================
     private ArrayList<Column> mColumns = new ArrayList<AttributeTable.Column>();
+    int pkIndex;
+    
     // public methods =========================================================
-    public void addColumn(String name, AttributeType type)
+    public void addColumn(String name, AttributeType type, boolean isPK)
     {
+        pkIndex = mColumns.size();
         mColumns.add(new Column(name, type));
     }
     

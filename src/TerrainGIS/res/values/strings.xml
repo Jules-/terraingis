@@ -8,6 +8,7 @@
     <string name="name_form">Name</string>
     <string name="type_form">Type</string>
     <string name="srid_form">SRS EPSG</string>
+    <string name="attributes_form">Attributes</string>
     <!-- error messages -->
     <string name="location_fix_error">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="MyTheme" parent="@android:style/Theme.Holo.Light">
         <item name="android:actionBarStyle">@style/MyActionBar</item>    
@@ -10,4 +10,7 @@
         <item name="android:background">#40000000</item>
     </style>
 
+    <style name="subtitle_dialog_style" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">#ff33b5e5</item>
+    </style>
 </resources>

@@ -464,7 +464,7 @@ public class SpatiaLiteManager
         {
             db.exec("CREATE TABLE '%q' (" +
                     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)", null, argsTable);
-            db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
+            db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XYZ')", null, argsGeom);
             db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
         }
         catch (Exception e)
@@ -510,8 +510,7 @@ public class SpatiaLiteManager
 
         try
         {
-            Stmt stmt = db.prepare("PRAGMA table_info(?);");
-            stmt.bind(1, name);
+            Stmt stmt = db.prepare(String.format("PRAGMA table_info('%s');", name));
             
             while(stmt.step())
             {
@@ -520,16 +519,11 @@ public class SpatiaLiteManager
                 
                 boolean isPK = (stmt.column_int(5) == 1);
                 AttributeType type = AttributeType.getType(stmt.column_string(2));
-                if(type != null && !isPK)
+                if(type != null)
                 {
                     String nameColumn = stmt.column_string(1);
-                    if(nameColumn == "datetime" && 
-                            (type == AttributeType.TEXT || type == AttributeType.NUMBER))
-                    {
-                        type = AttributeType.DATETIME;
-                    }
                     
-                    result.addColumn(nameColumn, type);
+                    result.addColumn(nameColumn, type, isPK);
                 }
             }
             
@@ -555,7 +549,7 @@ public class SpatiaLiteManager
         try
         {
             db.open(spatialDbFile.getAbsolutePath(), Constants.SQLITE_OPEN_READWRITE | Constants.SQLITE_OPEN_CREATE);
-            db.exec("PRAGMA temp_store = 2;", null, null);
+            db.exec("PRAGMA temp_store = 2;", null, null); // not use temporery files
         }
         catch (Exception e)
         {
