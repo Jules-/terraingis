@@ -7,10 +7,10 @@
     
     <style name="MyActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:displayOptions"></item>
-        <item name="android:background">#40000000</item>
+        <item name="android:background">@color/actionbar_background</item>
     </style>
 
-    <style name="subtitle_dialog_style" parent="@android:style/TextAppearance.Medium">
-        <item name="android:textColor">#ff33b5e5</item>
+    <style name="subtitle_dialog_style" parent="@android:style/TextAppearance.Large">
+        <item name="android:textColor">@color/holo_foreground</item>
     </style>
 </resources>

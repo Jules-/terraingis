@@ -12,7 +12,7 @@ public abstract class CreateLayerDialog extends DialogFragment
         // name
         if(name.isEmpty())
         {
-            throw new RuntimeException(getString(R.string.name_error));
+            throw new RuntimeException(getString(R.string.name_layer_error));
         }
         //check exist name
         LayerManager layerManager = LayerManager.getInstance();

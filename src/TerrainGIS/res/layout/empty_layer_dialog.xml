@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/name_form"
-        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         style="@style/subtitle_dialog_style" />
 
 	<EditText
@@ -26,7 +26,7 @@
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:text="@string/type_form"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    style="@style/subtitle_dialog_style" />
 
 	<Spinner
@@ -40,7 +40,7 @@
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:text="@string/attributes_form"
-	    android:textAppearance="?android:attr/textAppearanceMedium"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
 	    style="@style/subtitle_dialog_style" />
 
 	<ScrollView
@@ -51,17 +51,25 @@
 		<LinearLayout
 		    android:layout_width="match_parent"
 		    android:layout_height="wrap_content"
-		    android:orientation="vertical"
-		    android:id="@+id/empty_layer_dialog_layout">
+		    android:orientation="vertical">
+
+			<LinearLayout
+			    android:layout_width="match_parent"
+			    android:layout_height="wrap_content"
+			    android:orientation="vertical"
+			    android:id="@+id/empty_layer_dialog_layout">
+	
+			</LinearLayout>
+
+		
+			<ImageButton
+		        android:id="@+id/button_add"
+		        android:layout_width="70dip"
+		        android:layout_height="70dip"
+		        android:src="@drawable/add" />
 
 		</LinearLayout>
 
 	</ScrollView>
 	
-    <ImageButton
-        android:id="@+id/button_add"
-        android:layout_width="70dip"
-        android:layout_height="70dip"
-        android:src="@drawable/add" />
-
 </LinearLayout>

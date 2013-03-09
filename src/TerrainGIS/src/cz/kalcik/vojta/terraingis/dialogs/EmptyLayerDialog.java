@@ -4,12 +4,15 @@
 package cz.kalcik.vojta.terraingis.dialogs;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.layer.AttributeTable;
 import cz.kalcik.vojta.terraingis.layer.AttributeTable.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import cz.kalcik.vojta.terraingis.view.AttributeLayout;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.AlertDialog.Builder;
@@ -20,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -32,11 +36,14 @@ import android.widget.Toast;
  */
 public class EmptyLayerDialog extends CreateLayerDialog
 {
+    // constants ======================================================================================
+    
+    
     // attributes =====================================================================================
     MainActivity mMainActivity;
     LinearLayout mLayout;
     LayoutInflater mInflater;
-    ArrayList<LinearLayout> mAttributes = new ArrayList<LinearLayout>();
+    ArrayList<AttributeLayout> mAttributes = new ArrayList<AttributeLayout>();
     int attributeId = 0;
     
     // on methods =====================================================================================
@@ -49,15 +56,22 @@ public class EmptyLayerDialog extends CreateLayerDialog
          
          mMainActivity = (MainActivity)getActivity();
          mInflater = mMainActivity.getLayoutInflater();
+         
          View view = mInflater.inflate(R.layout.empty_layer_dialog, null);
          mLayout = (LinearLayout)view.findViewById(R.id.empty_layer_dialog_layout);
-         addAttribute();
+         addAttribute(AttributeTable.DATETIME_COLUMN, AttributeTable.DATETIME_TYPE, false);
+         setBackgroundColors();
+         ImageButton addButton = (ImageButton)view.findViewById(R.id.button_add);
+         addButton.setOnClickListener(addAttributeHandler);
          dialogBuilder.setView(view);
          
-         dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
-         dialogBuilder.setNegativeButton(R.string.negative_button, negativeHandler);
+         dialogBuilder.setPositiveButton(R.string.positive_button, null);
+         dialogBuilder.setNegativeButton(R.string.negative_button, null);
          
-         return dialogBuilder.create();
+         AlertDialog dialog = dialogBuilder.create();
+         dialog.setOnShowListener(onShowListener);
+         
+         return dialog;
     }
     
     // private methods ================================================================================
@@ -66,28 +80,128 @@ public class EmptyLayerDialog extends CreateLayerDialog
      */
     private void addAttribute()
     {
-        LinearLayout item = (LinearLayout)mInflater.inflate(R.layout.attribute_column, null);
+        addAttribute(null, null, true);
+    }
+    
+    private void addAttribute(String name, AttributeType type, boolean canChange)
+    {
+        AttributeLayout item = (AttributeLayout)mInflater.inflate(R.layout.attribute_column, null);
+        // set name
+        EditText editText = (EditText)item.findViewById(R.id.edit_text_name_column);
+        if(name != null)
+        {
+            editText.setText(name);
+        }
+        if(!canChange)
+        {
+            editText.setEnabled(false);
+        }
         // set spinner
         Spinner spinner = (Spinner)item.findViewById(R.id.spinner_attribute_type);
         ArrayAdapter<AttributeType> adapter = new ArrayAdapter<AttributeType>(mMainActivity,
                 android.R.layout.simple_spinner_dropdown_item, AttributeType.values());
         spinner.setAdapter(adapter);
+        if(type != null)
+        {
+            spinner.setSelection(adapter.getPosition(type));
+        }
+        if(!canChange)
+        {
+            spinner.setEnabled(false);
+        }
+        // button
+        ImageButton button = (ImageButton)item.findViewById(R.id.button_delete);
+        button.setOnClickListener(removeAttributeHandler);
         
         mLayout.addView(item);
         
-        mAttributes.add(item);
+        mAttributes.add(item);        
     }
     
+    /**
+     * set background colors of attributes
+     */
+    private void setBackgroundColors()
+    {
+        int color1 = getResources().getColor(R.color.background_list1);
+        int color2 = getResources().getColor(R.color.background_list2);
+        boolean firstColor = true;
+        
+        for(AttributeLayout layout : mAttributes)
+        {
+            int color = firstColor ? color1 : color2;
+
+            layout.setBackgroundColor(color);
+            firstColor = !firstColor;
+        }
+    }
     
+    /**
+     * check attributes
+     */
+    private void checkAttributes()
+    {
+        TreeSet<String> names = new TreeSet<String>();
+        
+        for(AttributeLayout layout : mAttributes)
+        {
+            String name = layout.getName();
+            
+            if(name.isEmpty())
+            {
+                throw new RuntimeException(getString(R.string.name_attribute_error));
+            }
+            else if(name.equals(SpatiaLiteManager.ID_COLUMN_NAME))
+            {
+                throw new RuntimeException(getString(R.string.concrete_name_attribute_error));
+            }
+            
+            if(names.contains(name))
+            {
+                throw new RuntimeException(getString(R.string.name_attribute_same_error));
+            }
+            
+            names.add(name);
+        }        
+    }
+    
+    /**
+     * create attribute table for new layer
+     * @return
+     */
+    private AttributeTable createAttributeTable()
+    {
+        AttributeTable result = new AttributeTable();
+
+        result.addColumn(SpatiaLiteManager.ID_COLUMN_NAME,
+                SpatiaLiteManager.ID_COLUMN_TYPE, true);
+        
+        for(AttributeLayout layout : mAttributes)
+        {
+            result.addColumn(layout.getName(), layout.getType(), false);
+        }
+        
+        return result;
+    }
     // handlers =======================================================================================
- 
+    DialogInterface.OnShowListener onShowListener = new DialogInterface.OnShowListener()
+    {
+        @Override
+        public void onShow(DialogInterface dialog)
+        {
+            Button okButton = ((AlertDialog) getDialog()).getButton(DialogInterface.BUTTON_POSITIVE);
+            okButton.setOnClickListener(positiveHandler);
+        }
+    };
+    
+    
     /**
      * positive button
      */
-    DialogInterface.OnClickListener positiveHandler = new DialogInterface.OnClickListener()
+    View.OnClickListener positiveHandler = new View.OnClickListener()
     {
         @Override
-        public void onClick(DialogInterface dialog, int id)
+        public void onClick(View v)
         {
             // name
             EditText nameEditText = (EditText)getDialog().findViewById(R.id.edit_text_name_empty);
@@ -95,6 +209,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
             try
             {
                 checkName(name);
+                checkAttributes();
             }
             catch(RuntimeException e)
             {
@@ -107,23 +222,42 @@ public class EmptyLayerDialog extends CreateLayerDialog
                        
             SpatiaLiteManager spatialite = LayerManager.getInstance().getSpatialiteManager();
             
-            spatialite.createEmptyLayer(name, SpatiaLiteManager.GEOMETRY_COLUMN_NAME,
-                                        layerType, SpatiaLiteManager.EPSG_LONLAT);
+            spatialite.createEmptyLayer(name, layerType, 
+                    createAttributeTable().createSQLColumns(), SpatiaLiteManager.EPSG_LONLAT);
             LayerManager.getInstance().loadSpatialite();
             ((MainActivity)getActivity()).getLayersFragment().invalidateListView();
+            
+            getDialog().dismiss();
         }        
     };
 
-    
     /**
-     * negative button
+     * add attribute
      */
-    DialogInterface.OnClickListener negativeHandler = new DialogInterface.OnClickListener()
+    View.OnClickListener addAttributeHandler = new View.OnClickListener()
     {
         @Override
-        public void onClick(DialogInterface dialog, int id)
+        public void onClick(View v)
         {
+            addAttribute();
+            setBackgroundColors();
+        }        
+    };
+    
+    /**
+     * add attribute
+     */
+    View.OnClickListener removeAttributeHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            LinearLayout parent = (LinearLayout)v.getParent();
+            int position = mAttributes.indexOf(parent);
+            mLayout.removeView(parent);
+            mAttributes.remove(position);
             
+            setBackgroundColors();
         }        
     };
     

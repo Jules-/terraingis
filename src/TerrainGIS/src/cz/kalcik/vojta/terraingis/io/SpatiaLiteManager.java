@@ -33,6 +33,8 @@ public class SpatiaLiteManager
     public static final int EPSG_SPHERICAL_MERCATOR = 3857;
     public static final int EPSG_LONLAT = 4326;
     public static final String GEOMETRY_COLUMN_NAME = "Geometry";
+    public static final String ID_COLUMN_NAME = "id";
+    public static final AttributeType ID_COLUMN_TYPE = AttributeType.INTEGER;
     
     // attributes =========================================================================
     private Database db;
@@ -454,16 +456,16 @@ public class SpatiaLiteManager
      * @param type
      * @param srid
      */
-    public void createEmptyLayer(String name, String geometryColumn, String type, int srid)
+    public void createEmptyLayer(String name, String type, String columns, int srid)
     {
         String[] argsTable = {name};
-        String[] argsGeom = {name, geometryColumn, Integer.toString(srid), type};
-        String[] argsIndex = {name, geometryColumn};
+        String[] argsGeom = {name, GEOMETRY_COLUMN_NAME, Integer.toString(srid), type};
+        String[] argsIndex = {name, GEOMETRY_COLUMN_NAME};
         
         try
         {
-            db.exec("CREATE TABLE '%q' (" +
-                    "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)", null, argsTable);
+            String query = "CREATE TABLE '%q' " + columns;
+            db.exec(query, null, argsTable);
             db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XYZ')", null, argsGeom);
             db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
         }

@@ -57,13 +57,11 @@ public class ShapeFileIO
         LayerManager layerManager = LayerManager.getInstance();
         SpatiaLiteManager spatialiteManager = layerManager.getSpatialiteManager();
         
-        spatialiteManager.createEmptyLayer(
-                layerName, SpatiaLiteManager.GEOMETRY_COLUMN_NAME,
-                getTypeString(type), srid);
-        
-        layerManager.loadSpatialite();
-        VectorLayer layer = layerManager.getLayerByName(layerName);
-        layer.importGeometries(new ObjectIterator(shapeFile));
+//        spatialiteManager.createEmptyLayer(layerName, getTypeString(type), srid);
+//        
+//        layerManager.loadSpatialite();
+//        VectorLayer layer = layerManager.getLayerByName(layerName);
+//        layer.importGeometries(new ObjectIterator(shapeFile));
     }
     
     // private methods =====================================================================

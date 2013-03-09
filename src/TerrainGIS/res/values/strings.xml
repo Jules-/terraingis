@@ -12,7 +12,10 @@
     <!-- error messages -->
     <string name="location_fix_error">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>
-    <string name="name_error">Name can not be empty!</string>
+    <string name="name_layer_error">Name of layer can not be empty!</string>
+    <string name="name_attribute_error">Name of attribute can not be empty!</string>
+    <string name="name_attribute_same_error">There are same attributes!</string>
+    <string name="concrete_name_attribute_error">Attribute can not has name %s!</string>
     <string name="name_exist_error">The layer %s exist!</string>
     <string name="tileslayer_remove_error">Can not remove tiles layer!</string>
     <string name="not_selected_layer">It is not any layer selected!</string>

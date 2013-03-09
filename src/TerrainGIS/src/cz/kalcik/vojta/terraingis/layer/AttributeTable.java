@@ -12,6 +12,9 @@ import java.util.ArrayList;
 public class AttributeTable
 {
     // constants ==============================================================
+    public static String DATETIME_COLUMN = "datetime";
+    public static AttributeType DATETIME_TYPE = AttributeType.TEXT;
+    
     /**
      * Data type of attribute
      * @author jules
@@ -48,10 +51,41 @@ public class AttributeTable
     // public methods =========================================================
     public void addColumn(String name, AttributeType type, boolean isPK)
     {
-        pkIndex = mColumns.size();
+        if(isPK)
+        {
+            pkIndex = mColumns.size();
+        }
         mColumns.add(new Column(name, type));
     }
     
+    /**
+     * crate SQL definition of columns
+     * @return
+     */
+    public String createSQLColumns()
+    {
+        StringBuilder builder = new StringBuilder("(");
+        
+        int size = mColumns.size();
+        for(int i=0; i < size; i++)
+        {
+            Column column = mColumns.get(i);
+            builder.append(String.format("'%s' %s", column.name,
+                    column.type));
+            if(i == pkIndex)
+            {
+                builder.append(" PRIMARY KEY AUTOINCREMENT");
+            }
+            
+            if(i < size-1)
+            {
+                builder.append(", ");
+            }
+        }
+        builder.append(")");
+        
+        return builder.toString();
+    }
     // getter, setter =========================================================
         
     /**
