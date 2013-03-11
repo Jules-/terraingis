@@ -8,9 +8,9 @@ import java.util.TreeSet;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
-import cz.kalcik.vojta.terraingis.layer.AttributeTable;
-import cz.kalcik.vojta.terraingis.layer.AttributeTable.AttributeType;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
+import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
+import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.view.AttributeLayout;
 import android.app.AlertDialog;
@@ -59,7 +59,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
          
          View view = mInflater.inflate(R.layout.empty_layer_dialog, null);
          mLayout = (LinearLayout)view.findViewById(R.id.empty_layer_dialog_layout);
-         addAttribute(AttributeTable.DATETIME_COLUMN, AttributeTable.DATETIME_TYPE, false);
+         addAttribute(AttributeHeader.DATETIME_COLUMN, AttributeHeader.DATETIME_TYPE, false);
          setBackgroundColors();
          ImageButton addButton = (ImageButton)view.findViewById(R.id.button_add);
          addButton.setOnClickListener(addAttributeHandler);
@@ -151,7 +151,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
             {
                 throw new RuntimeException(getString(R.string.name_attribute_error));
             }
-            else if(name.equals(SpatiaLiteManager.ID_COLUMN_NAME))
+            else if(name.equals(SpatiaLiteIO.ID_COLUMN_NAME))
             {
                 throw new RuntimeException(getString(R.string.concrete_name_attribute_error));
             }
@@ -169,12 +169,12 @@ public class EmptyLayerDialog extends CreateLayerDialog
      * create attribute table for new layer
      * @return
      */
-    private AttributeTable createAttributeTable()
+    private AttributeHeader createAttributeTable()
     {
-        AttributeTable result = new AttributeTable();
+        AttributeHeader result = new AttributeHeader();
 
-        result.addColumn(SpatiaLiteManager.ID_COLUMN_NAME,
-                SpatiaLiteManager.ID_COLUMN_TYPE, true);
+        result.addColumn(SpatiaLiteIO.ID_COLUMN_NAME,
+                SpatiaLiteIO.ID_COLUMN_TYPE, true);
         
         for(AttributeLayout layout : mAttributes)
         {
@@ -220,10 +220,10 @@ public class EmptyLayerDialog extends CreateLayerDialog
             Spinner spinnerLayerType = (Spinner)getDialog().findViewById(R.id.spinner_layer_type);
             String layerType = (String)spinnerLayerType.getSelectedItem();
                        
-            SpatiaLiteManager spatialite = LayerManager.getInstance().getSpatialiteManager();
+            SpatiaLiteIO spatialite = LayerManager.getInstance().getSpatialiteManager();
             
             spatialite.createEmptyLayer(name, layerType, 
-                    createAttributeTable().createSQLColumns(), SpatiaLiteManager.EPSG_LONLAT);
+                    createAttributeTable().createSQLColumns(), SpatiaLiteIO.EPSG_LONLAT);
             LayerManager.getInstance().loadSpatialite();
             ((MainActivity)getActivity()).getLayersFragment().invalidateListView();
             

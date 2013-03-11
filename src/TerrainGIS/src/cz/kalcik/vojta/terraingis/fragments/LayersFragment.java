@@ -25,7 +25,7 @@ import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialog;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.TilesLayer;
@@ -262,7 +262,7 @@ public class LayersFragment extends Fragment
                 return;
             }
             
-            SpatiaLiteManager spatialite = mLayerManager.getSpatialiteManager();
+            SpatiaLiteIO spatialite = mLayerManager.getSpatialiteManager();
             
             int from = selectedLayer.getSrid();
             int to = mLayerManager.getSrid();

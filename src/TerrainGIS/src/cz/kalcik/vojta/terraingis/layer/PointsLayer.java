@@ -7,7 +7,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
@@ -18,13 +18,13 @@ public class PointsLayer extends VectorLayer
     
     // public methods =========================================================
     public PointsLayer(String name, int srid,
-                       SpatiaLiteManager spatialite)
+                       SpatiaLiteIO spatialite)
     {
         this(DefaultPaints.getPoint(), name, srid, spatialite);
     }
     
 	public PointsLayer(Paint paint, String name, int srid,
-                       SpatiaLiteManager spatialite)
+                       SpatiaLiteIO spatialite)
 	{
 	    super(VectorLayerType.POINT, paint, name, srid, spatialite);
 	}

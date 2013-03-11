@@ -9,44 +9,15 @@ import java.util.ArrayList;
  * @author jules
  *
  */
-public class AttributeTable
+public class AttributeHeader
 {
     // constants ==============================================================
     public static String DATETIME_COLUMN = "datetime";
     public static AttributeType DATETIME_TYPE = AttributeType.TEXT;
     
-    /**
-     * Data type of attribute
-     * @author jules
-     *
-     */
-    public enum AttributeType
-    {
-        TEXT, INTEGER, REAL;
-        
-        public static AttributeType getType(String spatialiteType)
-        {
-            if(spatialiteType.equals("TEXT"))
-            {
-                return TEXT;
-            }
-            else if(spatialiteType.equals("INTEGER"))
-            {
-                return INTEGER;
-            }
-            else if(spatialiteType.equals("REAL"))
-            {
-                return REAL;
-            }
-            else
-            {
-                return null;
-            }
-        }
-    };
     // attributes =============================================================
-    private ArrayList<Column> mColumns = new ArrayList<AttributeTable.Column>();
-    int pkIndex;
+    private ArrayList<Column> mColumns = new ArrayList<AttributeHeader.Column>();
+    int pkIndex = -1;
     
     // public methods =========================================================
     public void addColumn(String name, AttributeType type, boolean isPK)
@@ -86,6 +57,62 @@ public class AttributeTable
         
         return builder.toString();
     }
+    
+    /**
+     * create SQL definition columns for insert attributes
+     * begin with coma
+     * @param showPK
+     * @return
+     */
+    public String getInsertSQLColumns(boolean showPK)
+    {
+        StringBuilder builder = new StringBuilder();
+        
+        int size = mColumns.size();
+        for(int i=0; i < size; i++)
+        {
+            if(showPK || i != pkIndex)
+            {
+                builder.append(", ");
+                Column column = mColumns.get(i);
+                builder.append(String.format("'%s'", column.name));
+            }
+        }
+        
+        return builder.toString();
+    }
+    
+    /**
+     * create question marks for SQL query
+     * begin with coma
+     * @param showPK
+     * @return
+     */
+    public String getInsertSQLArgs(boolean showPK)
+    {
+        StringBuilder builder = new StringBuilder();
+        
+        int size = showPK || pkIndex >= 0 ? mColumns.size() : mColumns.size() - 1;
+        for(int i=0; i < size; i++)
+        {
+            builder.append(", ?");
+        }
+        
+        return builder.toString();
+    }
+    
+    /**
+     * @return count of columns
+     */
+    public int getCountColumns()
+    {
+        return mColumns.size();
+    }
+    
+    public AttributeType getColumnType(int index)
+    {
+        return mColumns.get(index).type;
+    }
     // getter, setter =========================================================
         
     /**
@@ -97,7 +124,7 @@ public class AttributeTable
     }
 
     // classes ================================================================
-    class Column
+    public class Column
     {
         public String name;
         public AttributeType type;

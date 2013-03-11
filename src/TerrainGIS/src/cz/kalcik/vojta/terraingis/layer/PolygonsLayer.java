@@ -7,7 +7,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 import cz.kalcik.vojta.terraingis.R.color;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -19,13 +19,13 @@ public class PolygonsLayer extends VectorLayer
     
     // public methods =========================================================
     public PolygonsLayer(String name, int srid,
-                         SpatiaLiteManager spatialite)
+                         SpatiaLiteIO spatialite)
     {
         this(DefaultPaints.getPolygon(), name, srid, spatialite);
     }
     
     public PolygonsLayer(Paint paint, String name, int srid,
-                         SpatiaLiteManager spatialite)
+                         SpatiaLiteIO spatialite)
     {
         super(VectorLayerType.POLYGON, paint, name, srid, spatialite);
         

@@ -12,8 +12,9 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
 
-import cz.kalcik.vojta.terraingis.layer.AttributeTable;
-import cz.kalcik.vojta.terraingis.layer.AttributeTable.AttributeType;
+import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
+import cz.kalcik.vojta.terraingis.layer.AttributeType;
+import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
 
 import android.util.Log;
 
@@ -27,7 +28,7 @@ import jsqlite.Stmt;
  * @author jules
  *
  */
-public class SpatiaLiteManager
+public class SpatiaLiteIO
 {    
     // constants ==========================================================================
     public static final int EPSG_SPHERICAL_MERCATOR = 3857;
@@ -46,7 +47,7 @@ public class SpatiaLiteManager
      * constructor
      * @param path
      */
-    public SpatiaLiteManager(String path)
+    public SpatiaLiteIO(String path)
     {
     	open(path);
     }
@@ -386,12 +387,14 @@ public class SpatiaLiteManager
      * @param column
      * @param srid
      */
-    public void inserGeometry(Geometry geom, String name, String column, int inputSrid, int tableSrid)
+    public void insertObject(Geometry geom, String name, String column, int inputSrid, int tableSrid,
+            String attributesColumns, String attributesArgs, AttributeRecord attributesValues)
     {
         try
         {
-            Stmt stmt = prepareInsert(name, column, inputSrid, tableSrid);
-            inserGeometry(stmt, geom);
+            Stmt stmt = prepareInsert(name, column, inputSrid, tableSrid, attributesColumns,
+                    attributesArgs);
+            insertObject(stmt, geom, attributesValues);
             
             stmt.close();
         }
@@ -406,11 +409,29 @@ public class SpatiaLiteManager
      * @param stmt
      * @param geom
      */
-    public void inserGeometry(Stmt stmt, Geometry geom)
+    public void insertObject(Stmt stmt, Geometry geom, AttributeRecord attributes)
     {
         try
         {
             stmt.bind(1, mWKBWriter.write(geom));
+            String[] values = attributes.getmValues();
+            int count = values.length;
+            for (int i = 0; i < count; i++)
+            {
+                AttributeType type = attributes.getColumnType(i);
+                if(type == AttributeType.TEXT)
+                {
+                    stmt.bind(i+2, values[i]);
+                }
+                else if(type == AttributeType.INTEGER)
+                {
+                    stmt.bind(i+2, Integer.parseInt(values[i]));
+                }
+                else if(type == AttributeType.REAL)
+                {
+                    stmt.bind(i+2, Double.parseDouble(values[i]));
+                }
+            }
             stmt.step();
             
             stmt.clear_bindings();
@@ -431,7 +452,8 @@ public class SpatiaLiteManager
      * @return
      * @throws Exception
      */
-    public Stmt prepareInsert(String name, String column, int inputSrid, int tableSrid) throws Exception
+    public Stmt prepareInsert(String name, String column, int inputSrid, int tableSrid,
+            String attributesColumns, String attributesArgs) throws Exception
     {
         String value;
         
@@ -445,8 +467,9 @@ public class SpatiaLiteManager
         }
         
 
-        return db.prepare(String.format("INSERT INTO '%s' ('%s') VALUES (%s)",
-                          name, column, value));
+        String query = String.format("INSERT INTO '%s' ('%s'%s) VALUES (%s%s)",
+                name, column, attributesColumns, value, attributesArgs);
+        return db.prepare(query);
     }
     
     /**
@@ -466,7 +489,7 @@ public class SpatiaLiteManager
         {
             String query = "CREATE TABLE '%q' " + columns;
             db.exec(query, null, argsTable);
-            db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XYZ')", null, argsGeom);
+            db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
             db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
         }
         catch (Exception e)
@@ -506,9 +529,9 @@ public class SpatiaLiteManager
      * @param name of table
      * @return attribute table
      */
-    public AttributeTable getAttributeTable(String name)
+    public AttributeHeader getAttributeTable(String name)
     {
-        AttributeTable result = new AttributeTable();
+        AttributeHeader result = new AttributeHeader();
 
         try
         {
@@ -520,7 +543,7 @@ public class SpatiaLiteManager
                 // cid | name | type | notnull | dflt_value | pk
                 
                 boolean isPK = (stmt.column_int(5) == 1);
-                AttributeType type = AttributeType.getType(stmt.column_string(2));
+                AttributeType type = AttributeType.getTypeSpatialite(stmt.column_string(2));
                 if(type != null)
                 {
                     String nameColumn = stmt.column_string(1);
@@ -538,6 +561,21 @@ public class SpatiaLiteManager
         
         return result;
     }
+    
+    /**
+     * Initialize spatialite DB
+     */
+    public void initDB()
+    {
+        try
+        {
+            db.exec("SELECT InitSpatialMetaData();", null, null);
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }        
+    }
     // private methods =======================================================================
     /**
      * open spatialite database
@@ -550,8 +588,16 @@ public class SpatiaLiteManager
         db = new Database();
         try
         {
+            File file = new File(path);
+            boolean exist = file.exists();
+            
             db.open(spatialDbFile.getAbsolutePath(), Constants.SQLITE_OPEN_READWRITE | Constants.SQLITE_OPEN_CREATE);
             db.exec("PRAGMA temp_store = 2;", null, null); // not use temporery files
+            
+            if(!exist)
+            {
+                initDB();
+            }
         }
         catch (Exception e)
         {

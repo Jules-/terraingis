@@ -4,7 +4,7 @@
 package cz.kalcik.vojta.terraingis.view;
 
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.layer.AttributeTable.AttributeType;
+import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.EditText;

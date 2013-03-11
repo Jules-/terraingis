@@ -18,7 +18,7 @@ import android.widget.Toast;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
@@ -151,7 +151,7 @@ public class MapFragment extends Fragment
     {
         if(mAutoRecordLayer != null)
         {
-            mAutoRecordLayer.addPoints(points, SpatiaLiteManager.EPSG_LONLAT);
+            mAutoRecordLayer.addPoints(points, SpatiaLiteIO.EPSG_LONLAT);
         }
         
         changeRecordButtons();
@@ -166,7 +166,7 @@ public class MapFragment extends Fragment
     {
         if(mAutoRecordLayer != null)
         {
-            recordPoint(point, mAutoRecordLayer, SpatiaLiteManager.EPSG_LONLAT);
+            recordPoint(point, mAutoRecordLayer, SpatiaLiteIO.EPSG_LONLAT);
         }
     }
     

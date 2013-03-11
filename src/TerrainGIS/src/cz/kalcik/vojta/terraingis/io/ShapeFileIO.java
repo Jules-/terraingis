@@ -3,23 +3,18 @@
  */
 package cz.kalcik.vojta.terraingis.io;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpMultiPoint;
-import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPoint;
-import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolyLine;
-import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolygon;
+import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field;
+import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field.FieldType;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
+import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
+import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer.VectorLayerType;
-
-import android.util.Log;
 
 /**
  * @author jules
@@ -55,21 +50,32 @@ public class ShapeFileIO
         ShpShape.Type type = shapeFile.getSHP_shapeType();
         
         LayerManager layerManager = LayerManager.getInstance();
-        SpatiaLiteManager spatialiteManager = layerManager.getSpatialiteManager();
+        SpatiaLiteIO spatialiteManager = layerManager.getSpatialiteManager();
         
-//        spatialiteManager.createEmptyLayer(layerName, getTypeString(type), srid);
-//        
-//        layerManager.loadSpatialite();
-//        VectorLayer layer = layerManager.getLayerByName(layerName);
-//        layer.importGeometries(new ObjectIterator(shapeFile));
+        spatialiteManager.createEmptyLayer(layerName, getTypeString(type),
+                createAttributeHeader(shapeFile).createSQLColumns(), srid);
+        
+        layerManager.loadSpatialite();
+        VectorLayer layer = layerManager.getLayerByName(layerName);
+        layer.importObjects(new ShapeFileIterator(shapeFile));
     }
     
-    // private methods =====================================================================
+    // public static methods ==============================================================
+    
+    /**
+     * @param type
+     * @return string spatialite type of layer
+     */
+    public static String getTypeString(ShpShape.Type type)
+    {        
+        return getType(type).getSpatialiteType();
+    }
+    
     /**
      * @param type
      * @return type of layer
      */
-    private VectorLayerType getType(ShpShape.Type type)
+    public static VectorLayerType getType(ShpShape.Type type)
     {
         if(type.isTypeOfPoint() || type.isTypeOfMultiPoint())
         {
@@ -86,104 +92,30 @@ public class ShapeFileIO
         
         return null;
     }
-    
+    // private methods =====================================================================    
     /**
-     * @param type
-     * @return string spatialite type of layer
+     * create attribute table from shapeFile
+     * @param shapeFile
+     * @return
      */
-    private String getTypeString(ShpShape.Type type)
-    {        
-        return getType(type).getSpatialiteType();
+    private AttributeHeader createAttributeHeader(ShapeFile shapeFile)
+    {
+        AttributeHeader result = new AttributeHeader();
+        int count = shapeFile.getDBF_fieldCount();
+        for(int i=0; i < count; i++)
+        {
+            DBF_Field field = shapeFile.getDBF_field(i);
+            String name = field.getName();
+            AttributeType type = AttributeType.getTypeShapefile(
+                    FieldType.byID(field.getType()));
+            if(type != null)
+            {
+                result.addColumn(name, type, false);
+            }
+        }
+        
+        return result;
     }
     
     // classes ==========================================================================
-    
-    class ObjectIterator implements Iterator<Geometry>
-    {
-        ShapeFile mFile;
-        ShpShape.Type mType;
-        double[][] mMultiPoints;
-        int mCount;
-        int mIndex = 0;
-        int mSubCount = 0;
-        int mSubIndex = 0;
-        
-        public ObjectIterator(ShapeFile file)
-        {
-            mFile = file;
-            mType = mFile.getSHP_shapeType();
-            mCount = mFile.getSHP_shapeCount();
-        }
-        
-        @Override
-        public boolean hasNext()
-        {
-            return mIndex < mCount;
-        }
-
-        @Override
-        public Geometry next()
-        {
-            ArrayList<Coordinate> resultPoints = new ArrayList<Coordinate>();
-            if(mType.isTypeOfPoint())
-            {
-                ShpPoint shape = mFile.getSHP_shape(mIndex);
-                double[] values = shape.getPoint();
-                resultPoints.add(new Coordinate(values[0], values[1]));
-                mIndex++;
-            }
-            else if(mType.isTypeOfMultiPoint())
-            {
-                if(mSubCount == 0)
-                {
-                    ShpMultiPoint shape = mFile.getSHP_shape(mIndex);
-                    mSubCount = shape.getNumberOfPoints();
-                    mMultiPoints = shape.getPoints();
-                }
-                resultPoints.add(new Coordinate(mMultiPoints[mSubIndex][0], mMultiPoints[mSubIndex][1]));
-                
-                mSubIndex++;
-                if(mSubIndex >= mSubCount)
-                {
-                    mSubCount = 0;
-                    mSubIndex = 0;
-                    mIndex++;
-                }
-            }
-            else if(mType.isTypeOfPolyLine() || mType.isTypeOfPolygon())
-            {
-                int count = 0;
-                double[][] points = null;
-                
-                if(mType.isTypeOfPolyLine())
-                {
-                    ShpPolyLine shape = mFile.getSHP_shape(mIndex);
-                    count = shape.getNumberOfPoints();
-                    points = shape.getPoints();
-                }
-                else if(mType.isTypeOfPolygon())
-                {
-                    ShpPolygon shape = mFile.getSHP_shape(mIndex);
-                    count = shape.getNumberOfPoints();
-                    points = shape.getPoints();
-                }
-                    
-                    
-                for(int i=0; i < count; i++)
-                {
-                    resultPoints.add(new Coordinate(points[i][0], points[i][1]));
-                }
-                
-                mIndex++;
-            }
-            
-            return VectorLayer.createGeometry(resultPoints, getType(mType));
-        }
-
-        @Override
-        public void remove()
-        {
-            throw new UnsupportedOperationException();
-        }    
-    }
 }

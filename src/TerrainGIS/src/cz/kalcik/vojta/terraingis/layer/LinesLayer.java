@@ -6,7 +6,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
@@ -16,13 +16,13 @@ public class LinesLayer extends VectorLayer
     
     // public methods =========================================================
     public LinesLayer(String name, int srid,
-                      SpatiaLiteManager spatialite)
+                      SpatiaLiteIO spatialite)
     {
         this(DefaultPaints.getLine(), name, srid, spatialite);
     }
     
     public LinesLayer(Paint paint, String name, int srid,
-                      SpatiaLiteManager spatialite)
+                      SpatiaLiteIO spatialite)
     {
         super(VectorLayerType.LINE, paint, name, srid, spatialite);
         

@@ -18,7 +18,8 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.ShapeFileRecord;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
@@ -76,10 +77,10 @@ public abstract class VectorLayer extends AbstractLayer
     protected Paint mPaint;
     protected Paint mNotSavedPaint;
     protected VectorLayerType mType;
-    protected SpatiaLiteManager mSpatialite;
+    protected SpatiaLiteIO mSpatialite;
     protected String mGeometryColumn;
     protected VectorLayerData data = new VectorLayerData(new ArrayList<Coordinate>());
-    protected AttributeTable mAttributes;
+    protected AttributeHeader mAttributeHeader;
     
     // constructors ============================================================
     
@@ -89,7 +90,7 @@ public abstract class VectorLayer extends AbstractLayer
      * @param paint
      */
     public VectorLayer(VectorLayerType type, Paint paint, String name, int srid,
-                       SpatiaLiteManager spatialite)
+                       SpatiaLiteIO spatialite)
     {
         this.mType = type;
         if(paint == null)
@@ -103,7 +104,7 @@ public abstract class VectorLayer extends AbstractLayer
         this.mSpatialite = spatialite;
         mGeometryColumn = mSpatialite.getColumnGeom(name);
         mHasIndex = mSpatialite.indexEnabled(name);
-        mAttributes = mSpatialite.getAttributeTable(name);
+        mAttributeHeader = mSpatialite.getAttributeTable(name);
         updateEnvelope();
     }
     
@@ -144,6 +145,7 @@ public abstract class VectorLayer extends AbstractLayer
         super.setData(inData);
         data = (VectorLayerData)super.data.childData;
     }
+    
     // public methods =========================================================    
     @Override
     public void detach()
@@ -193,19 +195,26 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public void endObject()
     {
-        mSpatialite.inserGeometry(createGeometry(), super.data.name, mGeometryColumn,
-                SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR, mSrid);
+        mSpatialite.insertObject(createGeometry(), super.data.name, mGeometryColumn,
+                SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR, mSrid,
+                mAttributeHeader.getInsertSQLColumns(true),
+                mAttributeHeader.getInsertSQLArgs(true), null);
         updateEnvelope();
         data.mRecordedPoints.clear();
     }
     
-    public void importGeometries(Iterator<Geometry> iterGeometries) throws Exception
+    public void importObjects(Iterator<ShapeFileRecord> iterGeometries) throws Exception
     {
-        Stmt stmt = mSpatialite.prepareInsert(super.data.name, mGeometryColumn, mSrid, mSrid);
+        Stmt stmt = mSpatialite.prepareInsert(super.data.name, mGeometryColumn, mSrid, mSrid,
+                mAttributeHeader.getInsertSQLColumns(true),
+                mAttributeHeader.getInsertSQLArgs(true));
         
         while(iterGeometries.hasNext())
         {
-            mSpatialite.inserGeometry(stmt, iterGeometries.next());
+            ShapeFileRecord record = iterGeometries.next();
+            AttributeRecord values = new AttributeRecord(mAttributeHeader, record.getAttributes());
+            values.trimValues();
+            mSpatialite.insertObject(stmt, record.getGeometry(), values);
         }
         
         stmt.close();

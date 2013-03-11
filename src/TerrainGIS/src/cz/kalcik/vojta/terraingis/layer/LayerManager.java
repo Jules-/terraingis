@@ -15,7 +15,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteManager;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer.AbstractLayerData;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
@@ -47,8 +47,8 @@ public class LayerManager
     // attributes =========================================================================
     
     private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
-    private SpatiaLiteManager spatialiteManager = null;
-    private int srid = SpatiaLiteManager.EPSG_SPHERICAL_MERCATOR;
+    private SpatiaLiteIO spatialiteManager = null;
+    private int srid = SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR;
 
     // public methods ======================================================================
     
@@ -86,12 +86,12 @@ public class LayerManager
     {
         if(spatialiteManager == null)
         {
-            spatialiteManager = new SpatiaLiteManager(MainActivity.DB_FILE.getAbsolutePath());
+            spatialiteManager = new SpatiaLiteIO(MainActivity.DB_FILE.getAbsolutePath());
         }
         
         Map<String, Boolean> mapLayers = mapOfNames();
         
-        for(SpatiaLiteManager.Layer layer: spatialiteManager.getLayers())
+        for(SpatiaLiteIO.Layer layer: spatialiteManager.getLayers())
         {
             // is layer loaded? 
             if(mapLayers.containsKey(layer.name))
@@ -154,7 +154,7 @@ public class LayerManager
      */
     public Coordinate lonLatWGS84ToM(Coordinate input)
     {        
-        return spatialiteManager.transformSRS(input, SpatiaLiteManager.EPSG_LONLAT, srid);
+        return spatialiteManager.transformSRS(input, SpatiaLiteIO.EPSG_LONLAT, srid);
     }
     
     /**
@@ -164,7 +164,7 @@ public class LayerManager
      */
     public Coordinate mToLonLatWGS84(Coordinate input)
     {
-        return spatialiteManager.transformSRS(input, srid, SpatiaLiteManager.EPSG_LONLAT);
+        return spatialiteManager.transformSRS(input, srid, SpatiaLiteIO.EPSG_LONLAT);
     }
     
     /**
@@ -261,7 +261,7 @@ public class LayerManager
     /**
      * @return the spatialiteManager
      */
-    public SpatiaLiteManager getSpatialiteManager()
+    public SpatiaLiteIO getSpatialiteManager()
     {
         return spatialiteManager;
     }
