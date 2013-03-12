@@ -415,6 +415,7 @@ public class SpatiaLiteIO
             stmt.bind(1, mWKBWriter.write(geom));
             String[] values = usePK ? attributes.getValues() : attributes.getValues();
             int count = values.length;
+            int bindIndex = 2;
             for (int i = 0; i < count; i++)
             {
                 if(!usePK && attributes.isColumnPK(i))
@@ -425,16 +426,18 @@ public class SpatiaLiteIO
                 AttributeType type = attributes.getColumnType(i);
                 if(type == AttributeType.TEXT)
                 {
-                    stmt.bind(i+2, values[i]);
+                    stmt.bind(bindIndex, values[i]);
                 }
                 else if(type == AttributeType.INTEGER)
                 {
-                    stmt.bind(i+2, Integer.parseInt(values[i]));
+                    stmt.bind(bindIndex, Integer.parseInt(values[i]));
                 }
                 else if(type == AttributeType.REAL)
                 {
-                    stmt.bind(i+2, Double.parseDouble(values[i]));
+                    stmt.bind(bindIndex, Double.parseDouble(values[i]));
                 }
+                
+                bindIndex++;
             }
             stmt.step();
             

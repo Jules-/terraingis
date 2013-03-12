@@ -42,6 +42,17 @@ public class AttributeValueLayout extends LinearLayout
         
         return result;
     }
+ 
+    /**
+     * set value of attribute
+     * @param value
+     */
+    public void setValue(String value)
+    {
+        EditText editText = (EditText)findViewById(R.id.editText_value_attribute);
+        
+        editText.setText(value);
+    }
     
     /**
      * set name of attribute

@@ -3,14 +3,17 @@
  */
 package cz.kalcik.vojta.terraingis.dialogs;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.zip.Inflater;
+import java.util.Date;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
 import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
+import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.AttributeValueLayout;
 import android.app.AlertDialog;
@@ -28,6 +31,9 @@ import android.widget.LinearLayout;
  */
 public class SetAttributesDialog extends DialogFragment
 {
+    // constants =====================================================================================
+    private String DATETIME_NAME = "datetime";
+    private AttributeType DATETIME_TYPE = AttributeType.TEXT;
     // attributes ====================================================================================
     private MainActivity mMainActivity;
     private LinearLayout mMainLayout;
@@ -84,6 +90,12 @@ public class SetAttributesDialog extends DialogFragment
                 mAttributes.add(item);
                 item.setName(column.name);
                 item.setInputType(column.type);
+                // datetime
+                if(column.name.equals(DATETIME_NAME) && column.type == DATETIME_TYPE)
+                {
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+                    item.setValue(df.format(new Date()));
+                }
                 mMainLayout.addView(item);
             }
         }

@@ -9,7 +9,8 @@
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    style="@style/subtitle_dialog_style" />
+	    style="@style/subtitle_dialog_style"
+   		android:layout_marginLeft="5dp" />
     <EditText
    		android:id="@+id/editText_value_attribute"
    		android:layout_width="match_parent"
