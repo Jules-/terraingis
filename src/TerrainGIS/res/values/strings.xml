@@ -9,6 +9,7 @@
     <string name="type_form">Type</string>
     <string name="srid_form">SRS EPSG</string>
     <string name="attributes_form">Attributes</string>
+    <string name="null_value_form">NULL</string>
     <!-- error messages -->
     <string name="location_fix_error">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>
@@ -45,6 +46,8 @@
         <item>LINESTRING</item>
         <item>POLYGON</item>
     </string-array>
+    <!-- set attributes dialog -->
+    <string name="set_attributes_message">Save object</string>
     <!-- other -->
     <string name="confirm_remove_message">Really remove %s layer?</string>
 </resources>

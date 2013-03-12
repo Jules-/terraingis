@@ -17,16 +17,11 @@ public class AttributeHeader
     
     // attributes =============================================================
     private ArrayList<Column> mColumns = new ArrayList<AttributeHeader.Column>();
-    int pkIndex = -1;
     
     // public methods =========================================================
     public void addColumn(String name, AttributeType type, boolean isPK)
     {
-        if(isPK)
-        {
-            pkIndex = mColumns.size();
-        }
-        mColumns.add(new Column(name, type));
+        mColumns.add(new Column(name, type, isPK));
     }
     
     /**
@@ -43,7 +38,7 @@ public class AttributeHeader
             Column column = mColumns.get(i);
             builder.append(String.format("'%s' %s", column.name,
                     column.type));
-            if(i == pkIndex)
+            if(column.isPK)
             {
                 builder.append(" PRIMARY KEY AUTOINCREMENT");
             }
@@ -68,13 +63,11 @@ public class AttributeHeader
     {
         StringBuilder builder = new StringBuilder();
         
-        int size = mColumns.size();
-        for(int i=0; i < size; i++)
+        for(Column column : mColumns)
         {
-            if(showPK || i != pkIndex)
+            if(showPK || !column.isPK)
             {
                 builder.append(", ");
-                Column column = mColumns.get(i);
                 builder.append(String.format("'%s'", column.name));
             }
         }
@@ -92,7 +85,7 @@ public class AttributeHeader
     {
         StringBuilder builder = new StringBuilder();
         
-        int size = showPK || pkIndex >= 0 ? mColumns.size() : mColumns.size() - 1;
+        int size = showPK ? mColumns.size() : mColumns.size() - countPKColumns();
         for(int i=0; i < size; i++)
         {
             builder.append(", ?");
@@ -108,10 +101,40 @@ public class AttributeHeader
     {
         return mColumns.size();
     }
+
+    /**
+     * @return count of columns without primary keys
+     */
+    public int getCountColumnsWithoutPK()
+    {
+        return mColumns.size() - countPKColumns();
+    }
     
+    /**
+     * @param index
+     * @return type of column with index
+     */
     public AttributeType getColumnType(int index)
     {
         return mColumns.get(index).type;
+    }
+
+    /**
+     * @param index
+     * @return true if column is PK
+     */
+    public boolean isColumnPK(int index)
+    {
+        return mColumns.get(index).isPK;
+    }
+    
+    /**
+     * @param index
+     * @return column with index
+     */
+    public Column getColumn(int index)
+    {
+        return mColumns.get(index);
     }
     // getter, setter =========================================================
         
@@ -123,16 +146,37 @@ public class AttributeHeader
         return mColumns;
     }
 
+    // private methods ========================================================
+    /**
+     * @return count of primary keys
+     */
+    private int countPKColumns()
+    {
+        int count = 0;
+        
+        for(Column column : mColumns)
+        {
+            if(column.isPK)
+            {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+    
     // classes ================================================================
     public class Column
     {
         public String name;
         public AttributeType type;
+        public boolean isPK;
         
-        public Column(String name, AttributeType type)
+        public Column(String name, AttributeType type, boolean isPK)
         {
             this.name = name;
             this.type = type;
+            this.isPK = isPK;
         }
     }
 }

@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
+import cz.kalcik.vojta.terraingis.dialogs.SetAttributesDialog;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
@@ -272,7 +274,7 @@ public class MapFragment extends Fragment
         layer.addPoint(location, srid);
         if(layer.getType() == VectorLayerType.POINT)
         {
-            layer.endObject();
+            endObject(layer);
         }
         
         changeRecordButtons();
@@ -351,6 +353,16 @@ public class MapFragment extends Fragment
             mAutoRecordLayer = mLayerManager.getLayerByName(data.autoRecordLayerString);
         }
     }
+    
+    /**
+     * end recorded object
+     */
+    private void endObject(VectorLayer layer)
+    {
+        SetAttributesDialog dialog = new SetAttributesDialog();
+        dialog.setLayer(layer);
+        mMainActivity.showDialog(dialog);
+    }
     // handlers ===============================================================
     
     /**
@@ -385,7 +397,7 @@ public class MapFragment extends Fragment
 
             try
             {
-                selectedLayer.endObject();
+                endObject(selectedLayer);
                 
                 if(selectedLayer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
                 {

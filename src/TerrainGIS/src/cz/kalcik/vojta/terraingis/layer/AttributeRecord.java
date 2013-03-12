@@ -29,6 +29,15 @@ public class AttributeRecord
     {
         return mHeader.getColumnType(index);
     }
+   
+    /**
+     * @param index
+     * @return true if column is PK
+     */
+    public boolean isColumnPK(int index)
+    {
+        return mHeader.isColumnPK(index);
+    }
     
     /**
      * @return count of values
@@ -49,12 +58,13 @@ public class AttributeRecord
             mValues[i] = mValues[i].trim();
         }
     }
+    
     // getter setter =========================================================================
     
     /**
      * @return the mValues
      */
-    public String[] getmValues()
+    public String[] getValues()
     {
         return mValues;
     }

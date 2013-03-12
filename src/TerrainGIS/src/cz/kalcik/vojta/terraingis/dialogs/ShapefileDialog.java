@@ -74,7 +74,7 @@ public class ShapefileDialog extends CreateLayerDialog
          mSridEditText = (EditText)dialogView.findViewById(R.id.edit_text_srid_shapefile);
          
          dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
-         dialogBuilder.setNegativeButton(R.string.negative_button, negativeHandler);
+         dialogBuilder.setNegativeButton(R.string.negative_button, null);
          
          return dialogBuilder.create();
     }
@@ -116,19 +116,6 @@ public class ShapefileDialog extends CreateLayerDialog
             {
                 Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
-        }        
-    };
-
-    
-    /**
-     * negative button
-     */
-    DialogInterface.OnClickListener negativeHandler = new DialogInterface.OnClickListener()
-    {
-        @Override
-        public void onClick(DialogInterface dialog, int id)
-        {
-            
         }        
     };
 }

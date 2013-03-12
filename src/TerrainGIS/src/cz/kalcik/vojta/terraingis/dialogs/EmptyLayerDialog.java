@@ -12,7 +12,7 @@ import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
-import cz.kalcik.vojta.terraingis.view.AttributeLayout;
+import cz.kalcik.vojta.terraingis.view.AttributeColumnLayout;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.AlertDialog.Builder;
@@ -43,7 +43,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
     MainActivity mMainActivity;
     LinearLayout mLayout;
     LayoutInflater mInflater;
-    ArrayList<AttributeLayout> mAttributes = new ArrayList<AttributeLayout>();
+    ArrayList<AttributeColumnLayout> mAttributes = new ArrayList<AttributeColumnLayout>();
     int attributeId = 0;
     
     // on methods =====================================================================================
@@ -85,7 +85,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
     
     private void addAttribute(String name, AttributeType type, boolean canChange)
     {
-        AttributeLayout item = (AttributeLayout)mInflater.inflate(R.layout.attribute_column, null);
+        AttributeColumnLayout item = (AttributeColumnLayout)mInflater.inflate(R.layout.attribute_column, null);
         // set name
         EditText editText = (EditText)item.findViewById(R.id.edit_text_name_column);
         if(name != null)
@@ -127,7 +127,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
         int color2 = getResources().getColor(R.color.background_list2);
         boolean firstColor = true;
         
-        for(AttributeLayout layout : mAttributes)
+        for(AttributeColumnLayout layout : mAttributes)
         {
             int color = firstColor ? color1 : color2;
 
@@ -143,7 +143,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
     {
         TreeSet<String> names = new TreeSet<String>();
         
-        for(AttributeLayout layout : mAttributes)
+        for(AttributeColumnLayout layout : mAttributes)
         {
             String name = layout.getName();
             
@@ -176,7 +176,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
         result.addColumn(SpatiaLiteIO.ID_COLUMN_NAME,
                 SpatiaLiteIO.ID_COLUMN_TYPE, true);
         
-        for(AttributeLayout layout : mAttributes)
+        for(AttributeColumnLayout layout : mAttributes)
         {
             result.addColumn(layout.getName(), layout.getType(), false);
         }

@@ -146,6 +146,15 @@ public abstract class VectorLayer extends AbstractLayer
         data = (VectorLayerData)super.data.childData;
     }
     
+    
+    /**
+     * @return the mAttributeHeader
+     */
+    public AttributeHeader getAttributeHeader()
+    {
+        return mAttributeHeader;
+    }
+
     // public methods =========================================================    
     @Override
     public void detach()
@@ -193,28 +202,27 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * end recorded object
      */
-    public void endObject()
+    public void endObject(AttributeRecord record)
     {
         mSpatialite.insertObject(createGeometry(), super.data.name, mGeometryColumn,
                 SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR, mSrid,
-                mAttributeHeader.getInsertSQLColumns(true),
-                mAttributeHeader.getInsertSQLArgs(true), null);
+                mAttributeHeader, record, false);
         updateEnvelope();
         data.mRecordedPoints.clear();
     }
     
     public void importObjects(Iterator<ShapeFileRecord> iterGeometries) throws Exception
     {
+        boolean usePK = true;
         Stmt stmt = mSpatialite.prepareInsert(super.data.name, mGeometryColumn, mSrid, mSrid,
-                mAttributeHeader.getInsertSQLColumns(true),
-                mAttributeHeader.getInsertSQLArgs(true));
+                mAttributeHeader, usePK);
         
         while(iterGeometries.hasNext())
         {
             ShapeFileRecord record = iterGeometries.next();
             AttributeRecord values = new AttributeRecord(mAttributeHeader, record.getAttributes());
             values.trimValues();
-            mSpatialite.insertObject(stmt, record.getGeometry(), values);
+            mSpatialite.insertObject(stmt, record.getGeometry(), values, usePK);
         }
         
         stmt.close();

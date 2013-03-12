@@ -388,13 +388,12 @@ public class SpatiaLiteIO
      * @param srid
      */
     public void insertObject(Geometry geom, String name, String column, int inputSrid, int tableSrid,
-            String attributesColumns, String attributesArgs, AttributeRecord attributesValues)
+            AttributeHeader header, AttributeRecord attributesValues, boolean usePK)
     {
         try
         {
-            Stmt stmt = prepareInsert(name, column, inputSrid, tableSrid, attributesColumns,
-                    attributesArgs);
-            insertObject(stmt, geom, attributesValues);
+            Stmt stmt = prepareInsert(name, column, inputSrid, tableSrid, header, usePK);
+            insertObject(stmt, geom, attributesValues, usePK);
             
             stmt.close();
         }
@@ -409,15 +408,20 @@ public class SpatiaLiteIO
      * @param stmt
      * @param geom
      */
-    public void insertObject(Stmt stmt, Geometry geom, AttributeRecord attributes)
+    public void insertObject(Stmt stmt, Geometry geom, AttributeRecord attributes, boolean usePK)
     {
         try
         {
             stmt.bind(1, mWKBWriter.write(geom));
-            String[] values = attributes.getmValues();
+            String[] values = usePK ? attributes.getValues() : attributes.getValues();
             int count = values.length;
             for (int i = 0; i < count; i++)
             {
+                if(!usePK && attributes.isColumnPK(i))
+                {
+                    continue;
+                }
+                
                 AttributeType type = attributes.getColumnType(i);
                 if(type == AttributeType.TEXT)
                 {
@@ -453,22 +457,23 @@ public class SpatiaLiteIO
      * @throws Exception
      */
     public Stmt prepareInsert(String name, String column, int inputSrid, int tableSrid,
-            String attributesColumns, String attributesArgs) throws Exception
+            AttributeHeader header, boolean usePK) throws Exception
     {
-        String value;
+        String geomDefinition;
         
         if(inputSrid == tableSrid)
         {
-            value = String.format(Locale.UK, "GeomFromWKB(?, %d)", inputSrid);
+            geomDefinition = String.format(Locale.UK, "GeomFromWKB(?, %d)", inputSrid);
         }
         else
         {
-            value = String.format(Locale.UK, "Transform(GeomFromWKB(?, %d), %d)", inputSrid, tableSrid);
+            geomDefinition = String.format(Locale.UK, "Transform(GeomFromWKB(?, %d), %d)", inputSrid, tableSrid);
         }
         
 
         String query = String.format("INSERT INTO '%s' ('%s'%s) VALUES (%s%s)",
-                name, column, attributesColumns, value, attributesArgs);
+                name, column, header.getInsertSQLColumns(usePK),
+                geomDefinition, header.getInsertSQLArgs(usePK));
         return db.prepare(query);
     }
     

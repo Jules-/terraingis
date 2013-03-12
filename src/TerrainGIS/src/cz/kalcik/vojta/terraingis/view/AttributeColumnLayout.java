@@ -15,9 +15,9 @@ import android.widget.Spinner;
  * @author jules
  *
  */
-public class AttributeLayout extends LinearLayout
+public class AttributeColumnLayout extends LinearLayout
 {
-    public AttributeLayout(Context context, final AttributeSet attrs)
+    public AttributeColumnLayout(Context context, final AttributeSet attrs)
     {
         super(context, attrs);
     }
