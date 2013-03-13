@@ -584,6 +584,39 @@ public class SpatiaLiteIO
             Log.e("TerrainGIS", e.getMessage());
         }        
     }
+    
+    /**
+     * @param filter names
+     * @return SRS names
+     */
+    public ArrayList<SpatialiteSRS> findSRSByName(String name)
+    {
+        ArrayList<SpatialiteSRS> result = new ArrayList<SpatialiteSRS>();
+        
+        try
+        {
+            Stmt stmt = db.prepare("SELECT srid, ref_sys_name FROM spatial_ref_sys " +
+            		"WHERE ref_sys_name LIKE ? ORDER BY ref_sys_name");
+            
+            stmt.bind(1, "%"+name+"%");
+            
+            while(stmt.step())
+            {
+                SpatialiteSRS item = new SpatialiteSRS();
+                item.srid = stmt.column_int(0);
+                item.name = stmt.column_string(1);
+                result.add(item);
+            }
+            
+            stmt.close();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return result;
+    }
     // private methods =======================================================================
     /**
      * open spatialite database
@@ -692,5 +725,22 @@ public class SpatiaLiteIO
         public String name;
         public String type;
         public int srid;
+    }
+    
+    /**
+     * @author jules
+     * 
+     * class for return srid
+     */
+    public class SpatialiteSRS
+    {
+        public String name;
+        public int srid;
+        
+        @Override
+        public String toString()
+        {
+            return String.format(Locale.UK, "%s (EPSG: %d)", name, srid);
+        }
     }
 }

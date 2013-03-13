@@ -50,7 +50,7 @@ public class ShapeFileIO
         ShpShape.Type type = shapeFile.getSHP_shapeType();
         
         LayerManager layerManager = LayerManager.getInstance();
-        SpatiaLiteIO spatialiteManager = layerManager.getSpatialiteManager();
+        SpatiaLiteIO spatialiteManager = layerManager.getSpatialiteIO();
         
         spatialiteManager.createEmptyLayer(layerName, getTypeString(type),
                 createAttributeHeader(shapeFile).createSQLColumns(), srid);

@@ -261,7 +261,7 @@ public class LayerManager
     /**
      * @return the spatialiteManager
      */
-    public SpatiaLiteIO getSpatialiteManager()
+    public SpatiaLiteIO getSpatialiteIO()
     {
         return spatialiteManager;
     }

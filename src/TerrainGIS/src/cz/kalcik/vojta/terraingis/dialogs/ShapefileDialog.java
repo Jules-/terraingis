@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -24,13 +25,21 @@ public class ShapefileDialog extends CreateLayerDialog
     // constants =====================================================================================
     private final Set<String> SUFFIXS = new TreeSet<String>(Arrays.asList(".shp", ".shx", ".dbf")); 
     // attributes ====================================================================================
+    MainActivity mMainActivity;
     private File mFile;
     private String mNameNoSuffix;
     EditText mNameEditText;
     EditText mSridEditText;
     
     // public methods ================================================================================
-    
+    /**
+     * set EPSG srid
+     * @param srid
+     */
+    public void setSrid(int srid)
+    {
+        mSridEditText.setText(Integer.toString(srid));
+    }
     
     // getter setter =================================================================================
     /**
@@ -62,21 +71,24 @@ public class ShapefileDialog extends CreateLayerDialog
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
-         Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        mMainActivity = (MainActivity)getActivity();
+        Builder dialogBuilder = new AlertDialog.Builder(mMainActivity);
          
-         dialogBuilder.setTitle(mFile.getName());
+        dialogBuilder.setTitle(mFile.getName());
          
-         LayoutInflater inflater = getActivity().getLayoutInflater();
-         View dialogView = inflater.inflate(R.layout.shapefile_dialog, null);
-         dialogBuilder.setView(dialogView);
-         mNameEditText = (EditText)dialogView.findViewById(R.id.edit_text_name_shapefile);
-         mNameEditText.setText(mNameNoSuffix);
-         mSridEditText = (EditText)dialogView.findViewById(R.id.edit_text_srid_shapefile);
+        LayoutInflater inflater = mMainActivity.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.shapefile_dialog, null);
+        dialogBuilder.setView(dialogView);
+        mNameEditText = (EditText)dialogView.findViewById(R.id.edit_text_name_shapefile);
+        mNameEditText.setText(mNameNoSuffix);
+        mSridEditText = (EditText)dialogView.findViewById(R.id.edit_text_srid_shapefile);
+        Button findButton = (Button)dialogView.findViewById(R.id.button_run_find_dialog);
+        findButton.setOnClickListener(findSridHandler);
          
-         dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
-         dialogBuilder.setNegativeButton(R.string.negative_button, null);
+        dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
+        dialogBuilder.setNegativeButton(R.string.negative_button, null);
          
-         return dialogBuilder.create();
+        return dialogBuilder.create();
     }
     // private methods ================================================================================
     
@@ -110,12 +122,23 @@ public class ShapefileDialog extends CreateLayerDialog
                     throw new RuntimeException(getString(R.string.load_shapefile_error));
                 }
                 
-                ((MainActivity)getActivity()).getLayersFragment().invalidateListView();
+                ((MainActivity)mMainActivity).getLayersFragment().invalidateListView();
             }
             catch(RuntimeException e)
             {
-                Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainActivity, e.getMessage(), Toast.LENGTH_LONG).show();
             }
+        }        
+    };
+    
+    View.OnClickListener findSridHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            FindSRSDialog dialog = new FindSRSDialog();
+            dialog.setParentDialog(ShapefileDialog.this);
+            mMainActivity.showDialog(dialog);
         }        
     };
 }

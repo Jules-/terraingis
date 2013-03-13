@@ -27,12 +27,26 @@
 	    android:text="@string/srid_form"
 	    android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	<EditText
-	    android:id="@+id/edit_text_srid_shapefile"
+	<LinearLayout
 	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:hint="@string/srid_form"
-	    android:inputType="number" >
-	</EditText>
+	    android:layout_height="wrap_content" >
+
+		<EditText
+		    android:id="@+id/edit_text_srid_shapefile"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_weight="1"
+		    android:ems="10"
+		    android:hint="@string/srid_form"
+		    android:inputType="number" />
+
+		<Button
+		    android:id="@+id/button_run_find_dialog"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_weight="1"
+		    android:text="@string/find_button_form" />
+
+	</LinearLayout>
 
 </LinearLayout>

@@ -262,7 +262,7 @@ public class LayersFragment extends Fragment
                 return;
             }
             
-            SpatiaLiteIO spatialite = mLayerManager.getSpatialiteManager();
+            SpatiaLiteIO spatialite = mLayerManager.getSpatialiteIO();
             
             int from = selectedLayer.getSrid();
             int to = mLayerManager.getSrid();

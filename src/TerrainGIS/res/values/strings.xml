@@ -10,6 +10,7 @@
     <string name="srid_form">SRS EPSG</string>
     <string name="attributes_form">Attributes</string>
     <string name="null_value_form">NULL</string>
+    <string name="find_button_form">Find</string>
     <!-- error messages -->
     <string name="location_fix_error">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>
@@ -48,6 +49,8 @@
     </string-array>
     <!-- set attributes dialog -->
     <string name="set_attributes_message">Save object</string>
+    <!-- find srid dialog -->
+    <string name="find_srid_message">Find SRS</string>
     <!-- other -->
     <string name="confirm_remove_message">Really remove %s layer?</string>
 </resources>

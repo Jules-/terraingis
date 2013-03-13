@@ -220,7 +220,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
             Spinner spinnerLayerType = (Spinner)getDialog().findViewById(R.id.spinner_layer_type);
             String layerType = (String)spinnerLayerType.getSelectedItem();
                        
-            SpatiaLiteIO spatialite = LayerManager.getInstance().getSpatialiteManager();
+            SpatiaLiteIO spatialite = LayerManager.getInstance().getSpatialiteIO();
             
             spatialite.createEmptyLayer(name, layerType, 
                     createAttributeTable().createSQLColumns(), SpatiaLiteIO.EPSG_LONLAT);
