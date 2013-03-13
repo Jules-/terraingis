@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 /**
  * @author jules
@@ -52,10 +53,13 @@ public class SetAttributesDialog extends DialogFragment
          
          dialogBuilder.setTitle(R.string.set_attributes_message);
          
+         ScrollView scrollView = new ScrollView(mMainActivity);
+         
          mMainLayout = new LinearLayout(mMainActivity);
          mMainLayout.setOrientation(LinearLayout.VERTICAL);
+         scrollView.addView(mMainLayout);
          
-         dialogBuilder.setView(mMainLayout);
+         dialogBuilder.setView(scrollView);
          loadAttributes();
          
          dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
