@@ -77,7 +77,7 @@ public class ShapefileDialog extends CreateLayerDialog
         dialogBuilder.setTitle(mFile.getName());
          
         LayoutInflater inflater = mMainActivity.getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.shapefile_dialog, null);
+        View dialogView = inflater.inflate(R.layout.dialog_shapefile, null);
         dialogBuilder.setView(dialogView);
         mNameEditText = (EditText)dialogView.findViewById(R.id.edit_text_name_shapefile);
         mNameEditText.setText(mNameNoSuffix);

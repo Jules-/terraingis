@@ -351,7 +351,7 @@ public class MapView extends SurfaceView
         }
     }
     
-    private void drawLocation(Canvas canvas)
+    private synchronized void drawLocation(Canvas canvas)
     {
         mDrawer.drawIconM(canvas, locationM, locationIcon);
     }

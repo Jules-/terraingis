@@ -5,10 +5,11 @@ import java.io.Serializable;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.app.Activity;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.FragmentActivity;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,7 +25,7 @@ import cz.kalcik.vojta.terraingis.location.LocationWorker;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
 
-public class MainActivity extends FragmentActivity
+public class MainActivity extends Activity
 {
     // constants ==========================================================
     public static final File APP_DIRECTORY = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS");
@@ -203,8 +204,8 @@ public class MainActivity extends FragmentActivity
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
         mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
         
-        mMapFragment = (MapFragment)getSupportFragmentManager().findFragmentById(R.id.map_fragment);
-        mLayersFragment = (LayersFragment)getSupportFragmentManager().findFragmentById(R.id.layers_fragment);
+        mMapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map_fragment);
+        mLayersFragment = (LayersFragment)getFragmentManager().findFragmentById(R.id.layers_fragment);
         
         mLocationWorker = new LocationWorker(this);
         MapView map = mMapFragment.getMap();

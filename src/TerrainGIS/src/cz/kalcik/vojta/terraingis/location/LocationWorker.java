@@ -136,17 +136,20 @@ public class LocationWorker implements LocationListener
     /**
      * receive new location update
      */
-    public synchronized void onLocationChanged(Location location)
+    public void onLocationChanged(Location location)
     {
-        // switch to GPS
-        if(location.getProvider().equals(LocationManager.GPS_PROVIDER))
+        synchronized(this)
         {
-            mLastGPSMillis = SystemClock.elapsedRealtime();
-            
-            if(currentProvider == ProviderType.BOTH)
+            // switch to GPS
+            if(location.getProvider().equals(LocationManager.GPS_PROVIDER))
             {
-                currentProvider = ProviderType.GPS;
-                switchProvider();
+                mLastGPSMillis = SystemClock.elapsedRealtime();
+                
+                if(currentProvider == ProviderType.BOTH)
+                {
+                    currentProvider = ProviderType.GPS;
+                    switchProvider();
+                }
             }
         }
 

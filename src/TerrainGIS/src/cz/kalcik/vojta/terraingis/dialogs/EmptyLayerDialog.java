@@ -57,7 +57,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
          mMainActivity = (MainActivity)getActivity();
          mInflater = mMainActivity.getLayoutInflater();
          
-         View view = mInflater.inflate(R.layout.empty_layer_dialog, null);
+         View view = mInflater.inflate(R.layout.dialog_empty_layer, null);
          mLayout = (LinearLayout)view.findViewById(R.id.empty_layer_dialog_layout);
          addAttribute(AttributeHeader.DATETIME_COLUMN, AttributeHeader.DATETIME_TYPE, false);
          setBackgroundColors();

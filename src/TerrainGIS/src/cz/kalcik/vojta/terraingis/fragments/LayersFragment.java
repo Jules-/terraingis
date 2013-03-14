@@ -1,17 +1,17 @@
 package cz.kalcik.vojta.terraingis.fragments;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.mobeta.android.dslv.DragSortListView;
 import com.vividsolutions.jts.geom.Envelope;
 
+import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
@@ -183,6 +184,23 @@ public class LayersFragment extends Fragment
         super.onCreateContextMenu(menu, v, menuInfo);
         
         getActivity().getMenuInflater().inflate(R.menu.layers_context_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item)
+    {
+        if(item.getItemId() == R.id.menuitem_show_attribute_table)
+        {
+            Intent intent = new Intent(mMainActivity, AttributeTableActivity.class);
+            
+            this.startActivity(intent);
+            
+            return true;
+        }
+        else
+        {
+            return super.onContextItemSelected(item);
+        }
     }
 
     // private methods ========================================================

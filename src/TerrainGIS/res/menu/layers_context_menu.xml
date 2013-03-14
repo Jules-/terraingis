@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-	<item android:id="@+id/menu_show_attribute_table"
+	<item android:id="@+id/menuitem_show_attribute_table"
         android:title="@string/menu_show_attribute_table"/>
 </menu>

@@ -48,7 +48,7 @@ public class FindSRSDialog extends DialogFragment
         
         dialogBuilder.setTitle(R.string.find_srid_message);
          
-        View dialogView = mMainActivity.getLayoutInflater().inflate(R.layout.find_srid_dialog, null);
+        View dialogView = mMainActivity.getLayoutInflater().inflate(R.layout.dialog_find_srid, null);
         Button findButton = (Button)dialogView.findViewById(R.id.button_find);
         findButton.setOnClickListener(findSridHandler);
          

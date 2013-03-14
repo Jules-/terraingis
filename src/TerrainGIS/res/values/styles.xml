@@ -1,11 +1,11 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="MyTheme" parent="@android:style/Theme.Holo.Light">
-        <item name="android:actionBarStyle">@style/MyActionBar</item>    
+    <style name="MapTheme" parent="@android:style/Theme.Holo.Light">
+        <item name="android:actionBarStyle">@style/ActionBar_map_toolbar</item>    
         <item name="android:windowActionBarOverlay">true</item>
     </style>
     
-    <style name="MyActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+    <style name="ActionBar_map_toolbar" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:displayOptions"></item>
         <item name="android:background">@color/actionbar_background</item>
     </style>
