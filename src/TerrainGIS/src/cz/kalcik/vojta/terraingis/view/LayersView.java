@@ -90,7 +90,7 @@ public class LayersView extends DragSortListView
             invalidateViews();
             mMainActivity.getMapFragment().changeRecordButtons();
         }
-    };    
+    };
     
     // classes =============================================================================
     

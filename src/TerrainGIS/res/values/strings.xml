@@ -51,6 +51,8 @@
     <string name="set_attributes_message">Save object</string>
     <!-- find srid dialog -->
     <string name="find_srid_message">Find SRS</string>
+    <!-- layers context menu -->
+    <string name="menu_show_attribute_table">Show attribute table</string>
     <!-- other -->
     <string name="confirm_remove_message">Really remove %s layer?</string>
 </resources>

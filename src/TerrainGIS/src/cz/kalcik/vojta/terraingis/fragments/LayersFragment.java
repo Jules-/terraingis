@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,67 +46,11 @@ public class LayersFragment extends Fragment
     public static int LOAD_REQUESTCODE = 0;
     
     // properties =========================================================
-    private ArrayAdapter<AbstractLayer> mArrayAdapter;
     private LayersView mListView;
     private MainActivity mMainActivity;
     private LayerManager mLayerManager = LayerManager.getInstance();
-    
-    private DragSortListView.DropListener onDrop =
-            new DragSortListView.DropListener()
-            {
-                @Override
-                public void drop(int from, int to)
-                {
-                    if (from != to)
-                    {
-                        AbstractLayer item = mArrayAdapter.getItem(from);
-                        mArrayAdapter.remove(item);
-                        mArrayAdapter.insert(item, to);
-                        mListView.moveCheckState(from, to);
-                        
-                        //change selection
-                        int selectedItem = mListView.getMySelectedPosition();
-                        
-                        if(from == selectedItem)
-                        {
-                            mListView.setMySelectedPosition(to);
-                        }
-                        else if(from < selectedItem && to >= selectedItem)
-                        {
-                            mListView.setMySelectedPosition(selectedItem-1);
-                        }
-                        else if(from > selectedItem && to <= selectedItem)
-                        {
-                            mListView.setMySelectedPosition(selectedItem+1);
-                        }
-                        
-                        mListView.invalidateViews();
-                        mMainActivity.getMap().invalidate();
-                    }
-                }
-            };
-
-    
-    // public methods =====================================================
-    
-    // getter, setter =====================================================
-    /**
-     * when layer is not selected return null
-     * @return selected layer
-     */
-    public AbstractLayer getSelectedLayer()
-    {
-        int position = mListView.getMySelectedPosition();
         
-        if(position < 0 || position >= mArrayAdapter.getCount())
-        {
-            return null;
-        }
-        else
-        {
-            return mArrayAdapter.getItem(position);
-        }
-    }
+    // public methods =====================================================
     
     /**
      * remove selection
@@ -133,6 +79,25 @@ public class LayersFragment extends Fragment
         intent.setType("file/*");
         startActivityForResult(intent, LOAD_REQUESTCODE);        
     }
+    
+    // getter, setter =====================================================
+    /**
+     * when layer is not selected return null
+     * @return selected layer
+     */
+    public AbstractLayer getSelectedLayer()
+    {
+        int position = mListView.getMySelectedPosition();
+        
+        if(position < 0 || position >= mArrayAdapter.getCount())
+        {
+            return null;
+        }
+        else
+        {
+            return mArrayAdapter.getItem(position);
+        }
+    }
     // on methods =========================================================
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -143,43 +108,7 @@ public class LayersFragment extends Fragment
         // listView
         mListView = (LayersView) myView.findViewById(R.id.list_layers);
         mListView.setDropListener(onDrop);
-        
-        ArrayList<AbstractLayer> layers = mLayerManager.getLayers();
-        
-        mArrayAdapter = new ArrayAdapter<AbstractLayer>(getActivity(), R.layout.list_item_handle_left, R.id.text_item, layers)
-            {
-                @Override
-                public View getView(int position, View convertView, ViewGroup parent)
-                {
-                    View itemView = super.getView(position, convertView, parent);
-                    
-                    // selected layer
-                    int selectedPosition = mListView.getMySelectedPosition();
-                    if (selectedPosition == position)
-                    {
-                        itemView.setBackgroundColor(getResources().getColor(R.color.highlight_selected_item));
-                    }
-                    else
-                    {
-                        itemView.setBackgroundColor(Color.TRANSPARENT);
-                    }
-                    
-                    // visible layer
-                    TextView textView = (TextView)itemView.findViewById(R.id.text_item);
-                    if(getItem(position).isVisible())
-                    {
-                        textView.setTextColor(Color.BLACK);
-                        textView.setTypeface(null, Typeface.NORMAL);
-                    }
-                    else
-                    {
-                        textView.setTextColor(Color.GRAY);
-                        textView.setTypeface(null, Typeface.ITALIC);
-                    }
-                    
-                    return itemView;
-                }
-            };
+        registerForContextMenu(mListView);
         
         mListView.setAdapter(mArrayAdapter);
         
@@ -245,8 +174,17 @@ public class LayersFragment extends Fragment
         }
     }
     
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+            ContextMenuInfo menuInfo)
+    {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        
+        getActivity().getMenuInflater().inflate(R.menu.layers_context_menu, menu);
+    }
+
     // handlers ===============================================================
-    
+
     /**
      * zoom to selected layer
      */
@@ -352,5 +290,81 @@ public class LayersFragment extends Fragment
             mMainActivity.showDialog(dialog);
         }        
     };
+
+    /**
+     * drop listener
+     */
+    private DragSortListView.DropListener onDrop =
+            new DragSortListView.DropListener()
+            {
+                @Override
+                public void drop(int from, int to)
+                {
+                    if (from != to)
+                    {
+                        AbstractLayer item = mArrayAdapter.getItem(from);
+                        mArrayAdapter.remove(item);
+                        mArrayAdapter.insert(item, to);
+                        mListView.moveCheckState(from, to);
+                        
+                        //change selection
+                        int selectedItem = mListView.getMySelectedPosition();
+                        
+                        if(from == selectedItem)
+                        {
+                            mListView.setMySelectedPosition(to);
+                        }
+                        else if(from < selectedItem && to >= selectedItem)
+                        {
+                            mListView.setMySelectedPosition(selectedItem-1);
+                        }
+                        else if(from > selectedItem && to <= selectedItem)
+                        {
+                            mListView.setMySelectedPosition(selectedItem+1);
+                        }
+                        
+                        mListView.invalidateViews();
+                        mMainActivity.getMap().invalidate();
+                    }
+                }
+            };
+    
+    // adapters ======================================================================================
+    private ArrayAdapter<AbstractLayer> mArrayAdapter =
+            new ArrayAdapter<AbstractLayer>(getActivity(), R.layout.list_item_handle_left,
+                    R.id.text_item, mLayerManager.getLayers())
+    {
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            View itemView = super.getView(position, convertView, parent);
+            
+            // selected layer
+            int selectedPosition = mListView.getMySelectedPosition();
+            if (selectedPosition == position)
+            {
+                itemView.setBackgroundColor(getResources().getColor(R.color.highlight_selected_item));
+            }
+            else
+            {
+                itemView.setBackgroundColor(Color.TRANSPARENT);
+            }
+            
+            // visible layer
+            TextView textView = (TextView)itemView.findViewById(R.id.text_item);
+            if(getItem(position).isVisible())
+            {
+                textView.setTextColor(Color.BLACK);
+                textView.setTypeface(null, Typeface.NORMAL);
+            }
+            else
+            {
+                textView.setTextColor(Color.GRAY);
+                textView.setTypeface(null, Typeface.ITALIC);
+            }
+            
+            return itemView;
+        }
+    };    
     // classes =============================================================================
 }
