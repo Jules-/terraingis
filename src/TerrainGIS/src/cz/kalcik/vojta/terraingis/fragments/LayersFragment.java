@@ -48,6 +48,7 @@ public class LayersFragment extends Fragment
     // properties =========================================================
     private LayersView mListView;
     private MainActivity mMainActivity;
+    private ArrayAdapter<AbstractLayer> mArrayAdapter;
     private LayerManager mLayerManager = LayerManager.getInstance();
         
     // public methods =====================================================
@@ -110,6 +111,7 @@ public class LayersFragment extends Fragment
         mListView.setDropListener(onDrop);
         registerForContextMenu(mListView);
         
+        setArrayAdapter();
         mListView.setAdapter(mArrayAdapter);
         
         // buttons
@@ -183,6 +185,50 @@ public class LayersFragment extends Fragment
         getActivity().getMenuInflater().inflate(R.menu.layers_context_menu, menu);
     }
 
+    // private methods ========================================================
+    /**
+     * set ArrayAdapter of layers    
+     */
+    private void setArrayAdapter()
+    {
+        mArrayAdapter =
+                new ArrayAdapter<AbstractLayer>(getActivity(), R.layout.list_item_handle_left,
+                        R.id.text_item, mLayerManager.getLayers())
+        {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent)
+            {
+                View itemView = super.getView(position, convertView, parent);
+                
+                // selected layer
+                int selectedPosition = mListView.getMySelectedPosition();
+                if (selectedPosition == position)
+                {
+                    itemView.setBackgroundColor(getResources().getColor(R.color.highlight_selected_item));
+                }
+                else
+                {
+                    itemView.setBackgroundColor(Color.TRANSPARENT);
+                }
+                
+                // visible layer
+                TextView textView = (TextView)itemView.findViewById(R.id.text_item);
+                if(getItem(position).isVisible())
+                {
+                    textView.setTextColor(Color.BLACK);
+                    textView.setTypeface(null, Typeface.NORMAL);
+                }
+                else
+                {
+                    textView.setTextColor(Color.GRAY);
+                    textView.setTypeface(null, Typeface.ITALIC);
+                }
+                
+                return itemView;
+            }
+        };  
+    }
+    
     // handlers ===============================================================
 
     /**
@@ -329,42 +375,5 @@ public class LayersFragment extends Fragment
                 }
             };
     
-    // adapters ======================================================================================
-    private ArrayAdapter<AbstractLayer> mArrayAdapter =
-            new ArrayAdapter<AbstractLayer>(getActivity(), R.layout.list_item_handle_left,
-                    R.id.text_item, mLayerManager.getLayers())
-    {
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            View itemView = super.getView(position, convertView, parent);
-            
-            // selected layer
-            int selectedPosition = mListView.getMySelectedPosition();
-            if (selectedPosition == position)
-            {
-                itemView.setBackgroundColor(getResources().getColor(R.color.highlight_selected_item));
-            }
-            else
-            {
-                itemView.setBackgroundColor(Color.TRANSPARENT);
-            }
-            
-            // visible layer
-            TextView textView = (TextView)itemView.findViewById(R.id.text_item);
-            if(getItem(position).isVisible())
-            {
-                textView.setTextColor(Color.BLACK);
-                textView.setTypeface(null, Typeface.NORMAL);
-            }
-            else
-            {
-                textView.setTextColor(Color.GRAY);
-                textView.setTypeface(null, Typeface.ITALIC);
-            }
-            
-            return itemView;
-        }
-    };    
     // classes =============================================================================
 }
