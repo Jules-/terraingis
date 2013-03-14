@@ -15,7 +15,7 @@
    inkscape:label="Pozadí"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="record_on.svg">
+   sodipodi:docname="ic_menu_record_off.svg">
   <defs
      id="defs3">
     <filter
@@ -96,13 +96,13 @@
      inkscape:pageshadow="2"
      inkscape:zoom="7.9195959"
      inkscape:cx="-19.533013"
-     inkscape:cy="11.540706"
+     inkscape:cy="16.591469"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1680"
-     inkscape:window-height="1030"
-     inkscape:window-x="1278"
+     inkscape:window-width="1237"
+     inkscape:window-height="780"
+     inkscape:window-x="41"
      inkscape:window-y="-3"
      inkscape:window-maximized="1" />
   <metadata
@@ -113,7 +113,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -131,9 +131,9 @@
        sodipodi:rx="12.879445"
        sodipodi:ry="12.879445"
        d="m 40.911178,24.766491 a 12.879445,12.879445 0 1 1 -25.758891,0 12.879445,12.879445 0 1 1 25.758891,0 z"
-       transform="matrix(1.3411171,0,0,1.3411171,-13.593835,995.14744)" />
+       transform="matrix(1.8634343,0,0,1.8634343,-28.235293,982.21147)" />
     <path
-       transform="matrix(0.55680338,0,0,0.55680338,8.3918375,1014.5722)"
+       transform="matrix(1.0870034,0,0,1.0870034,-6.4705874,1001.4409)"
        d="m 40.911178,24.766491 a 12.879445,12.879445 0 1 1 -25.758891,0 12.879445,12.879445 0 1 1 25.758891,0 z"
        sodipodi:ry="12.879445"
        sodipodi:rx="12.879445"

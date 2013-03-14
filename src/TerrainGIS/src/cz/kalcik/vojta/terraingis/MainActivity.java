@@ -7,7 +7,6 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Display;
@@ -119,8 +118,7 @@ public class MainActivity extends Activity
                 i--;
             }
             
-            cancelTimer();
-            hideActionBar();
+            hideActionBarNow();
             mLayersLayout.setVisibility(View.VISIBLE);
         }
     }
@@ -201,6 +199,8 @@ public class MainActivity extends Activity
         ConvertUnits.setDensity(getResources().getDisplayMetrics().density);
         checkAppDirectory();
         
+        getActionBar().setHomeButtonEnabled(true);
+        
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
         mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
         
@@ -266,6 +266,11 @@ public class MainActivity extends Activity
                 startRecord();
             }
         }
+        // hide icon
+        else if(android.R.id.home == id)
+        {
+            hideActionBarNow();
+        }        
         
         setActionBarIcons();
      
@@ -357,23 +362,23 @@ public class MainActivity extends Activity
         // location icons
         if(mLocationWorker.isRunLocation())
         {
-            mMenuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.gps_on));
+            mMenuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_gps_on));
             mMenuShowLocation.setVisible(true);
         }
         else
         {
-            mMenuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.gps_off));
+            mMenuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_gps_off));
             mMenuShowLocation.setVisible(false);
         }
         
         // record icon
         if(data.mRecordMode)
         {
-            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.record_on));
+            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_on));
         }
         else
         {
-            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.record_off));
+            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_off));
         }
     }
 
@@ -429,6 +434,15 @@ public class MainActivity extends Activity
     private void hideActionBar()
     {
         getActionBar().hide();
+    }
+    
+    /**
+     * hide now actionBar
+     */
+    private void hideActionBarNow()
+    {
+        cancelTimer();
+        hideActionBar();        
     }
     // classes =================================================================
     /**

@@ -27,7 +27,7 @@ public class Settings
     // attributes ===================================================================
     private int locationIcon = R.drawable.location;
     private boolean hideActionBar = true;
-    private int timeHideActionBar = 5000;
+    private int timeHideActionBar = 8000;
     private int mAutoRecordMinDist = 10;
     private int mLocationMinTime = 2000;
     private int mRecordMinAccuracy = 20;

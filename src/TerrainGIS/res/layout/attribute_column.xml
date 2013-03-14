@@ -29,6 +29,6 @@
         android:layout_width="70dip"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:src="@drawable/remove"/>
+        android:src="@drawable/ic_menu_remove"/>
     
 </cz.kalcik.vojta.terraingis.view.AttributeColumnLayout>
