@@ -55,20 +55,34 @@ public class AttributeHeader
     
     /**
      * create SQL definition columns for insert attributes
-     * begin with coma
      * @param showPK
+     * @param showFirstComa - if is set show first coma
      * @return
      */
-    public String getInsertSQLColumns(boolean showPK)
+    public String getComaNameColumns(boolean showPK, boolean showFirstComa, boolean useQuotes)
     {
         StringBuilder builder = new StringBuilder();
+        boolean firstLoop = true;
         
         for(Column column : mColumns)
         {
             if(showPK || !column.isPK)
             {
-                builder.append(", ");
-                builder.append(String.format("'%s'", column.name));
+                if(!firstLoop || showFirstComa)
+                {
+                    builder.append(", ");
+                }
+                
+                if(useQuotes)
+                {
+                    builder.append(String.format("'%s'", column.name));
+                }
+                else
+                {
+                    builder.append(column.name);
+                }
+                
+                firstLoop = false;
             }
         }
         

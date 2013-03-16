@@ -81,6 +81,39 @@ public class SpatiaLiteIO
     	
     	return list;
     }
+
+    /**
+     * get layer from spatialite db by name
+     * @return list of Layers
+     */
+    public Layer getLayer(String name)
+    {
+        Layer result = null;
+        
+        String query = "SELECT f_table_name, type, srid FROM geometry_columns " +
+        		"WHERE f_table_name = ?";
+        try
+        {
+            Stmt stmt = db.prepare(query);
+            stmt.bind(1, name);
+            
+            if(stmt.step())
+            {
+                result = new Layer();
+                result.name = stmt.column_string(0);
+                result.type = stmt.column_string(1);
+                result.srid = stmt.column_int(2);
+            }
+            
+            stmt.close();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return result;
+    }
     
     /**
      * check if layer have index
@@ -343,7 +376,7 @@ public class SpatiaLiteIO
             stmt.bind(4, envelope.getMaxX());
             stmt.bind(5, envelope.getMaxY());
             
-            return new GeomIterator(stmt);
+            return new SpatialiteGeomIterator(stmt);
         }
         catch (Exception e)
         {
@@ -475,7 +508,7 @@ public class SpatiaLiteIO
         
 
         String query = String.format("INSERT INTO '%s' ('%s'%s) VALUES (%s%s)",
-                name, column, header.getInsertSQLColumns(usePK),
+                name, column, header.getComaNameColumns(usePK, true, true),
                 geomDefinition, header.getInsertSQLArgs(usePK));
         return db.prepare(query);
     }
@@ -617,6 +650,30 @@ public class SpatiaLiteIO
         
         return result;
     }
+    
+    /**
+     * get all attributes of table
+     * @param name
+     * @param header
+     * @return
+     */
+    public Iterator<String[]> getAttributes(String name, AttributeHeader header)
+    {
+        try
+        {
+            String query = String.format("SELECT %s FROM '%s'",
+                    header.getComaNameColumns(true, false, false), name);
+            Stmt stmt = db.prepare(query);
+            
+            return new SpatialiteAttributesIterator(stmt, header.getCountColumns());
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return null;        
+    }
     // private methods =======================================================================
     /**
      * open spatialite database
@@ -646,75 +703,6 @@ public class SpatiaLiteIO
         }
     }
     // classes ===============================================================================
-    /**
-     * Iterator returned from db
-     * @author jules
-     *
-     */
-    class GeomIterator implements Iterator<Geometry>
-    {
-        private Stmt mStmt;
-        private boolean mHasNext = false;
-        private boolean mIsNext = false;
-        
-        public GeomIterator(Stmt stmt)
-        {
-            this.mStmt = stmt;
-        }
-        
-        @Override
-        public boolean hasNext()
-        {
-            if(!mIsNext)
-            {
-                try
-                {
-                    mHasNext = mStmt.step();
-                    if(!mHasNext)
-                    {
-                        mStmt.close();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.e("TerrainGIS", e.getMessage());
-                }
-                
-                mIsNext = true;
-            }
-            return mHasNext;
-        }
-
-        @Override
-        public Geometry next()
-        {
-            if(hasNext())
-            {
-                try
-                {
-                    mIsNext = false;
-                    return wkbReader.read(mStmt.column_bytes(0));
-                }
-                catch (ParseException e)
-                {
-                    Log.e("TerrainGIS", e.getMessage());
-                }
-                catch (Exception e)
-                {
-                    Log.e("TerrainGIS", e.getMessage());
-                }
-            }
-            
-            return null;
-        }
-
-        @Override
-        public void remove()
-        {
-            throw new UnsupportedOperationException();
-        }    
-    }
-    
     /**
      * class for result layer values
      * @author jules

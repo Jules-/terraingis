@@ -27,6 +27,7 @@
     <string name="srid_empty_error">SRS is empty!</string>
     <string name="bad_shapefile_error">Bad shapefile name!</string>
     <string name="load_shapefile_error">Can not load shapefile!</string>
+    <string name="layer_attribu_tetable_error">This layer does not have attributes!</string>
     <!-- record buttons -->
     <string name="record_point">Add point</string>
     <string name="record_end_object">End object</string>

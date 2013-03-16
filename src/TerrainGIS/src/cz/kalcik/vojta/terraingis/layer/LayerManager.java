@@ -16,6 +16,7 @@ import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO.Layer;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer.AbstractLayerData;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
@@ -101,20 +102,7 @@ public class LayerManager
                 continue;
             }
             
-            AbstractLayer newLayer = null;
-            
-            if(layer.type.equals("POINT") || layer.type.equals("MULTIPOINT"))
-            {
-                newLayer = new PointsLayer(layer.name, layer.srid, spatialiteManager);
-            }
-            else if(layer.type.equals("LINESTRING") || layer.type.equals("MULTILINESTRING"))
-            {
-                newLayer = new LinesLayer(layer.name, layer.srid, spatialiteManager);
-            }
-            else if(layer.type.equals("POLYGON") || layer.type.equals("MULTIPOLYGON"))
-            {
-                newLayer = new PolygonsLayer(layer.name, layer.srid, spatialiteManager);
-            }
+            AbstractLayer newLayer = createVectorLayer(layer, spatialiteManager);
             
             mapLayers.put(newLayer.toString(), true);
             
@@ -264,6 +252,33 @@ public class LayerManager
     public SpatiaLiteIO getSpatialiteIO()
     {
         return spatialiteManager;
+    }
+    
+    // public static method ==================================================================
+    /**
+     * create VectorLayer by layer attributes from spatialite
+     * @param layer
+     * @param spatialite
+     * @return
+     */
+    public static VectorLayer createVectorLayer(Layer layer, SpatiaLiteIO spatialite)
+    {
+        VectorLayer result = null;
+        
+        if(layer.type.equals("POINT") || layer.type.equals("MULTIPOINT"))
+        {
+            result = new PointsLayer(layer.name, layer.srid, spatialite);
+        }
+        else if(layer.type.equals("LINESTRING") || layer.type.equals("MULTILINESTRING"))
+        {
+            result = new LinesLayer(layer.name, layer.srid, spatialite);
+        }
+        else if(layer.type.equals("POLYGON") || layer.type.equals("MULTIPOLYGON"))
+        {
+            result = new PolygonsLayer(layer.name, layer.srid, spatialite);
+        }
+        
+        return result;
     }
     
     // private methods =======================================================================

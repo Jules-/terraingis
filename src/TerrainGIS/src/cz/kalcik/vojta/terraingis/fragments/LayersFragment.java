@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -32,6 +33,7 @@ import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.TilesLayer;
+import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.LayersView;
 import cz.kalcik.vojta.terraingis.R;
 
@@ -43,14 +45,16 @@ import cz.kalcik.vojta.terraingis.R;
 public class LayersFragment extends Fragment
 {
     // constants =========================================================
-    private static String SELECTED_POSITION = "SelectedPosition";
+    public static String LAYER_ATTRIBUTE_TABLE = "cz.kalcik.vojta.LayerAttributeTable";
     public static int LOAD_REQUESTCODE = 0;
     
+    private static String SELECTED_POSITION = "SelectedPosition";
     // properties =========================================================
     private LayersView mListView;
     private MainActivity mMainActivity;
     private ArrayAdapter<AbstractLayer> mArrayAdapter;
     private LayerManager mLayerManager = LayerManager.getInstance();
+    private AbstractLayer mContextMenuSelectedlayer;
         
     // public methods =====================================================
     
@@ -183,6 +187,10 @@ public class LayersFragment extends Fragment
     {
         super.onCreateContextMenu(menu, v, menuInfo);
         
+        AdapterView.AdapterContextMenuInfo info =
+                (AdapterView.AdapterContextMenuInfo) menuInfo;
+        mContextMenuSelectedlayer = mArrayAdapter.getItem(info.position);
+
         getActivity().getMenuInflater().inflate(R.menu.layers_context_menu, menu);
     }
 
@@ -191,11 +199,20 @@ public class LayersFragment extends Fragment
     {
         if(item.getItemId() == R.id.menuitem_show_attribute_table)
         {
-            Intent intent = new Intent(mMainActivity, AttributeTableActivity.class);
-            
-            this.startActivity(intent);
-            
-            return true;
+            if(mContextMenuSelectedlayer instanceof VectorLayer)
+            {
+                Intent intent = new Intent(mMainActivity, AttributeTableActivity.class);
+                intent.putExtra(LAYER_ATTRIBUTE_TABLE, mContextMenuSelectedlayer.getData().name);
+                
+                this.startActivity(intent);
+                
+                return true;
+            }
+            else
+            {
+                Toast.makeText(mMainActivity, R.string.layer_attribu_tetable_error, Toast.LENGTH_LONG).show();
+                return false;
+            }
         }
         else
         {
