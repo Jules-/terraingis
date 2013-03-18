@@ -239,7 +239,7 @@ public class LayersFragment extends Fragment
                 int selectedPosition = mListView.getMySelectedPosition();
                 if (selectedPosition == position)
                 {
-                    itemView.setBackgroundColor(getResources().getColor(R.color.highlight_selected_item));
+                    itemView.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
                 }
                 else
                 {

@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeType;
@@ -123,16 +124,11 @@ public class EmptyLayerDialog extends CreateLayerDialog
      */
     private void setBackgroundColors()
     {
-        int color1 = getResources().getColor(R.color.background_list1);
-        int color2 = getResources().getColor(R.color.background_list2);
-        boolean firstColor = true;
+        ListBackgroundColors colors = new ListBackgroundColors(mMainActivity); 
         
         for(AttributeColumnLayout layout : mAttributes)
         {
-            int color = firstColor ? color1 : color2;
-
-            layout.setBackgroundColor(color);
-            firstColor = !firstColor;
+            layout.setBackgroundColor(colors.getNextColor());
         }
     }
     

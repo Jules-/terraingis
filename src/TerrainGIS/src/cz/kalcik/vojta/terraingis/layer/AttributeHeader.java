@@ -36,7 +36,7 @@ public class AttributeHeader
         for(int i=0; i < size; i++)
         {
             Column column = mColumns.get(i);
-            builder.append(String.format("'%s' %s", column.name,
+            builder.append(String.format("\"%s\" %s", column.name,
                     column.type));
             if(column.isPK)
             {
@@ -59,7 +59,7 @@ public class AttributeHeader
      * @param showFirstComa - if is set show first coma
      * @return
      */
-    public String getComaNameColumns(boolean showPK, boolean showFirstComa, boolean useQuotes)
+    public String getComaNameColumns(boolean showPK, boolean showFirstComa)
     {
         StringBuilder builder = new StringBuilder();
         boolean firstLoop = true;
@@ -73,14 +73,7 @@ public class AttributeHeader
                     builder.append(", ");
                 }
                 
-                if(useQuotes)
-                {
-                    builder.append(String.format("'%s'", column.name));
-                }
-                else
-                {
-                    builder.append(column.name);
-                }
+                builder.append(String.format("\"%s\"", column.name));
                 
                 firstLoop = false;
             }

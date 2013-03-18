@@ -97,7 +97,7 @@ public class SetAttributesDialog extends DialogFragment
                 // datetime
                 if(column.name.equals(DATETIME_NAME) && column.type == DATETIME_TYPE)
                 {
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmX");
                     item.setValue(df.format(new Date()));
                 }
                 mMainLayout.addView(item);

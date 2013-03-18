@@ -163,7 +163,7 @@ public class SpatiaLiteIO
                 // TODO use idx_table_column_node
                 String cmd = String.format("SELECT MIN(xmin) As xmin, MAX(xmax) As xmax, " +
                         "MIN(ymin) As ymin, MAX(ymax) As ymax "+
-                        "FROM 'idx_%s_%s'", name, column);
+                        "FROM \"idx_%s_%s\"", name, column);
                 stmt = db.prepare(cmd);
             }
             else
@@ -351,8 +351,8 @@ public class SpatiaLiteIO
             Stmt stmt;
             if(useRTree)
             {
-                cmd = String.format("SELECT AsBinary(Transform(%s, ?)) FROM '%s' WHERE "+
-                        "ROWID IN (SELECT pkid FROM 'idx_%s_%s' WHERE pkid MATCH RTreeIntersects(?, ?, ?, ?))",
+                cmd = String.format("SELECT AsBinary(Transform(%s, ?)) FROM \"%s\" WHERE "+
+                        "ROWID IN (SELECT pkid FROM \"idx_%s_%s\" WHERE pkid MATCH RTreeIntersects(?, ?, ?, ?))",
                         column, name, name, column);
                 
                 stmt = db.prepare(cmd);
@@ -364,7 +364,7 @@ public class SpatiaLiteIO
             }
             else
             {
-                cmd = String.format("SELECT AsBinary(Transform(%s, ?)) FROM '%s' WHERE "+
+                cmd = String.format("SELECT AsBinary(Transform(%s, ?)) FROM \"%s\" WHERE "+
                         "MbrIntersects(BuildMBR(?, ?, ?, ?), Transform(%s, ?)) = 1", column, name, column);           
                 stmt = db.prepare(cmd);
                 stmt.bind(6, outputSrid);
@@ -507,8 +507,8 @@ public class SpatiaLiteIO
         }
         
 
-        String query = String.format("INSERT INTO '%s' ('%s'%s) VALUES (%s%s)",
-                name, column, header.getComaNameColumns(usePK, true, true),
+        String query = String.format("INSERT INTO \"%s\" (\"%s\"%s) VALUES (%s%s)",
+                name, column, header.getComaNameColumns(usePK, true),
                 geomDefinition, header.getInsertSQLArgs(usePK));
         return db.prepare(query);
     }
@@ -528,7 +528,7 @@ public class SpatiaLiteIO
         
         try
         {
-            String query = "CREATE TABLE '%q' " + columns;
+            String query = "CREATE TABLE \"%q\" " + columns;
             db.exec(query, null, argsTable);
             db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
             db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
@@ -554,10 +554,10 @@ public class SpatiaLiteIO
             if(hasIndex)
             {
                 db.exec("SELECT DisableSpatialIndex('%q', '%q');", null, argsGeom);
-                db.exec("DROP TABLE 'idx_%q_%q';", null, argsGeom);
+                db.exec("DROP TABLE \"idx_%q_%q\";", null, argsGeom);
             }
             db.exec("SELECT DiscardGeometryColumn('%q', '%q');", null, argsGeom);
-            db.exec("DROP TABLE '%q';", null, argsTable);
+            db.exec("DROP TABLE \"%q\";", null, argsTable);
             db.exec("VACUUM;", null, argsTable);
         }
         catch (Exception e)
@@ -661,8 +661,8 @@ public class SpatiaLiteIO
     {
         try
         {
-            String query = String.format("SELECT %s FROM '%s'",
-                    header.getComaNameColumns(true, false, false), name);
+            String query = String.format("SELECT ROWID, %s FROM \"%s\"",
+                    header.getComaNameColumns(true, false), name);
             Stmt stmt = db.prepare(query);
             
             return new SpatialiteAttributesIterator(stmt, header.getCountColumns());
