@@ -20,12 +20,15 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author jules
@@ -120,6 +123,32 @@ public class AttributeTableActivity extends Activity
             mHScroll.scrollBy((int) (mx - curX), (int) (my - curY));
         }
 
+        return true;
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.activity_attribute_table, menu);
+        
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        int id = item.getItemId();
+        // remove
+        if(id == R.id.menu_remove)
+        {
+
+        }
+        // edit
+        else if(id == R.id.menu_edit)
+        {
+
+        }
+     
         return true;
     }
     // private methods =========================================================

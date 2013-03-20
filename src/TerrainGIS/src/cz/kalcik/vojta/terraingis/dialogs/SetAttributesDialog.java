@@ -40,6 +40,7 @@ public class SetAttributesDialog extends DialogFragment
     private LinearLayout mMainLayout;
     private ArrayList<AttributeValueLayout> mAttributes = new ArrayList<AttributeValueLayout>();
     private VectorLayer mLayer;
+    private String[] mValues = null;
     
     // public methods ================================================================================
     
@@ -76,6 +77,14 @@ public class SetAttributesDialog extends DialogFragment
     {
         this.mLayer = layer;
     }
+    
+    /**
+     * @param values the mValues to set
+     */
+    public void setValues(String[] values)
+    {
+        this.mValues = values;
+    }
 
     // private methods ================================================================================
     /**
@@ -86,19 +95,30 @@ public class SetAttributesDialog extends DialogFragment
         AttributeHeader attributeHeader = mLayer.getAttributeHeader();
         LayoutInflater inflater = mMainActivity.getLayoutInflater();
         
-        for(Column column: attributeHeader.getColumns())
+        ArrayList<Column> columns = attributeHeader.getColumns();
+        int size = columns.size();
+        for(int i=0; i < size; i++)
         {
+            Column column = columns.get(i);
+            
             if(!column.isPK)
             {
                 AttributeValueLayout item = (AttributeValueLayout)inflater.inflate(R.layout.set_attribute_value_item, null);
                 mAttributes.add(item);
                 item.setName(column.name);
                 item.setInputType(column.type);
-                // datetime
-                if(column.name.equals(DATETIME_NAME) && column.type == DATETIME_TYPE)
+                if(mValues == null)
                 {
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmX");
-                    item.setValue(df.format(new Date()));
+                    // datetime
+                    if(column.name.equals(DATETIME_NAME) && column.type == DATETIME_TYPE)
+                    {
+                        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmX");
+                        item.setValue(df.format(new Date()));
+                    }
+                }
+                else
+                {
+                    item.setValue(mValues[i]);
                 }
                 mMainLayout.addView(item);
             }
