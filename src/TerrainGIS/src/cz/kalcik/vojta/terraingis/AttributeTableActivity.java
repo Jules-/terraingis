@@ -6,6 +6,7 @@ package cz.kalcik.vojta.terraingis;
 import java.util.ArrayList;
 
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
+import cz.kalcik.vojta.terraingis.dialogs.UpdateAttributesDialog;
 import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO.Layer;
@@ -16,7 +17,6 @@ import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
 import cz.kalcik.vojta.terraingis.view.AttributeTableRow;
 import android.app.ActionBar;
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -28,13 +28,12 @@ import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * @author jules
  * activity for showing attribute table
  */
-public class AttributeTableActivity extends Activity
+public class AttributeTableActivity extends AbstractActivity
 {
     // attributes ================================================================
     private SpatiaLiteIO mSpatialite;
@@ -146,7 +145,13 @@ public class AttributeTableActivity extends Activity
         // edit
         else if(id == R.id.menu_edit)
         {
-
+            if(mSelectedRow != null)
+            {
+                UpdateAttributesDialog dialog = new UpdateAttributesDialog();
+                dialog.setLayer(mLayer);
+                dialog.setValues(mSelectedRow.getValues());
+                showDialog(dialog);
+            }
         }
      
         return true;

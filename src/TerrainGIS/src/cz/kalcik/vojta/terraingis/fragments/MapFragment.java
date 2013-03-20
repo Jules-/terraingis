@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog;
 import cz.kalcik.vojta.terraingis.dialogs.SetAttributesDialog;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
@@ -358,7 +359,7 @@ public class MapFragment extends Fragment
      */
     private void endObject(VectorLayer layer)
     {
-        SetAttributesDialog dialog = new SetAttributesDialog();
+        InsertAttributesDialog dialog = new InsertAttributesDialog();
         dialog.setLayer(layer);
         mMainActivity.showDialog(dialog);
     }

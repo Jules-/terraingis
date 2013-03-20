@@ -674,6 +674,28 @@ public class SpatiaLiteIO
         
         return null;        
     }
+    
+    /**
+     * update attributes with new names
+     * @param name
+     * @param values
+     * @param rowid
+     */
+    public void updateAttributes(String name, String values, int rowid)
+    {
+        try
+        {
+            String query = String.format("UPDATE \"%s\" SET %s WHERE ROWID=?",
+                    name, values);
+            Stmt stmt = db.prepare(query);
+            stmt.bind(1, rowid);
+            stmt.close();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }        
+    }
     // private methods =======================================================================
     /**
      * open spatialite database

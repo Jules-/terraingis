@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
@@ -16,6 +15,7 @@ import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
 import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.AttributeValueLayout;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -30,17 +30,17 @@ import android.widget.ScrollView;
  * @author jules
  *
  */
-public class SetAttributesDialog extends DialogFragment
+public abstract class SetAttributesDialog extends DialogFragment
 {
     // constants =====================================================================================
-    private String DATETIME_NAME = "datetime";
-    private AttributeType DATETIME_TYPE = AttributeType.TEXT;
+    protected String DATETIME_NAME = "datetime";
+    protected AttributeType DATETIME_TYPE = AttributeType.TEXT;
     // attributes ====================================================================================
-    private MainActivity mMainActivity;
+    private Activity mActivity;
     private LinearLayout mMainLayout;
-    private ArrayList<AttributeValueLayout> mAttributes = new ArrayList<AttributeValueLayout>();
-    private VectorLayer mLayer;
-    private String[] mValues = null;
+    protected ArrayList<AttributeValueLayout> mAttributes = new ArrayList<AttributeValueLayout>();
+    protected VectorLayer mLayer;
+    protected DialogInterface.OnClickListener positiveHandler;
     
     // public methods ================================================================================
     
@@ -48,15 +48,15 @@ public class SetAttributesDialog extends DialogFragment
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
-         mMainActivity = (MainActivity)getActivity();
+         mActivity = (Activity)getActivity();
         
-         Builder dialogBuilder = new AlertDialog.Builder(mMainActivity);
+         Builder dialogBuilder = new AlertDialog.Builder(mActivity);
          
          dialogBuilder.setTitle(R.string.set_attributes_message);
          
-         ScrollView scrollView = new ScrollView(mMainActivity);
+         ScrollView scrollView = new ScrollView(mActivity);
          
-         mMainLayout = new LinearLayout(mMainActivity);
+         mMainLayout = new LinearLayout(mActivity);
          mMainLayout.setOrientation(LinearLayout.VERTICAL);
          scrollView.addView(mMainLayout);
          
@@ -78,14 +78,6 @@ public class SetAttributesDialog extends DialogFragment
         this.mLayer = layer;
     }
     
-    /**
-     * @param values the mValues to set
-     */
-    public void setValues(String[] values)
-    {
-        this.mValues = values;
-    }
-
     // private methods ================================================================================
     /**
      * attributes of selected layer
@@ -93,7 +85,7 @@ public class SetAttributesDialog extends DialogFragment
     private void loadAttributes()
     {
         AttributeHeader attributeHeader = mLayer.getAttributeHeader();
-        LayoutInflater inflater = mMainActivity.getLayoutInflater();
+        LayoutInflater inflater = mActivity.getLayoutInflater();
         
         ArrayList<Column> columns = attributeHeader.getColumns();
         int size = columns.size();
@@ -107,55 +99,19 @@ public class SetAttributesDialog extends DialogFragment
                 mAttributes.add(item);
                 item.setName(column.name);
                 item.setInputType(column.type);
-                if(mValues == null)
+                
+                String value = getValueOfAttribute(column, i);
+                if(value != null)
                 {
-                    // datetime
-                    if(column.name.equals(DATETIME_NAME) && column.type == DATETIME_TYPE)
-                    {
-                        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmX");
-                        item.setValue(df.format(new Date()));
-                    }
+                    item.setValue(value);
                 }
-                else
-                {
-                    item.setValue(mValues[i]);
-                }
+                
                 mMainLayout.addView(item);
             }
         }
     }
     
-    // handlers =======================================================================================
+    // abstract protected methods =====================================================================
     
-    /**
-     * positive button
-     */
-    DialogInterface.OnClickListener positiveHandler = new DialogInterface.OnClickListener()
-    {
-        @Override
-        public void onClick(DialogInterface dialog, int id)
-        {
-            AttributeHeader attributeHeader = mLayer.getAttributeHeader();
-            String[] values = new String[attributeHeader.getCountColumns()];
-            
-            int indexAllColumns = 0;
-            int indexNoPKColumns = 0;
-            
-            for(Column column: attributeHeader.getColumns())
-            {
-                if(column.isPK)
-                {
-                    values[indexAllColumns] = null;
-                }
-                else
-                {
-                    values[indexAllColumns] = mAttributes.get(indexNoPKColumns).getValue();
-                    indexNoPKColumns++;
-                }
-                indexAllColumns++;
-            }
-            
-            mLayer.endObject(new AttributeRecord(attributeHeader, values));
-        }        
-    };
+    protected abstract String getValueOfAttribute(Column column, int i);
 }

@@ -7,6 +7,7 @@ import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import android.content.Context;
 import android.view.MotionEvent;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 /**
  * @author jules
@@ -26,7 +27,22 @@ public class AttributeTableRow extends TableRow
         
         mActivity = (AttributeTableActivity)getContext();
     }
-
+    
+    /**
+     * @return values of attributes
+     */
+    public String[] getValues()
+    {
+        int count = getChildCount();
+        String[] result = new String[count];
+        for(int i=0; i<count; i++)
+        {
+            TextView text = (TextView) getChildAt(i);
+            result[i] = text.getText().toString();
+        }
+        
+        return result;
+    }
     // getter setter =================================================================
 
     /**

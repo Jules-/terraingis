@@ -24,16 +24,12 @@ import cz.kalcik.vojta.terraingis.location.LocationWorker;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
 
-public class MainActivity extends Activity
+public class MainActivity extends AbstractActivity
 {
     // constants ==========================================================
-    public static final File APP_DIRECTORY = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS");
-    public static final File DB_FILE = new File(APP_DIRECTORY.getAbsoluteFile()+"/db.sqlite");
-    
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
     private static final String MAIN_ACTIVITY_DATA = "MainActivityData";
     private static final String SHOWN_LAYERS = "ShownLayers";
-    private static final String DIALOG_TAG = "DialogTag";
     private static final float MIN_WIDTH_PANEL_DP = 300;
     
     // properties =========================================================
@@ -123,14 +119,6 @@ public class MainActivity extends Activity
         }
     }
     
-    /**
-     * show dialog
-     * @param dialog
-     */
-    public void showDialog(DialogFragment dialog)
-    {
-        dialog.show(getFragmentManager(), DIALOG_TAG);
-    }
     // getter, setter =====================================================
     
     /**
