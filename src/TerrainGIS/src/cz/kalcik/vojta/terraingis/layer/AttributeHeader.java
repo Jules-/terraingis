@@ -102,6 +102,34 @@ public class AttributeHeader
     }
     
     /**
+     * return set part of command for SQL UPDATE
+     * @param showPK
+     * @return
+     */
+    public String getUpdateSQLArgs(boolean showPK)
+    {
+        StringBuilder builder = new StringBuilder();
+        boolean firstLoop = true;
+        
+        for(Column column : mColumns)
+        {
+            if(showPK || !column.isPK)
+            {
+                if(!firstLoop)
+                {
+                    builder.append(", ");
+                }
+                
+                builder.append(String.format("\"%s\"=?", column.name));
+                
+                firstLoop = false;
+            }
+        }
+        
+        return builder.toString();        
+    }
+    
+    /**
      * @return count of columns
      */
     public int getCountColumns()

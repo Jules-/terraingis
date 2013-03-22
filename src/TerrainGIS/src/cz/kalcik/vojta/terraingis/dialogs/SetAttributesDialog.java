@@ -78,6 +78,35 @@ public abstract class SetAttributesDialog extends DialogFragment
         this.mLayer = layer;
     }
     
+    // protected methods ==============================================================================
+    /**
+     * @return values of dialog
+     */
+    protected String[] getValues()
+    {
+        AttributeHeader attributeHeader = mLayer.getAttributeHeader();
+        String[] values = new String[attributeHeader.getCountColumns()];
+        
+        int indexAllColumns = 0;
+        int indexNoPKColumns = 0;
+        
+        for(Column column: attributeHeader.getColumns())
+        {
+            if(column.isPK)
+            {
+                values[indexAllColumns] = null;
+            }
+            else
+            {
+                values[indexAllColumns] = mAttributes.get(indexNoPKColumns).getValue();
+                indexNoPKColumns++;
+            }
+            indexAllColumns++;
+        }
+        
+        return values;
+    }    
+    
     // private methods ================================================================================
     /**
      * attributes of selected layer

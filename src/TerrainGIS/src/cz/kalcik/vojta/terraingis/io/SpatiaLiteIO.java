@@ -680,21 +680,25 @@ public class SpatiaLiteIO
      * @param name
      * @param values
      * @param rowid
+     * @throws Exception 
      */
-    public void updateAttributes(String name, String values, int rowid)
+    public void updateAttributes(String name, String setString, String[] values, int rowid)
+            throws Exception
     {
-        try
+        String query = String.format("UPDATE \"%s\" SET %s WHERE ROWID=?",
+                name, setString);
+        Stmt stmt = db.prepare(query);
+        
+        int count = values.length;
+        for(int i=0; i < count;i++)
         {
-            String query = String.format("UPDATE \"%s\" SET %s WHERE ROWID=?",
-                    name, values);
-            Stmt stmt = db.prepare(query);
-            stmt.bind(1, rowid);
-            stmt.close();
+            stmt.bind(i+1, values[i]);
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }        
+        
+        stmt.bind(count+1, rowid);
+        stmt.step();
+        
+        stmt.close();
     }
     // private methods =======================================================================
     /**

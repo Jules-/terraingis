@@ -4,7 +4,9 @@
 package cz.kalcik.vojta.terraingis.view;
 
 import cz.kalcik.vojta.terraingis.AttributeTableActivity;
+import cz.kalcik.vojta.terraingis.R;
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -42,6 +44,34 @@ public class AttributeTableRow extends TableRow
         }
         
         return result;
+    }
+    
+    /**
+     * create cells of row
+     * @param row
+     * @param inflater
+     * @param values
+     * @param count
+     */
+    public void createCells(LayoutInflater inflater, String[] values, int count)
+    {
+        for(int i = 0; i< count; i++)
+        {
+            TextView cell = (TextView)inflater.inflate(R.layout.attribute_table_cell, null);
+            cell.setText(values[i]);
+            addView(cell);
+        }        
+    }
+    
+    /**
+     * reload all cells
+     * @param inflater
+     * @param values
+     */
+    public void reloadCells(LayoutInflater inflater, String[] values)
+    {
+        removeAllViews();
+        createCells(inflater, values, values.length);
     }
     // getter setter =================================================================
 

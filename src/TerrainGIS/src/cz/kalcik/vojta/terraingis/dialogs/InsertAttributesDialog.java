@@ -27,27 +27,9 @@ public class InsertAttributesDialog extends SetAttributesDialog
             @Override
             public void onClick(DialogInterface dialog, int id)
             {
-                AttributeHeader attributeHeader = mLayer.getAttributeHeader();
-                String[] values = new String[attributeHeader.getCountColumns()];
+                String[] values = getValues();
                 
-                int indexAllColumns = 0;
-                int indexNoPKColumns = 0;
-                
-                for(Column column: attributeHeader.getColumns())
-                {
-                    if(column.isPK)
-                    {
-                        values[indexAllColumns] = null;
-                    }
-                    else
-                    {
-                        values[indexAllColumns] = mAttributes.get(indexNoPKColumns).getValue();
-                        indexNoPKColumns++;
-                    }
-                    indexAllColumns++;
-                }
-                
-                mLayer.endObject(new AttributeRecord(attributeHeader, values));
+                mLayer.endObject(new AttributeRecord(mLayer.getAttributeHeader(), values));
             }        
         };
     }

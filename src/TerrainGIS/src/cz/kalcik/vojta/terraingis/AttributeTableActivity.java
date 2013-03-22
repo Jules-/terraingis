@@ -49,7 +49,8 @@ public class AttributeTableActivity extends AbstractActivity
     private HorizontalScrollView mHScroll;
     
     // public methods ============================================================
-        
+
+    
     // getter, setter ============================================================
     
     /**
@@ -58,6 +59,14 @@ public class AttributeTableActivity extends AbstractActivity
     public void setTouchedRow(AttributeTableRow touchedRow)
     {
         this.mTouchedRow = touchedRow;
+    }
+    
+    /**
+     * @return the mSpatialite
+     */
+    public SpatiaLiteIO getSpatialite()
+    {
+        return mSpatialite;
     }
 
     // on methods ================================================================
@@ -149,7 +158,7 @@ public class AttributeTableActivity extends AbstractActivity
             {
                 UpdateAttributesDialog dialog = new UpdateAttributesDialog();
                 dialog.setLayer(mLayer);
-                dialog.setValues(mSelectedRow.getValues());
+                dialog.setRow(mSelectedRow);
                 showDialog(dialog);
             }
         }
@@ -187,12 +196,8 @@ public class AttributeTableActivity extends AbstractActivity
             bodyRow.setRowid(iterValues.getLastROWID());
             mRows.add(bodyRow);
             
-            for(int i = 0; i< count; i++)
-            {
-                TextView cell = (TextView)inflater.inflate(R.layout.attribute_table_cell, null);
-                cell.setText(values[i]);
-                bodyRow.addView(cell);
-            }
+            bodyRow.createCells(inflater, values, count);
+            
             mTable.addView(bodyRow);
         }
         

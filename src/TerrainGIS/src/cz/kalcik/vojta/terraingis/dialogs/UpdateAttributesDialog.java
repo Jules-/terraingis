@@ -3,8 +3,15 @@
  */
 package cz.kalcik.vojta.terraingis.dialogs;
 
+import jsqlite.Exception;
 import android.content.DialogInterface;
+import android.widget.Toast;
+import cz.kalcik.vojta.terraingis.AttributeTableActivity;
+import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
+import cz.kalcik.vojta.terraingis.layer.VectorLayer;
+import cz.kalcik.vojta.terraingis.view.AttributeTableRow;
 
 /**
  * @author jules
@@ -13,7 +20,8 @@ import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
 public class UpdateAttributesDialog extends SetAttributesDialog
 {
     // attributes ====================================================================================
-    private String[] mValues = null;
+    private String[] mOriginValues = null;
+    private AttributeTableRow mRow;
     
     // public methods ================================================================================
     
@@ -26,24 +34,37 @@ public class UpdateAttributesDialog extends SetAttributesDialog
             @Override
             public void onClick(DialogInterface dialog, int id)
             {
-                // TODO edit attributes
+                AttributeTableActivity activity = (AttributeTableActivity)getActivity();
+                SpatiaLiteIO spatialite = activity.getSpatialite();
+                try
+                {
+                    spatialite.updateAttributes(mLayer.getData().name,
+                            mLayer.getAttributeHeader().getUpdateSQLArgs(false), mOriginValues,
+                            Integer.parseInt(mRow.getRowid()));
+                    mRow.reloadCells(activity.getLayoutInflater(), getValues());
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(activity, R.string.database_error, Toast.LENGTH_LONG).show();
+                }
             }        
         };
     }
     
-    // getter setter ==================================================================================
+    // getter setter ==================================================================================    
     /**
-     * @param values the mValues to set
+     * @param row the mRow to set
      */
-    public void setValues(String[] values)
+    public void setRow(AttributeTableRow row)
     {
-        this.mValues = values;
+        this.mRow = row;
+        mOriginValues = row.getValues();
     }
 
     // protected methods ==============================================================================
     @Override
     protected String getValueOfAttribute(Column column, int i)
     {
-        return mValues[i];
+        return mOriginValues[i];
     }
 }
