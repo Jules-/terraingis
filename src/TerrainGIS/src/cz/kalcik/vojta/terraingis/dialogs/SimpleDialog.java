@@ -27,7 +27,7 @@ public abstract class SimpleDialog extends DialogFragment
          dialogBuilder.setTitle(mMessage);
          
          dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
-         dialogBuilder.setNegativeButton(R.string.negative_button, negativeHandler);
+         dialogBuilder.setNegativeButton(R.string.negative_button, null);
          
          return dialogBuilder.create();
     }
@@ -60,18 +60,6 @@ public abstract class SimpleDialog extends DialogFragment
         public void onClick(DialogInterface dialog, int id)
         {
             execute();
-        }        
-    };
-
-    
-    /**
-     * negative button
-     */
-    DialogInterface.OnClickListener negativeHandler = new DialogInterface.OnClickListener()
-    {
-        @Override
-        public void onClick(DialogInterface dialog, int id)
-        {
         }        
     };
 }

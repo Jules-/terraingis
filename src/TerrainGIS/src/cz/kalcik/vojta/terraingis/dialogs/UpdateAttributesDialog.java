@@ -25,32 +25,6 @@ public class UpdateAttributesDialog extends SetAttributesDialog
     
     // public methods ================================================================================
     
-    public UpdateAttributesDialog()
-    {
-        super();
-        
-        positiveHandler = new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialog, int id)
-            {
-                AttributeTableActivity activity = (AttributeTableActivity)getActivity();
-                SpatiaLiteIO spatialite = activity.getSpatialite();
-                try
-                {
-                    spatialite.updateAttributes(mLayer.getData().name,
-                            mLayer.getAttributeHeader().getUpdateSQLArgs(false), mOriginValues,
-                            Integer.parseInt(mRow.getRowid()));
-                    mRow.reloadCells(activity.getLayoutInflater(), getValues());
-                }
-                catch (Exception e)
-                {
-                    Toast.makeText(activity, R.string.database_error, Toast.LENGTH_LONG).show();
-                }
-            }        
-        };
-    }
-    
     // getter setter ==================================================================================    
     /**
      * @param row the mRow to set
@@ -66,5 +40,23 @@ public class UpdateAttributesDialog extends SetAttributesDialog
     protected String getValueOfAttribute(Column column, int i)
     {
         return mOriginValues[i];
+    }
+
+    @Override
+    protected void execute()
+    {
+        AttributeTableActivity activity = (AttributeTableActivity)getActivity();
+        SpatiaLiteIO spatialite = activity.getSpatialite();
+        try
+        {
+            spatialite.updateAttributes(mLayer.getData().name,
+                    mLayer.getAttributeHeader().getUpdateSQLArgs(false), mOriginValues,
+                    Integer.parseInt(mRow.getRowid()));
+            mRow.reloadCells(activity.getLayoutInflater(), getValues());
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(activity, R.string.database_error, Toast.LENGTH_LONG).show();
+        }
     }
 }

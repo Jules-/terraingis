@@ -8,7 +8,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import jsqlite.Exception;
+
+import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
 import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
@@ -25,6 +29,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
 /**
  * @author jules
@@ -40,7 +45,6 @@ public abstract class SetAttributesDialog extends DialogFragment
     private LinearLayout mMainLayout;
     protected ArrayList<AttributeValueLayout> mAttributes = new ArrayList<AttributeValueLayout>();
     protected VectorLayer mLayer;
-    protected DialogInterface.OnClickListener positiveHandler;
     
     // public methods ================================================================================
     
@@ -140,7 +144,27 @@ public abstract class SetAttributesDialog extends DialogFragment
         }
     }
     
-    // abstract protected methods =====================================================================
+    // handlers =======================================================================================
     
+    protected DialogInterface.OnClickListener positiveHandler = new DialogInterface.OnClickListener()
+    {
+        @Override
+        public void onClick(DialogInterface dialog, int id)
+        {
+            execute();
+        }        
+    };
+    
+    // abstract protected methods =====================================================================
+    /**
+     * @param column
+     * @param i
+     * @return value of attribute by init loading
+     */
     protected abstract String getValueOfAttribute(Column column, int i);
+    
+    /**
+     * run action with inserted attributes
+     */
+    protected abstract void execute();
 }

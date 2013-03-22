@@ -32,4 +32,12 @@ public class ListBackgroundColors
         mFirstColor = !mFirstColor;
         return result;
     }
+    
+    /**
+     * reset background color
+     */
+    public void reset()
+    {
+        mFirstColor = true;
+    }
 }

@@ -457,7 +457,7 @@ public class SpatiaLiteIO
                 }
                 
                 AttributeType type = attributes.getColumnType(i);
-                if(type == AttributeType.TEXT)
+                if(values[i] == null || type == AttributeType.TEXT)
                 {
                     stmt.bind(bindIndex, values[i]);
                 }
@@ -699,6 +699,24 @@ public class SpatiaLiteIO
         stmt.step();
         
         stmt.close();
+    }
+    
+    /**
+     * remove object by ROWID
+     * @param name
+     * @param rowid
+     * @throws Exception
+     */
+    public void removeObject(String name, int rowid) throws Exception
+    {
+        String query = String.format("DELETE FROM \"%s\" WHERE ROWID=?",
+                name);
+        Stmt stmt = db.prepare(query);
+                
+        stmt.bind(1, rowid);
+        stmt.step();
+        
+        stmt.close();        
     }
     // private methods =======================================================================
     /**

@@ -25,6 +25,7 @@ import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
@@ -55,6 +56,7 @@ public class LayersFragment extends Fragment
     private ArrayAdapter<AbstractLayer> mArrayAdapter;
     private LayerManager mLayerManager = LayerManager.getInstance();
     private AbstractLayer mContextMenuSelectedlayer;
+    private ListBackgroundColors mBackgroundColors;
         
     // public methods =====================================================
     
@@ -133,6 +135,9 @@ public class LayersFragment extends Fragment
         
         // main activity
         mMainActivity = (MainActivity)getActivity();
+        
+        // background colors
+        mBackgroundColors = new ListBackgroundColors(mMainActivity);
         
         return myView;
     }
@@ -237,13 +242,22 @@ public class LayersFragment extends Fragment
                 
                 // selected layer
                 int selectedPosition = mListView.getMySelectedPosition();
+                
+                // background color
+                if(position == 0)
+                {
+                    mBackgroundColors.reset();
+                }
+                
+                int backgroundColor = mBackgroundColors.getNextColor();
+                
                 if (selectedPosition == position)
                 {
                     itemView.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
                 }
                 else
                 {
-                    itemView.setBackgroundColor(Color.TRANSPARENT);
+                    itemView.setBackgroundColor(backgroundColor);
                 }
                 
                 // visible layer

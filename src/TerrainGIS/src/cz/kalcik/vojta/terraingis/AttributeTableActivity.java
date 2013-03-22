@@ -6,6 +6,7 @@ package cz.kalcik.vojta.terraingis;
 import java.util.ArrayList;
 
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
+import cz.kalcik.vojta.terraingis.dialogs.RemoveObjectDialog;
 import cz.kalcik.vojta.terraingis.dialogs.UpdateAttributesDialog;
 import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
@@ -49,7 +50,13 @@ public class AttributeTableActivity extends AbstractActivity
     private HorizontalScrollView mHScroll;
     
     // public methods ============================================================
-
+    /**
+     * remove selected row
+     */
+    public void removeSelectedRow()
+    {
+        mTable.removeView(mSelectedRow);
+    }
     
     // getter, setter ============================================================
     
@@ -149,7 +156,14 @@ public class AttributeTableActivity extends AbstractActivity
         // remove
         if(id == R.id.menu_remove)
         {
-
+            if(mSelectedRow != null)
+            {
+                RemoveObjectDialog dialog = new RemoveObjectDialog();
+                dialog.setMessage(getResources().getString(R.string.confirm_remove_object_message));
+                dialog.setRowid(mSelectedRow.getRowid());
+                dialog.setLayerName(mLayer.getData().name);
+                showDialog(dialog);
+            }            
         }
         // edit
         else if(id == R.id.menu_edit)
