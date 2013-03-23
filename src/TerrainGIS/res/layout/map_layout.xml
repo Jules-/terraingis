@@ -17,26 +17,39 @@
         android:layout_alignParentRight="true"
         android:orientation="vertical" >
         
-        <Button
+        <ImageButton
             android:id="@+id/button_record_end_object"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/record_end_object"
-            android:visibility="gone"/>
+            android:contentDescription="@string/record_end_object"
+            android:visibility="gone"
+            android:padding="20dp"
+            android:src="@drawable/button_end_object"/>
         
-        <Button
+        <ImageButton
             android:id="@+id/button_record_auto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/record_auto_start"
-            android:visibility="gone"/>
+            android:contentDescription="@string/record_auto_start"
+            android:visibility="gone"
+            android:padding="20dp"
+            android:src="@drawable/button_auto_record_off"/>
         
-        <Button
+        <ImageButton
             android:id="@+id/button_record_point"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/record_point"
-            android:visibility="gone"/>
+            android:contentDescription="@string/record_point"
+            android:visibility="gone"
+            android:padding="20dp"
+            android:src="@drawable/button_add_point"/>
+	    
+	    <TextView
+	        android:id="@+id/textView_coordinates"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Coordinates" />
     </LinearLayout>
 
+    
 </RelativeLayout>

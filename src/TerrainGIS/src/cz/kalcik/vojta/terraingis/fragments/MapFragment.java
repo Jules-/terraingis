@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -59,9 +60,9 @@ public class MapFragment extends Fragment
     private MapView map;
     private LayerManager mLayerManager = LayerManager.getInstance();
     private MainActivity mMainActivity;
-    private Button mButtonRecordAuto;
-    private Button mButtonRecordEndObject;
-    private Button mButtonRecordPoint;
+    private ImageButton mButtonRecordAuto;
+    private ImageButton mButtonRecordEndObject;
+    private ImageButton mButtonRecordPoint;
     private VectorLayer mAutoRecordLayer = null;
     private Intent mServiceIntent;
     private AutoRecordServiceConnection mServiceConnection = new AutoRecordServiceConnection(this);
@@ -132,11 +133,15 @@ public class MapFragment extends Fragment
             mButtonRecordAuto.setVisibility(View.VISIBLE);
             if(data.isRunAutoRecord)
             {
-                mButtonRecordAuto.setText(R.string.record_auto_stop);
+                mButtonRecordAuto.setContentDescription(getString(R.string.record_auto_stop));
+                mButtonRecordAuto.setImageDrawable(
+                        getResources().getDrawable(R.drawable.button_auto_record_on));
             }
             else
             {
-                mButtonRecordAuto.setText(R.string.record_auto_start);
+                mButtonRecordAuto.setContentDescription(getString(R.string.record_auto_start));
+                mButtonRecordAuto.setImageDrawable(
+                        getResources().getDrawable(R.drawable.button_auto_record_off));
             }
         }
         else
@@ -187,11 +192,11 @@ public class MapFragment extends Fragment
         View myView = inflater.inflate(R.layout.map_layout, container, false);
         
         // record buttons
-        mButtonRecordAuto = (Button)myView.findViewById(R.id.button_record_auto);
+        mButtonRecordAuto = (ImageButton)myView.findViewById(R.id.button_record_auto);
         mButtonRecordAuto.setOnClickListener(autoRecordObjectHandler);
-        mButtonRecordEndObject = (Button)myView.findViewById(R.id.button_record_end_object);
+        mButtonRecordEndObject = (ImageButton)myView.findViewById(R.id.button_record_end_object);
         mButtonRecordEndObject.setOnClickListener(endObjectHandler);
-        mButtonRecordPoint = (Button)myView.findViewById(R.id.button_record_point);
+        mButtonRecordPoint = (ImageButton)myView.findViewById(R.id.button_record_point);
         mButtonRecordPoint.setOnClickListener(addPointHandler);
         
         // Map view state
