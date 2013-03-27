@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="actionbar_background">#40000000</color>
+    <color name="background_layersfragment_toolbar">#ffdddddd</color>
     <color name="background_list1">#ffeeeeee</color>
-    <color name="background_list2">#ffdddddd</color>
+    <color name="background_list2">#ffe8e8e8</color>
     <color name="attribute_table_header_background">#ffcccccc</color>
 </resources>

@@ -7,6 +7,7 @@ import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Display;
@@ -32,21 +33,23 @@ public class MainActivity extends AbstractActivity
     private static final String SHOWN_LAYERS = "ShownLayers";
     private static final float MIN_WIDTH_PANEL_DP = 300;
     
+    public enum ActivityMode {EXPLORE, RECORD, EDIT};
     // properties =========================================================
     public static class MainActivityData implements Serializable
     {
         private static final long serialVersionUID = 1L;
-        public boolean mRecordMode;
+        public ActivityMode mActivityMode;
 
-        public MainActivityData(boolean mRecordMode)
+        public MainActivityData(ActivityMode mActivityMode)
         {
-            this.mRecordMode = mRecordMode;
+            this.mActivityMode = mActivityMode;
         }
     }
     
     private MenuItem mMenuRunLocation;
     private MenuItem mMenuShowLocation;
     private MenuItem mMenuRecord;
+    private MenuItem mMenuEdit;
     private Timer timer;
     private LocationWorker mLocationWorker;
     private Settings mSettings = Settings.getInstance();
@@ -54,7 +57,7 @@ public class MainActivity extends AbstractActivity
     private LayersFragment mLayersFragment;
     private LinearLayout mMapLayout;
     private LinearLayout mLayersLayout;
-    private MainActivityData data = new MainActivityData(false);
+    private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE);
     
     // public methods =====================================================
     
@@ -93,7 +96,11 @@ public class MainActivity extends AbstractActivity
         if(!mLayersLayout.isShown())
         {
             Display display = getWindowManager().getDefaultDisplay();
-            float dp_width = ConvertUnits.px2dp(display.getWidth());
+            
+            Point outSize = new Point();
+            display.getSize(outSize);
+            
+            float dp_width = ConvertUnits.px2dp(outSize.x);
             
             boolean run = true;
             int i = 3;
@@ -147,11 +154,11 @@ public class MainActivity extends AbstractActivity
     }
     
     /**
-     * @return record mode state
+     * @return activity mode
      */
-    public boolean isRecordMode()
+    public ActivityMode getActivityMode()
     {
-        return data.mRecordMode;
+        return data.mActivityMode;
     }
     
     /**
@@ -213,6 +220,7 @@ public class MainActivity extends AbstractActivity
         mMenuRunLocation = menu.findItem(R.id.menu_location);
         mMenuShowLocation = menu.findItem(R.id.menu_show_location);
         mMenuRecord = menu.findItem(R.id.menu_record);
+        mMenuEdit = menu.findItem(R.id.menu_edit);
         setActionBarIcons();
         
         return true;
@@ -231,27 +239,43 @@ public class MainActivity extends AbstractActivity
             }
             else
             {
-                mLocationWorker.start();
+                startLocation();
             }
         }
         // show location
         else if(mMenuShowLocation.getItemId() == id)
         {
-            if(!mMapFragment.getMap().showLocation())
+            try
             {
-                Toast.makeText(this, R.string.location_fix_error, Toast.LENGTH_LONG).show();
+                mMapFragment.showLocation();
+            }
+            catch(RuntimeException e)
+            {
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
         // record
         else if(mMenuRecord.getItemId() == id)
         {
-            if(data.mRecordMode)
+            if(data.mActivityMode == ActivityMode.RECORD)
             {
-                stopRecord();
+                startExploreMode();
             }
             else
             {
-                startRecord();
+                startRecordMode();
+            }
+        }
+        // record
+        else if(mMenuEdit.getItemId() == id)
+        {
+            if(data.mActivityMode == ActivityMode.EDIT)
+            {
+                startExploreMode();
+            }
+            else
+            {
+                startEditMode();
             }
         }
         // hide icon
@@ -360,7 +384,7 @@ public class MainActivity extends AbstractActivity
         }
         
         // record icon
-        if(data.mRecordMode)
+        if(data.mActivityMode == ActivityMode.RECORD)
         {
             mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_on));
         }
@@ -368,40 +392,69 @@ public class MainActivity extends AbstractActivity
         {
             mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_off));
         }
+        
+        // edit icon
+        if(data.mActivityMode == ActivityMode.EDIT)
+        {
+            mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_on));
+        }
+        else
+        {
+            mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_off));
+        }
     }
 
+    /**
+     * start location service
+     */
+    private void startLocation()
+    {
+        mMapFragment.startLocation();
+        mLocationWorker.start();
+    }
+    
     /**
      * stop location service
      */
     private void stopLocation()
     {
-        if(data.mRecordMode)
+        if(data.mActivityMode == ActivityMode.RECORD)
         {
-            stopRecord();
+            startExploreMode();
         }
         
         mLocationWorker.stop();
+        mMapFragment.stopLocation();        
     }
     
     /**
-     * start record state
+     * start record mode of activity
      */
-    private void startRecord()
+    private void startRecordMode()
     {
-        data.mRecordMode = true;
+        data.mActivityMode = ActivityMode.RECORD;
         if(!mLocationWorker.isRunLocation())
         {
-            mLocationWorker.start();
+            startLocation();
         }
         mMapFragment.changeRecordButtons();
     }
 
     /**
-     * stop record state
+     * start explore mode of activity
      */
-    private void stopRecord()
+    private void startExploreMode()
     {
-        data.mRecordMode = false;
+        data.mActivityMode = ActivityMode.EXPLORE;
+        mMapFragment.changeRecordButtons();
+    }
+
+    /**
+     * start edit mode of activity
+     */
+    private void startEditMode()
+    {
+        data.mActivityMode = ActivityMode.EDIT;
         mMapFragment.changeRecordButtons();
     }
     

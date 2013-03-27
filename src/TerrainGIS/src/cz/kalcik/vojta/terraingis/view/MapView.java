@@ -9,6 +9,7 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.Settings;
+import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -49,10 +50,8 @@ public class MapView extends SurfaceView
     private Drawer mDrawer = Drawer.getInstance();
     private GestureDetector gestureDetector;
     private MainActivity mainActivity;
+    private MapFragment mMapFragment;
     
-    private Coordinate locationM = new Coordinate(0,0); // location from GPS or Wi-Fi
-    private boolean freezLocation = false;
-    private boolean locationValid = false;
     private MapViewData data = new MapViewData();
     private Drawable locationIcon;
 
@@ -82,39 +81,7 @@ public class MapView extends SurfaceView
         
         gestureDetector =  new GestureDetector(context, new MySimpleOnGestureListener());
     }
-       
-    /**
-     * start location service
-     */
-    public void startLocation()
-    {
-    }
 
-    /**
-     * stop location service
-     */
-    public void stopLocation()
-    {
-        setLocationValid(false);
-        invalidate();
-    }
-        
-    /**
-     * change position by location 
-     * @return true if success
-     */
-    public synchronized boolean showLocation()
-    {
-        if(locationValid)
-        {
-            navigator.setPositionM(locationM.x, locationM.y);
-            
-            invalidate();
-        }
-
-        return locationValid;
-    }
-    
     /**
      * zoom to envelope
      * @param zoomingEnvelope
@@ -146,15 +113,6 @@ public class MapView extends SurfaceView
     }
     
     /**
-     * set if location is valid
-     * @param value
-     */
-    public void setLocationValid(boolean value)
-    {
-        locationValid = value;
-    }
-    
-    /**
      * set zoom of canvas
      * @param zoom
      */
@@ -174,22 +132,7 @@ public class MapView extends SurfaceView
         navigator.setLonLatPosition(lon, lat);
         invalidate();
     }
-    
-    /**
-     * set location
-     * @param location
-     */
-    public synchronized void setLonLatLocation(Coordinate location)
-    {
-        if(freezLocation)
-        {
-            navigator.setLonLatPosition(location);
-        }
-        locationM = layerManager.lonLatWGS84ToM(location);
-        locationValid = true;
-        invalidate();
-    }
-    
+        
     /**
      * set height of ActionBar
      * @param heightActionBar
@@ -197,24 +140,9 @@ public class MapView extends SurfaceView
     public void setMainActivity(MainActivity mainActivity)
     {
         this.mainActivity = mainActivity;
+        mMapFragment = this.mainActivity.getMapFragment();
     }
      
-    /**
-     * if location is valid return location coordinates in meters
-     * else return null
-     * @return
-     */
-    public synchronized Coordinate getLocation()
-    {
-        if(locationValid)
-        {
-            return (Coordinate) locationM.clone();
-        }
-        else
-        {
-            return null;
-        }
-    }
     // on methods ==========================================================================
     
     @Override
@@ -236,10 +164,7 @@ public class MapView extends SurfaceView
         
         mDrawer.draw(canvas, getWidth(), getHeight());
         
-        if(locationValid)
-        {
-            drawLocation(canvas);
-        }
+        drawLocation(canvas);
     }
     
     @Override
@@ -353,7 +278,11 @@ public class MapView extends SurfaceView
     
     private synchronized void drawLocation(Canvas canvas)
     {
-        mDrawer.drawIconM(canvas, locationM, locationIcon);
+        Coordinate location = mMapFragment.getLocation();
+        if(location != null)
+        {
+            mDrawer.drawIconM(canvas, location, locationIcon);
+        }
     }
     
     // classes =============================================================================

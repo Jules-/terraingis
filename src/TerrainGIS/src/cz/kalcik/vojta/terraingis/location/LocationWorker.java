@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Settings;
+import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 import android.content.BroadcastReceiver;
@@ -45,8 +46,8 @@ public class LocationWorker implements LocationListener
     
     // attributes ====================================================================
     private MainActivity mMainActivity;
+    private MapFragment mMapFragment;
     private Settings mSettings = Settings.getInstance();
-    private MapView map;
     private Coordinate locationPoint = new Coordinate();
     private CommonLocationListener mCommon;
     private GPSStatusListener mGPSStatusListener = new GPSStatusListener();
@@ -64,7 +65,7 @@ public class LocationWorker implements LocationListener
     {
         mMainActivity = mainActivity;
         mCommon = new CommonLocationListener(mMainActivity);
-        map = mMainActivity.getMap();
+        mMapFragment = mMainActivity.getMapFragment();
         hasGPS = mCommon.hasGPSDevice();
     }
     
@@ -77,8 +78,6 @@ public class LocationWorker implements LocationListener
     {
         startLocation();
         data.runLocation = true;
-        
-        map.startLocation();
     }
     
     /**
@@ -86,8 +85,6 @@ public class LocationWorker implements LocationListener
      */
     public void stop()
     {
-        map.stopLocation();
-        
         data.runLocation = false;
         stopLocation();
     }
@@ -157,7 +154,7 @@ public class LocationWorker implements LocationListener
         locationPoint.y = location.getLatitude();
         locationPoint.z = location.getAltitude();
         
-        map.setLonLatLocation(locationPoint);
+        mMapFragment.setLonLatLocation(locationPoint);
     }
 
     public void onStatusChanged(String provider, int status, Bundle extras)

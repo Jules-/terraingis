@@ -14,10 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import cz.kalcik.vojta.terraingis.components.LonLatFormat;
+import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog;
 import cz.kalcik.vojta.terraingis.dialogs.SetAttributesDialog;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
@@ -31,6 +34,7 @@ import cz.kalcik.vojta.terraingis.location.AutoRecordService;
 import cz.kalcik.vojta.terraingis.location.AutoRecordServiceConnection;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.MainActivity.ActivityMode;
 import cz.kalcik.vojta.terraingis.R;
 
 /**
@@ -57,16 +61,22 @@ public class MapFragment extends Fragment
         }
     }
     
-    private MapView map;
+    private MapView mMap;
     private LayerManager mLayerManager = LayerManager.getInstance();
     private MainActivity mMainActivity;
-    private ImageButton mButtonRecordAuto;
-    private ImageButton mButtonRecordEndObject;
-    private ImageButton mButtonRecordPoint;
     private VectorLayer mAutoRecordLayer = null;
     private Intent mServiceIntent;
     private AutoRecordServiceConnection mServiceConnection = new AutoRecordServiceConnection(this);
     private MapFragmentData data = new MapFragmentData(false);
+    private Navigator mNavigator = Navigator.getInstance();
+    
+    private ImageButton mButtonRecordAuto;
+    private ImageButton mButtonRecordEndObject;
+    private ImageButton mButtonRecordPoint;
+    private TextView mCoordinatesText;
+
+    private Coordinate mLocationM = new Coordinate(0,0); // location from GPS or Wi-Fi
+    private boolean mLocationValid = false;
 
     // public methods =====================================================
     /**
@@ -78,7 +88,10 @@ public class MapFragment extends Fragment
         boolean showPointButton = false;
         boolean showAutoButton = false;
         
-        if(mMainActivity.isRecordMode())
+        
+        ActivityMode mode = mMainActivity.getActivityMode();
+        // recording
+        if(mode == ActivityMode.RECORD)
         {
             AbstractLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayer();
             // is selected layer
@@ -162,7 +175,7 @@ public class MapFragment extends Fragment
         }
         
         changeRecordButtons();
-        map.invalidate();
+        mMap.invalidate();
     }
 
     /**
@@ -177,13 +190,92 @@ public class MapFragment extends Fragment
         }
     }
     
-    // getter, setter =====================================================
-    
-    public MapView getMap()
+    /**
+     * change position by location 
+     * @return true if success
+     */
+    public synchronized void showLocation()
     {
-        return map;
+        if(mLocationValid)
+        {
+            mNavigator.setPositionM(mLocationM.x, mLocationM.y);
+            
+            mMap.invalidate();
+        }
+        else
+        {
+            throw new RuntimeException(getString(R.string.location_fix_error));
+        }
+    }
+
+    /**
+     * start location service
+     */
+    public void startLocation()
+    {
+        setCoordinateText();
     }
     
+    /**
+     * stop location service
+     */
+    public void stopLocation()
+    {
+        setLocationValid(false);
+        hideCoordinateTextView();
+        
+        mMap.invalidate();
+    }
+    
+    /**
+     * set location
+     * @param location
+     */
+    public synchronized void setLonLatLocation(Coordinate location)
+    {
+        mLocationM = mLayerManager.lonLatWGS84ToM(location);
+        mLocationValid = true;
+        
+        setCoordinateText();
+        
+        mMap.invalidate();
+    }
+    // getter, setter =====================================================
+    
+    /**
+     * @return map
+     */
+    public MapView getMap()
+    {
+        return mMap;
+    }
+
+    /**
+     * set if location is valid
+     * @param value
+     */
+    public void setLocationValid(boolean value)
+    {
+        mLocationValid = value;
+    }
+
+    /**
+     * if location is valid return location coordinates in meters
+     * else return null
+     * @return
+     */
+    public synchronized Coordinate getLocation()
+    {
+        if(mLocationValid)
+        {
+            return (Coordinate) mLocationM.clone();
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     // on methods =========================================================
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -199,9 +291,12 @@ public class MapFragment extends Fragment
         mButtonRecordPoint = (ImageButton)myView.findViewById(R.id.button_record_point);
         mButtonRecordPoint.setOnClickListener(addPointHandler);
         
+        // coordinate text
+        mCoordinatesText = (TextView)myView.findViewById(R.id.textView_coordinates);
+        
         // Map view state
-        map = (MapView) myView.findViewById(R.id.map);
-        mLayerManager.loadLayers((Context)mMainActivity, map);
+        mMap = (MapView) myView.findViewById(R.id.map);
+        mLayerManager.loadLayers((Context)mMainActivity, mMap);
         
         return myView;
     }
@@ -214,7 +309,7 @@ public class MapFragment extends Fragment
         if(savedInstanceState != null)
         {
             // map view
-            map.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
+            mMap.setData(savedInstanceState.getSerializable(MAP_VIEW_DATA));
             // layers data
             mLayerManager.setData((ArrayList<AbstractLayerData>)savedInstanceState.getSerializable(LAYERS_DATA));
             restoreData(savedInstanceState);
@@ -227,7 +322,7 @@ public class MapFragment extends Fragment
         super.onSaveInstanceState(outState);
 
         // Map view state
-        outState.putSerializable(MAP_VIEW_DATA, map.getData());
+        outState.putSerializable(MAP_VIEW_DATA, mMap.getData());
         // Layers data
         outState.putSerializable(LAYERS_DATA, mLayerManager.getData());
         saveData(outState);
@@ -244,8 +339,8 @@ public class MapFragment extends Fragment
         }
         
         // disable old location
-        map.setLocationValid(false);
-        map.invalidate();
+        mLocationValid = false;
+        mMap.invalidate();
     }
 
     @Override
@@ -283,7 +378,7 @@ public class MapFragment extends Fragment
         }
         
         changeRecordButtons();
-        map.invalidate();
+        mMap.invalidate();
     }
 
     /**
@@ -368,6 +463,43 @@ public class MapFragment extends Fragment
         dialog.setLayer(layer);
         mMainActivity.showDialog(dialog);
     }
+    
+    /**
+     * @return text of current location
+     */
+    private synchronized String getCoordinateText()
+    {
+        if(mLocationValid)
+        {
+            Coordinate location = mLayerManager.mToLonLatWGS84(mLocationM);
+            return LonLatFormat.getFormatDM(location);
+        }
+        else
+        {
+            return getString(R.string.location_fix_error);
+        }
+    }
+    
+    /**
+     * set text of coordinates
+     */
+    private void setCoordinateText()
+    {
+        if(mCoordinatesText.getVisibility() != View.VISIBLE)
+        {
+            mCoordinatesText.setVisibility(View.VISIBLE);
+        }
+        
+        mCoordinatesText.setText(getCoordinateText());
+    }
+    
+    /**
+     * hide coordinate TextView
+     */
+    private void hideCoordinateTextView()
+    {
+        mCoordinatesText.setVisibility(View.GONE);
+    }
     // handlers ===============================================================
     
     /**
@@ -376,17 +508,17 @@ public class MapFragment extends Fragment
     View.OnClickListener addPointHandler = new View.OnClickListener()
     {
         @Override
-        public void onClick(View v)
+        public synchronized void onClick(View v)
         {
             VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-            Coordinate location = map.getLocation();
-            if(location == null)
+
+            if(!mLocationValid)
             {
                 Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
                 return;
             }            
             
-            recordPoint(location, selectedLayer, mLayerManager.getSrid());
+            recordPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
         }        
     };
     
@@ -415,7 +547,7 @@ public class MapFragment extends Fragment
             }
             
             changeRecordButtons();
-            map.invalidate();
+            mMap.invalidate();
         }        
     };
 
