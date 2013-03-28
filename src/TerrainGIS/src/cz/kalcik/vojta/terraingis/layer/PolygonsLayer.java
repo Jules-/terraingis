@@ -47,10 +47,10 @@ public class PolygonsLayer extends VectorLayer
             mDrawer.drawCanvasPathM(canvas, iter.next().getCoordinates(), mPaint);
         }
         
-        if(data.mRecordedPoints.size() > 0)
+        if(childData.mRecordedPoints.size() > 0)
         {
             mDrawer.drawCanvasPathM(canvas,
-                                    data.mRecordedPoints.toArray(new Coordinate[data.mRecordedPoints.size()]),
+                                    childData.mRecordedPoints.toArray(new Coordinate[childData.mRecordedPoints.size()]),
                                     mNotSavedPaint);
         }
     }

@@ -6,11 +6,15 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.MainActivity.ActivityMode;
+import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
+import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -57,12 +61,12 @@ public class MapView extends SurfaceView
 
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
-    private PointF touchPoint = new PointF();
-    private PointF touchDiff = new PointF(0, 0);
-    private PinchDistance pinchDistance = new PinchDistance();
-    private TouchStatus touchStatus = TouchStatus.IDLE;
-    private float scale;
-    private PointF pivot = new PointF();
+    private PointF mTouchPoint = new PointF();
+    private PointF mTouchDiff = new PointF(0, 0);
+    private PinchDistance mPinchDistance = new PinchDistance();
+    private TouchStatus mTouchStatus = TouchStatus.IDLE;
+    private float mScale;
+    private PointF mPivot = new PointF();
     
     // static attributes
     
@@ -152,14 +156,14 @@ public class MapView extends SurfaceView
         
         canvas.drawColor(WHITE);
         
-        if(touchStatus == TouchStatus.PINCH)
+        if(mTouchStatus == TouchStatus.PINCH)
         {            
-            canvas.scale(scale, scale, pivot.x, pivot.y);
+            canvas.scale(mScale, mScale, mPivot.x, mPivot.y);
         }
         
-        if(touchStatus == TouchStatus.TOUCH)
+        if(mTouchStatus == TouchStatus.TOUCH)
         {            
-            canvas.translate(touchDiff.x, touchDiff.y);
+            canvas.translate(mTouchDiff.x, mTouchDiff.y);
         }
         
         mDrawer.draw(canvas, getWidth(), getHeight());
@@ -180,45 +184,45 @@ public class MapView extends SurfaceView
         // touch down
         if(action == MotionEvent.ACTION_DOWN)
         {
-            touchStatus = TouchStatus.TOUCH;
+            mTouchStatus = TouchStatus.TOUCH;
             
-            touchPoint.set(e.getX(), e.getY());
-            touchDiff.set(0, 0);
+            mTouchPoint.set(e.getX(), e.getY());
+            mTouchDiff.set(0, 0);
         }
         // pinch down
         else if(action == MotionEvent.ACTION_POINTER_DOWN)
         {
             changePositionByDiff();
             
-            touchStatus = TouchStatus.PINCH;
+            mTouchStatus = TouchStatus.PINCH;
             
-            pinchDistance.setStart(e.getX(0), e.getY(0), e.getX(1), e.getY(1));
-            pivot = pinchDistance.getMiddle();
+            mPinchDistance.setStart(e.getX(0), e.getY(0), e.getX(1), e.getY(1));
+            mPivot = mPinchDistance.getMiddle();
         }
         // moving fingers
         else if(action == MotionEvent.ACTION_MOVE)
         {
             // moving map
-            if(touchStatus == TouchStatus.TOUCH)
+            if(mTouchStatus == TouchStatus.TOUCH)
             {
                 float x = e.getX();
                 float y = e.getY();
                 
-                float diffX = x - touchPoint.x;
-                float diffY = y - touchPoint.y;
+                float diffX = x - mTouchPoint.x;
+                float diffY = y - mTouchPoint.y;
                 
-                if(Math.abs(diffX - touchDiff.x) > 1 || Math.abs(diffY - touchDiff.y) > 1)
+                if(Math.abs(diffX - mTouchDiff.x) > 1 || Math.abs(diffY - mTouchDiff.y) > 1)
                 {
-                    touchDiff.set(diffX, diffY);
+                    mTouchDiff.set(diffX, diffY);
                     
                     invalidate();
                 }
             }
             //zooming map
-            else if(touchStatus == TouchStatus.PINCH)
+            else if(mTouchStatus == TouchStatus.PINCH)
             {
-                pinchDistance.set(e.getX(0) - e.getX(1), e.getY(0) - e.getY(1));
-                scale = pinchDistance.getRateDistance();
+                mPinchDistance.set(e.getX(0) - e.getX(1), e.getY(0) - e.getY(1));
+                mScale = mPinchDistance.getRateDistance();
                 
                 invalidate();
             }
@@ -226,14 +230,14 @@ public class MapView extends SurfaceView
         // pinch up
         else if(action == MotionEvent.ACTION_POINTER_UP)
         {
-            touchStatus = TouchStatus.IDLE;
+            mTouchStatus = TouchStatus.IDLE;
                 
             changeZoomByScale();
         }
         // touch up
         else if(action == MotionEvent.ACTION_UP)
         {
-            touchStatus = TouchStatus.IDLE;
+            mTouchStatus = TouchStatus.IDLE;
             
             changePositionByDiff();
         }
@@ -254,10 +258,10 @@ public class MapView extends SurfaceView
      */
     private void changePositionByDiff()
     {
-        if(Math.abs(touchDiff.x) >= 0.5 || Math.abs(touchDiff.y) >= 0.5)
+        if(Math.abs(mTouchDiff.x) >= 0.5 || Math.abs(mTouchDiff.y) >= 0.5)
         {
-            navigator.offsetSurfacePx(-touchDiff.x, -touchDiff.y);
-            touchDiff.set(0, 0);
+            navigator.offsetSurfacePx(-mTouchDiff.x, -mTouchDiff.y);
+            mTouchDiff.set(0, 0);
             
             invalidate();
         }
@@ -268,9 +272,9 @@ public class MapView extends SurfaceView
      */
     private void changeZoomByScale()
     {
-        if(scale != 1)
+        if(mScale != 1)
         {
-            navigator.zoomByScale(scale, pivot);
+            navigator.zoomByScale(mScale, mPivot);
             
             invalidate();
         }
@@ -330,13 +334,27 @@ public class MapView extends SurfaceView
         @Override
         public boolean onSingleTapUp(MotionEvent arg0) 
         {
-            if(touchPoint.y <= mainActivity.getActionBarHeight())
+            if(mTouchPoint.y <= mainActivity.getActionBarHeight())
             {
                 mainActivity.showActionBar();
             }
-            else if(touchPoint.x <= mainActivity.getActionBarHeight() && mainActivity.isHiddenLayersFragment())
+            else if(mTouchPoint.x <= mainActivity.getActionBarHeight() && mainActivity.isHiddenLayersFragment())
             {
                 mainActivity.showLayersFragment();
+            }
+            
+            MainActivity acticity = (MainActivity) getContext();
+            
+            if(acticity.getActivityMode() == ActivityMode.EDIT)
+            {
+                AbstractLayer layer = acticity.getLayersFragment().getSelectedLayer();
+                if(layer instanceof VectorLayer)
+                {
+                    VectorLayer vectorLayer = (VectorLayer) layer;
+                    Coordinate clickedPoint = navigator.surfacePxToM(mTouchPoint, null);
+                    double bufferDistance = navigator.pxToM(ConvertUnits.dp2px(Settings.DP_RADIUS_CLICK));
+                    vectorLayer.clickedObject(navigator.getMRectangle(null), clickedPoint, bufferDistance);
+                }
             }
             
             return true;

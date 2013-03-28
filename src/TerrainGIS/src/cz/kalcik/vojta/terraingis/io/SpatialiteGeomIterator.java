@@ -34,7 +34,7 @@ public class SpatialiteGeomIterator extends SpatialiteAbstractIterator implement
             try
             {
                 mIsNext = false;
-                return wkbReader.read(mStmt.column_bytes(0));
+                return wkbReader.read(mStmt.column_bytes(1));
             }
             catch (ParseException e)
             {

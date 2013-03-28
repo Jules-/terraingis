@@ -16,10 +16,19 @@ public abstract class SpatialiteAbstractIterator
     protected Stmt mStmt;
     protected boolean mHasNext = false;
     protected boolean mIsNext = false;
+    protected String lastROWID = null;
     
     public SpatialiteAbstractIterator(Stmt stmt)
     {
         this.mStmt = stmt;
+    }
+
+    /**
+     * @return the lastROWID
+     */
+    public String getLastROWID()
+    {
+        return lastROWID;
     }
     
     public boolean hasNext()
@@ -32,6 +41,10 @@ public abstract class SpatialiteAbstractIterator
                 if(!mHasNext)
                 {
                     mStmt.close();
+                }
+                else
+                {
+                    lastROWID = mStmt.column_string(0);
                 }
             }
             catch (Exception e)

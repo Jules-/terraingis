@@ -79,8 +79,9 @@ public abstract class VectorLayer extends AbstractLayer
     protected VectorLayerType mType;
     protected SpatiaLiteIO mSpatialite;
     protected String mGeometryColumn;
-    protected VectorLayerData data = new VectorLayerData(new ArrayList<Coordinate>());
+    protected VectorLayerData childData = new VectorLayerData(new ArrayList<Coordinate>());
     protected AttributeHeader mAttributeHeader;
+    protected String mSelectedRowid;
     
     // constructors ============================================================
     
@@ -99,7 +100,7 @@ public abstract class VectorLayer extends AbstractLayer
         }
         
         this.mPaint = paint;        
-        super.data.name = name;
+        data.name = name;
         this.mSrid = srid;
         this.mSpatialite = spatialite;
         mGeometryColumn = mSpatialite.getColumnGeom(name);
@@ -133,17 +134,17 @@ public abstract class VectorLayer extends AbstractLayer
     public AbstractLayerData getData()
     {
         AbstractLayerData result = super.getData();
-        result.childData = data;
+        result.childData = childData;
         return result;
     }
 
     /**
-     * @param data the data to set
+     * @param childData the data to set
      */
     public void setData(AbstractLayerData inData)
     {
         super.setData(inData);
-        data = (VectorLayerData)super.data.childData;
+        childData = (VectorLayerData)data.childData;
     }
     
     
@@ -168,7 +169,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public boolean haveOpenedRecordObject()
     {
-        return (data.mRecordedPoints.size() != 0);
+        return (childData.mRecordedPoints.size() != 0);
     }
     
     /**
@@ -182,7 +183,7 @@ public abstract class VectorLayer extends AbstractLayer
         {
             coordinate = mSpatialite.transformSRS(coordinate, srid, layerManagerSrid);
         }
-        data.mRecordedPoints.add(coordinate);
+        childData.mRecordedPoints.add(coordinate);
     }
 
     /**
@@ -196,7 +197,7 @@ public abstract class VectorLayer extends AbstractLayer
         {
             points = mSpatialite.transformSRS(points, srid, layerManagerSrid);
         }
-        data.mRecordedPoints.addAll(points);
+        childData.mRecordedPoints.addAll(points);
     }
     
     /**
@@ -208,7 +209,7 @@ public abstract class VectorLayer extends AbstractLayer
                 SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR, mSrid,
                 mAttributeHeader, record, false);
         updateEnvelope();
-        data.mRecordedPoints.clear();
+        childData.mRecordedPoints.clear();
     }
     
     public void importObjects(Iterator<ShapeFileRecord> iterGeometries) throws Exception
@@ -235,7 +236,18 @@ public abstract class VectorLayer extends AbstractLayer
     public void remove()
     {
         mSpatialite.removeLayer(super.data.name, mGeometryColumn, mHasIndex);
-    }    
+    }
+    
+    /**
+     * set ROWID of clicked object
+     * @param point
+     * @param bufferDistance
+     */
+    public void clickedObject(Envelope envelope, Coordinate point, double bufferDistance)
+    {
+        mSelectedRowid = mSpatialite.getRowidNearCoordinate(envelope, data.name,
+                mGeometryColumn, mSrid, mLayerManager.getSrid(), mHasIndex, point, bufferDistance);
+    }
     // public static ============================================================
     
     /**
@@ -323,6 +335,6 @@ public abstract class VectorLayer extends AbstractLayer
      */
     private Geometry createGeometry()
     {
-        return createGeometry(data.mRecordedPoints, mType);
+        return createGeometry(childData.mRecordedPoints, mType);
     }
 }

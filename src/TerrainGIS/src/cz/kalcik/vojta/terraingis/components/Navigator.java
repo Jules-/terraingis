@@ -331,6 +331,29 @@ public class Navigator
         Coordinate pxCoord = mToPx(input, null);
         return pxToSurfacePx(pxCoord, output);
     }
+    
+    /**
+     * convert pixel coordinates of canvas to meters
+     * @param input
+     * @param output
+     * @return
+     */
+    public Coordinate surfacePxToM(PointF input, Coordinate output)
+    {
+        Coordinate pxCoord = surfacePxToPx(input, output);
+        return pxToM(pxCoord, output);
+    }
+    
+    /**
+     * convert px value to m value
+     * @param inputValue
+     * @return
+     */
+    public double pxToM(double inputValue)
+    {
+        return inputValue * zoom;
+    }
+    
     // static public methods ==============================================================
     
     static public int mpxToZoomLevel(double zoom)
@@ -346,23 +369,13 @@ public class Navigator
 
     // private methods ======================================================================
     /**
-     * convert m coordinate to px coordinate
+     * convert m value to px value
      * @param inputValue
      * @return
      */
     private double mToPx(double inputValue)
     {
         return inputValue/zoom;
-    }
-    
-    /**
-     * convert px coordinate to m coordinate
-     * @param inputValue
-     * @return
-     */
-    private double pxToM(double inputValue)
-    {
-        return inputValue * zoom;
     }
     
     /**

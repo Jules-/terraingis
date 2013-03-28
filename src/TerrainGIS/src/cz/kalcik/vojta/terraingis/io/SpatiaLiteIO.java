@@ -337,44 +337,21 @@ public class SpatiaLiteIO
      * @param envelope
      * @param name
      * @param column
-     * @param inputSrid
+     * @param layerSrid
      * @param outputSrid
      * @param useRTree
      * @return
      */
     public Iterator<Geometry> getObjects(Envelope envelope, String name, String column,
-                                          int inputSrid, int outputSrid, boolean useRTree)
+                                          int layerSrid, int outputSrid, boolean useRTree)
     {
         try
         {
-            String cmd;
-            Stmt stmt;
-            if(useRTree)
-            {
-                cmd = String.format("SELECT AsBinary(Transform(%s, ?)) FROM \"%s\" WHERE "+
-                        "ROWID IN (SELECT pkid FROM \"idx_%s_%s\" WHERE pkid MATCH RTreeIntersects(?, ?, ?, ?))",
-                        column, name, name, column);
-                
-                stmt = db.prepare(cmd);
-                
-                if(inputSrid != outputSrid)
-                {
-                    envelope = transformSRSEnvelope(envelope, outputSrid, inputSrid);
-                }
-            }
-            else
-            {
-                cmd = String.format("SELECT AsBinary(Transform(%s, ?)) FROM \"%s\" WHERE "+
-                        "MbrIntersects(BuildMBR(?, ?, ?, ?), Transform(%s, ?)) = 1", column, name, column);           
-                stmt = db.prepare(cmd);
-                stmt.bind(6, outputSrid);
-            }
-            
+            String cmd = String.format("SELECT ROWID, AsBinary(Transform(%s, ?)) " +
+            		"FROM \"%s\" WHERE %s", column, name, getObjectCondition(
+            		        envelope, name, column, layerSrid, outputSrid, useRTree));
+            Stmt stmt = db.prepare(cmd);;
             stmt.bind(1, outputSrid);
-            stmt.bind(2, envelope.getMinX());
-            stmt.bind(3, envelope.getMinY());
-            stmt.bind(4, envelope.getMaxX());
-            stmt.bind(5, envelope.getMaxY());
             
             return new SpatialiteGeomIterator(stmt);
         }
@@ -718,6 +695,56 @@ public class SpatiaLiteIO
         
         stmt.close();        
     }
+    
+    /**
+     * @param envelope
+     * @param name
+     * @param column
+     * @param layerSrid
+     * @param mapSrid
+     * @param useRTree
+     * @param point - in outputSrid projection
+     * @param bufferDistance - in units of outputSrid projection
+     * @return ROWID of object 
+     */
+    public String getRowidNearCoordinate(Envelope envelope, String name, String column,
+            int layerSrid, int mapSrid, boolean useRTree, Coordinate point, double bufferDistance)
+    {
+        String result = null;
+        
+        try
+        {
+            String columnBufferCondition = "?";
+            if(layerSrid != mapSrid)
+            {
+                columnBufferCondition = String.format(Locale.UK, "Transform(?, %d)", mapSrid);
+            }
+            
+            String cmd = String.format(Locale.UK, "SELECT ROWID FROM \"%s\" WHERE " +
+            		"%s AND Intersects(Buffer(%s, ?), MakePoint(?, ?, ?)) = 1", name,
+            		getObjectCondition(envelope, name, column, layerSrid, mapSrid, useRTree),
+            		columnBufferCondition);
+            Stmt stmt = db.prepare(cmd);
+            stmt.bind(1, column);
+            stmt.bind(2, bufferDistance);
+            stmt.bind(3, point.x);
+            stmt.bind(4, point.y);
+            stmt.bind(5, mapSrid);
+            
+            if(stmt.step())
+            {
+                result = stmt.column_string(0);
+            }
+            
+            stmt.close();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return result;
+    }
     // private methods =======================================================================
     /**
      * open spatialite database
@@ -745,6 +772,35 @@ public class SpatiaLiteIO
         {
             Log.e("TerrainGIS", e.getMessage());
         }
+    }
+    
+    /**
+     * @param name
+     * @param column
+     * @param useRTree
+     * @return condition for objects in envelope
+     */
+    private String getObjectCondition(Envelope envelope, String name, String column,
+            int layerSrid, int mapSrid, boolean useRTree)
+    {
+        if(useRTree)
+        {
+            if(layerSrid != mapSrid)
+            {
+                envelope = transformSRSEnvelope(envelope, mapSrid, layerSrid);
+            }            
+            
+            return String.format(Locale.UK, "ROWID IN (SELECT pkid FROM \"idx_%s_%s\" " +
+            		"WHERE pkid MATCH RTreeIntersects(%f, %f, %f, %f))",
+                    name, column, envelope.getMinX(), envelope.getMinY(),
+                    envelope.getMaxX(), envelope.getMaxY());
+        }
+        else
+        {
+            return String.format(Locale.UK, "MbrIntersects(BuildMBR(%f, %f, %f, %f), " +
+            		"Transform(%s, %d)) = 1", envelope.getMinX(), envelope.getMinY(),
+                    envelope.getMaxX(), envelope.getMaxY(), column, mapSrid);           
+        }        
     }
     // classes ===============================================================================
     /**
