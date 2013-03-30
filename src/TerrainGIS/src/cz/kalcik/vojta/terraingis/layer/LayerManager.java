@@ -76,7 +76,7 @@ public class LayerManager
         }
         
         layers.clear();
-        DefaultPaints.resetColors();
+        VectorLayerPaints.resetColors();
     }
 
     /**

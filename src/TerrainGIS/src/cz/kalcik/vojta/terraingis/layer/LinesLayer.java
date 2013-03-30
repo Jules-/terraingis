@@ -7,6 +7,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
+import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
@@ -18,18 +19,7 @@ public class LinesLayer extends VectorLayer
     public LinesLayer(String name, int srid,
                       SpatiaLiteIO spatialite)
     {
-        this(DefaultPaints.getLine(), name, srid, spatialite);
-    }
-    
-    public LinesLayer(Paint paint, String name, int srid,
-                      SpatiaLiteIO spatialite)
-    {
-        super(VectorLayerType.LINE, paint, name, srid, spatialite);
-        
-        mPaint.setStyle(Paint.Style.STROKE);
-        
-        mNotSavedPaint = new Paint(mPaint);
-        setDashedPath(mNotSavedPaint);
+        super(VectorLayerType.LINE, name, srid, spatialite);
     }
     
     /**
@@ -38,11 +28,12 @@ public class LinesLayer extends VectorLayer
     @Override
     public void draw(Canvas canvas, Envelope rect)
     {
-        Iterator<Geometry> iter = getObjects(rect);
+        SpatialiteGeomIterator iter = getObjects(rect);
 
         while(iter.hasNext())
         {
-            mDrawer.drawCanvasPathM(canvas, iter.next().getCoordinates(), mPaint);
+            mDrawer.drawCanvasPathM(canvas, iter.next().getCoordinates(),
+                    selectObjectPaint(iter));
         }
         
         if(childData.mRecordedPoints.size() > 0)

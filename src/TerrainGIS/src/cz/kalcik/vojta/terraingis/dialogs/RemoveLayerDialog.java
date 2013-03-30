@@ -31,7 +31,7 @@ public class RemoveLayerDialog extends SimpleDialog
         layersFragment.deselect();
         
         layersFragment.invalidateListView();
-        mainActivity.getMap().invalidate();
+        mainActivity.getMapFragment().getMap().invalidate();
     }
 
 }

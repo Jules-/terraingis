@@ -36,6 +36,7 @@ import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.TilesLayer;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.LayersView;
+import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
 
 /**
@@ -57,6 +58,7 @@ public class LayersFragment extends Fragment
     private LayerManager mLayerManager = LayerManager.getInstance();
     private AbstractLayer mContextMenuSelectedlayer;
     private ListBackgroundColors mBackgroundColors;
+    private MapView mMapView;
         
     // public methods =====================================================
     
@@ -106,6 +108,23 @@ public class LayersFragment extends Fragment
             return mArrayAdapter.getItem(position);
         }
     }
+    
+    // public method ======================================================
+    /**
+     * remove selected object in selected layer
+     */
+    public void removeSelectedObject()
+    {
+        AbstractLayer abstrctLayer = getSelectedLayer();
+        
+        if(abstrctLayer instanceof VectorLayer)
+        {
+            ((VectorLayer)abstrctLayer).removeSelectionOfObject();
+            
+            mMainActivity.getMapFragment().getMap().invalidate();
+        }        
+    }
+    
     // on methods =========================================================
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -315,7 +334,7 @@ public class LayersFragment extends Fragment
                 return;
             }
             
-            mMainActivity.getMap().zoomToEnvelopeM(envelope);
+            mMainActivity.getMapFragment().getMap().zoomToEnvelopeM(envelope);
         }
     };
 
@@ -340,7 +359,7 @@ public class LayersFragment extends Fragment
         public void onClick(View v)
         {
             mArrayAdapter.getItem(mListView.getMySelectedPosition()).toggleVisibility();
-            mMainActivity.getMap().invalidate();
+            mMainActivity.getMapFragment().getMap().invalidate();
             mListView.invalidateViews();
         }        
     };
@@ -419,7 +438,7 @@ public class LayersFragment extends Fragment
                         }
                         
                         mListView.invalidateViews();
-                        mMainActivity.getMap().invalidate();
+                        mMainActivity.getMapFragment().getMap().invalidate();
                     }
                 }
             };

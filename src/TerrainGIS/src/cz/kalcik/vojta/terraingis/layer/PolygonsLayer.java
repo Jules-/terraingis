@@ -1,38 +1,21 @@
 package cz.kalcik.vojta.terraingis.layer;
 
-import java.util.Iterator;
-
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
 
-import cz.kalcik.vojta.terraingis.R.color;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
+import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 
 public class PolygonsLayer extends VectorLayer
 {
     //constants ===============================================================
-    private final static int TRANCPARENCE_NOTSAVED = 64; 
     
     // public methods =========================================================
     public PolygonsLayer(String name, int srid,
                          SpatiaLiteIO spatialite)
     {
-        this(DefaultPaints.getPolygon(), name, srid, spatialite);
-    }
-    
-    public PolygonsLayer(Paint paint, String name, int srid,
-                         SpatiaLiteIO spatialite)
-    {
-        super(VectorLayerType.POLYGON, paint, name, srid, spatialite);
-        
-        mPaint.setStyle(Paint.Style.FILL);
-        
-        mNotSavedPaint = new Paint(mPaint);
-        mNotSavedPaint.setAlpha(TRANCPARENCE_NOTSAVED);
+        super(VectorLayerType.POLYGON, name, srid, spatialite);
     }
     
     /**
@@ -41,17 +24,19 @@ public class PolygonsLayer extends VectorLayer
     @Override
     public void draw(Canvas canvas, Envelope rect)
     {
-        Iterator<Geometry> iter = getObjects(rect);
+        SpatialiteGeomIterator iter = getObjects(rect);
         while(iter.hasNext())
         {
-            mDrawer.drawCanvasPathM(canvas, iter.next().getCoordinates(), mPaint);
+            mDrawer.drawCanvasPathM(canvas, iter.next().getCoordinates(), 
+                    selectObjectPaint(iter));
         }
         
         if(childData.mRecordedPoints.size() > 0)
         {
             mDrawer.drawCanvasPathM(canvas,
-                                    childData.mRecordedPoints.toArray(new Coordinate[childData.mRecordedPoints.size()]),
-                                    mNotSavedPaint);
+                    childData.mRecordedPoints.toArray(
+                            new Coordinate[childData.mRecordedPoints.size()]),
+                    mNotSavedPaint);
         }
     }
 }

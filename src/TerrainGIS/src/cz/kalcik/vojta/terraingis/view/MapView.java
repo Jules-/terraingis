@@ -334,6 +334,7 @@ public class MapView extends SurfaceView
         @Override
         public boolean onSingleTapUp(MotionEvent arg0) 
         {
+            MainActivity acticity = (MainActivity) getContext();
             if(mTouchPoint.y <= mainActivity.getActionBarHeight())
             {
                 mainActivity.showActionBar();
@@ -342,10 +343,7 @@ public class MapView extends SurfaceView
             {
                 mainActivity.showLayersFragment();
             }
-            
-            MainActivity acticity = (MainActivity) getContext();
-            
-            if(acticity.getActivityMode() == ActivityMode.EDIT)
+            else if(acticity.getActivityMode() == ActivityMode.EDIT)
             {
                 AbstractLayer layer = acticity.getLayersFragment().getSelectedLayer();
                 if(layer instanceof VectorLayer)
@@ -354,6 +352,8 @@ public class MapView extends SurfaceView
                     Coordinate clickedPoint = navigator.surfacePxToM(mTouchPoint, null);
                     double bufferDistance = navigator.pxToM(ConvertUnits.dp2px(Settings.DP_RADIUS_CLICK));
                     vectorLayer.clickedObject(navigator.getMRectangle(null), clickedPoint, bufferDistance);
+                    
+                    invalidate();
                 }
             }
             

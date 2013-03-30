@@ -20,6 +20,8 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.ShapeFileRecord;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
+import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
+import cz.kalcik.vojta.terraingis.layer.VectorLayerPaints.PaintType;
 
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
@@ -32,7 +34,6 @@ import android.graphics.Paint;
 public abstract class VectorLayer extends AbstractLayer
 {
     // constants ==============================================================
-    private static final float[] DASHED_PARAMS = {10, 5};
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     
     // enum ===================================================================
@@ -75,6 +76,7 @@ public abstract class VectorLayer extends AbstractLayer
     private boolean mHasIndex;
 
     protected Paint mPaint;
+    protected Paint mSelectedPaint;
     protected Paint mNotSavedPaint;
     protected VectorLayerType mType;
     protected SpatiaLiteIO mSpatialite;
@@ -90,16 +92,11 @@ public abstract class VectorLayer extends AbstractLayer
      * @param type
      * @param paint
      */
-    public VectorLayer(VectorLayerType type, Paint paint, String name, int srid,
+    public VectorLayer(VectorLayerType type, String name, int srid,
                        SpatiaLiteIO spatialite)
     {
-        this.mType = type;
-        if(paint == null)
-        {
-            paint = new Paint();
-        }
-        
-        this.mPaint = paint;        
+        mType = type;
+        setPaints();     
         data.name = name;
         this.mSrid = srid;
         this.mSpatialite = spatialite;
@@ -248,6 +245,15 @@ public abstract class VectorLayer extends AbstractLayer
         mSelectedRowid = mSpatialite.getRowidNearCoordinate(envelope, data.name,
                 mGeometryColumn, mSrid, mLayerManager.getSrid(), mHasIndex, point, bufferDistance);
     }
+    
+    /**
+     * remove selected rowid
+     */
+    public void removeSelectionOfObject()
+    {
+        mSelectedRowid = null;
+    }
+    
     // public static ============================================================
     
     /**
@@ -303,7 +309,7 @@ public abstract class VectorLayer extends AbstractLayer
     }
     
     // protected methods ========================================================
-    protected Iterator<Geometry> getObjects(Envelope envelope)
+    protected SpatialiteGeomIterator getObjects(Envelope envelope)
     {
         return mSpatialite.getObjects(envelope, super.data.name, mGeometryColumn, mSrid,
                                       mLayerManager.getSrid(), mHasIndex);
@@ -318,15 +324,31 @@ public abstract class VectorLayer extends AbstractLayer
     }
     
     /**
-     * create paint with dashed line from paint
-     * @param paint
+     * check if object is selected
+     * @param geomIterator
      * @return
      */
-    protected void setDashedPath(Paint paint)
+    protected boolean isSelectedObject(SpatialiteGeomIterator geomIterator)
     {
-        paint.setPathEffect(new DashPathEffect(DASHED_PARAMS, 0));
+        return geomIterator.getLastROWID().equals(mSelectedRowid);
     }
     
+    /**
+     * return paint by selection of object
+     * @param geomIterator
+     * @return
+     */
+    protected Paint selectObjectPaint(SpatialiteGeomIterator geomIterator)
+    {
+        if(geomIterator.getLastROWID().equals(mSelectedRowid))
+        {
+            return mSelectedPaint;
+        }
+        else
+        {
+            return mPaint;
+        }
+    }
     // private methods ===========================================================
     
     /**
@@ -336,5 +358,29 @@ public abstract class VectorLayer extends AbstractLayer
     private Geometry createGeometry()
     {
         return createGeometry(childData.mRecordedPoints, mType);
+    }
+    
+    /**
+     * set paints by type
+     */
+    private void setPaints()
+    {
+        if(mType == VectorLayerType.POINT)
+        {
+            mPaint = VectorLayerPaints.getPoint(PaintType.DEFAULT);
+            mSelectedPaint = VectorLayerPaints.getPoint(PaintType.SELECTED);
+        }
+        else if(mType == VectorLayerType.LINE)
+        {
+            mPaint = VectorLayerPaints.getLine(PaintType.DEFAULT);
+            mSelectedPaint = VectorLayerPaints.getLine(PaintType.SELECTED);
+            mNotSavedPaint = VectorLayerPaints.getLine(PaintType.NOT_SAVED);
+        }
+        else if(mType == VectorLayerType.POLYGON)
+        {
+            mPaint = VectorLayerPaints.getPolygon(PaintType.DEFAULT);
+            mSelectedPaint = VectorLayerPaints.getPolygon(PaintType.SELECTED);
+            mNotSavedPaint = VectorLayerPaints.getPolygon(PaintType.NOT_SAVED);
+        }           
     }
 }

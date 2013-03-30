@@ -342,7 +342,7 @@ public class SpatiaLiteIO
      * @param useRTree
      * @return
      */
-    public Iterator<Geometry> getObjects(Envelope envelope, String name, String column,
+    public SpatialiteGeomIterator getObjects(Envelope envelope, String name, String column,
                                           int layerSrid, int outputSrid, boolean useRTree)
     {
         try
@@ -714,10 +714,14 @@ public class SpatiaLiteIO
         
         try
         {
-            String columnBufferCondition = "?";
+            String columnBufferCondition;
             if(layerSrid != mapSrid)
             {
-                columnBufferCondition = String.format(Locale.UK, "Transform(?, %d)", mapSrid);
+                columnBufferCondition = String.format(Locale.UK, "Transform(\"%s\", %d)", column, mapSrid);
+            }
+            else
+            {
+                columnBufferCondition = "\""+column+"\"";
             }
             
             String cmd = String.format(Locale.UK, "SELECT ROWID FROM \"%s\" WHERE " +
@@ -725,11 +729,10 @@ public class SpatiaLiteIO
             		getObjectCondition(envelope, name, column, layerSrid, mapSrid, useRTree),
             		columnBufferCondition);
             Stmt stmt = db.prepare(cmd);
-            stmt.bind(1, column);
-            stmt.bind(2, bufferDistance);
-            stmt.bind(3, point.x);
-            stmt.bind(4, point.y);
-            stmt.bind(5, mapSrid);
+            stmt.bind(1, bufferDistance);
+            stmt.bind(2, point.x);
+            stmt.bind(3, point.y);
+            stmt.bind(4, mapSrid);
             
             if(stmt.step())
             {

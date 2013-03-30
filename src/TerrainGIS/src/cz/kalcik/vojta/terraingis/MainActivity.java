@@ -137,14 +137,6 @@ public class MainActivity extends AbstractActivity
     }
     
     /**
-     * @return MapView
-     */
-    public MapView getMap()
-    {
-        return mMapFragment.getMap();
-    }
-    
-    /**
      * check if LayersFragment is hidden
      * @return
      */
@@ -271,6 +263,7 @@ public class MainActivity extends AbstractActivity
         {
             if(data.mActivityMode == ActivityMode.EDIT)
             {
+                getLayersFragment().removeSelectedObject();
                 startExploreMode();
             }
             else

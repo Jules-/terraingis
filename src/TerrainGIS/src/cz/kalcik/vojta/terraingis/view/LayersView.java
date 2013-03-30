@@ -1,5 +1,6 @@
 package cz.kalcik.vojta.terraingis.view;
 
+import android.R.layout;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -15,6 +16,7 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
+import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 
 
 public class LayersView extends DragSortListView
@@ -50,7 +52,7 @@ public class LayersView extends DragSortListView
      */
     public void deselect()
     {
-        mMySelectedPosition = -1;
+        setMySelectedPosition(-1);
     }
     // getter, setter ======================================================================
     /**
@@ -67,6 +69,7 @@ public class LayersView extends DragSortListView
      */
     public void setMySelectedPosition(int position)
     {
+        mMainActivity.getLayersFragment().removeSelectedObject();
         mMySelectedPosition = position;
     }
     // on methods ==========================================================================
@@ -86,7 +89,7 @@ public class LayersView extends DragSortListView
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id)
         {
-            mMySelectedPosition = position;
+            setMySelectedPosition(position);
             invalidateViews();
             mMainActivity.getMapFragment().changeRecordButtons();
         }
