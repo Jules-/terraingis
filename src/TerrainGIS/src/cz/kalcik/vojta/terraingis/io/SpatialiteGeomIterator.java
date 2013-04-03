@@ -17,7 +17,8 @@ import com.vividsolutions.jts.io.WKBReader;
  * @author jules
  * iterator of geometry
  */
-public class SpatialiteGeomIterator extends SpatialiteAbstractIterator implements Iterator<Geometry>
+public class SpatialiteGeomIterator extends SpatialiteAbstractIterator
+    implements Iterator<Geometry>
 {
     private WKBReader wkbReader = new WKBReader();
     

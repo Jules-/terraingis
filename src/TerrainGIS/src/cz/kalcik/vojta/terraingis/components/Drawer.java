@@ -3,8 +3,6 @@
  */
 package cz.kalcik.vojta.terraingis.components;
 
-import java.util.ArrayList;
-
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -14,7 +12,6 @@ import android.graphics.drawable.Drawable;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
 
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 
@@ -78,7 +75,7 @@ public class Drawer
      * @param points
      * @param paint
      */
-    public void drawCanvasPathM(Canvas canvas, Coordinate[] points, Paint paint)
+    public void drawCanvasPathSurfacePx(Canvas canvas, PointF[] points, Paint paint)
     {
         Path path = new Path();
         int size = points.length;
@@ -87,18 +84,36 @@ public class Drawer
             return;
         }
         
-        Coordinate pointPx = mNavigator.mToPx(points[0], null);
-        PointF surfacePoint = mNavigator.pxToSurfacePx(pointPx, null);
-        path.moveTo(surfacePoint.x, surfacePoint.y);
+        path.moveTo(points[0].x, points[0].y);
         
         for(int i = 1; i < size; i++)
         {
-            mNavigator.mToPx(points[i], pointPx);
-            mNavigator.pxToSurfacePx(pointPx, surfacePoint);
-            path.lineTo(surfacePoint.x, surfacePoint.y);
+            path.lineTo(points[i].x, points[i].y);
         }
         
         canvas.drawPath(path, paint);
+    }
+    
+    /**
+     * draw points
+     * @param canvas
+     * @param points
+     * @param paintDefault
+     * @param paintSelected
+     * @param radius
+     * @param selected
+     */
+    public void drawPathNodesSurfacePx(Canvas canvas, PointF[] points, Paint paintDefault,
+            Paint paintSelected, float radius, int selected)
+    {
+        int size = points.length;
+        
+        for(int i = 0; i < size; i++)
+        {
+            Paint paint = i == selected ? paintSelected : paintDefault;
+            
+            canvas.drawCircle(points[i].x, points[i].y, radius, paint);
+        }        
     }
     
     /**
@@ -120,7 +135,7 @@ public class Drawer
      * @param point
      * @param icon
      */
-    public synchronized void drawIconM(Canvas canvas, Coordinate point, Drawable icon)
+    public void drawIconM(Canvas canvas, Coordinate point, Drawable icon)
     {
         Coordinate pointPx = mNavigator.mToPx(point, null);
       
@@ -137,4 +152,6 @@ public class Drawer
             icon.draw(canvas);
         }
     }
+    
+        
 }

@@ -17,6 +17,8 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
+import cz.kalcik.vojta.terraingis.components.ConvertUnits;
+import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.ShapeFileRecord;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
@@ -84,6 +86,7 @@ public abstract class VectorLayer extends AbstractLayer
     protected VectorLayerData childData = new VectorLayerData(new ArrayList<Coordinate>());
     protected AttributeHeader mAttributeHeader;
     protected String mSelectedRowid;
+    protected int mSelectedNodeIndex = -1;
     
     // constructors ============================================================
     
@@ -240,10 +243,16 @@ public abstract class VectorLayer extends AbstractLayer
      * @param point
      * @param bufferDistance
      */
-    public void clickedObject(Envelope envelope, Coordinate point, double bufferDistance)
+    public void clickedObject(Envelope envelope, Coordinate point)
     {
+        double bufferDistance = mNavigator.pxToM(ConvertUnits.dp2px(Settings.DP_RADIUS_CLICK));
         mSelectedRowid = mSpatialite.getRowidNearCoordinate(envelope, data.name,
                 mGeometryColumn, mSrid, mLayerManager.getSrid(), mHasIndex, point, bufferDistance);
+        
+        if(mSelectedRowid != null && mType != VectorLayerType.POINT)
+        {
+            checkSelectedNode(point, bufferDistance);
+        }
     }
     
     /**
@@ -382,5 +391,33 @@ public abstract class VectorLayer extends AbstractLayer
             mSelectedPaint = VectorLayerPaints.getPolygon(PaintType.SELECTED);
             mNotSavedPaint = VectorLayerPaints.getPolygon(PaintType.NOT_SAVED);
         }           
+    }
+    
+    /**
+     * check if is selected node and set his index 
+     * @param point
+     * @param bufferDistance
+     */
+    private void checkSelectedNode(Coordinate point, Double bufferDistance)
+    {
+        Geometry selectedObject = mSpatialite.getObject(data.name, mGeometryColumn,
+                mLayerManager.getSrid(), Integer.parseInt(mSelectedRowid));
+        
+        Coordinate[] points = selectedObject.getCoordinates();
+        int size = points.length;
+        double minDistance = bufferDistance;
+        int minIndex = -1;
+        
+        for(int i=0; i < size; i++)
+        {
+            Double distance = points[i].distance(point);
+            if(distance < minDistance)
+            {
+                minDistance = distance;
+                minIndex = i;
+            }
+        }
+        
+        mSelectedNodeIndex = minIndex;
     }
 }

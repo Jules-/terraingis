@@ -15,7 +15,7 @@ import android.graphics.Paint;
 public class VectorLayerPaints
 {
     // constants ===================================================================
-    enum PaintType {DEFAULT, SELECTED, NOT_SAVED};
+    enum PaintType {DEFAULT, SELECTED, SELECTED_SELECTED_NODE, NOT_SAVED};
     
     private static final float POINT_RADIUS_DP = 6;
     private static final float POINT_RADIUS_SELECTED_DP = 8;
@@ -26,6 +26,7 @@ public class VectorLayerPaints
     private static final float MIN_VALUE = 0.3f;
     private static final float[] DEFAULT_HSV = {0, 1, 1};
     private static final int SELECTED_COLOR = Color.YELLOW;
+    private static final int SELECTED_DEFAULT_NODE_COLOR = Color.BLACK;
     private static final float[] DASHED_PARAMS = {10, 5};
     private final static int TRANCPARENCE_NOTSAVED = 64;
     // static atributes ============================================================
@@ -127,6 +128,10 @@ public class VectorLayerPaints
         if(paintType == PaintType.SELECTED)
         {
             result.setColor(SELECTED_COLOR);
+        }
+        else if(paintType == PaintType.SELECTED_SELECTED_NODE)
+        {
+            result.setColor(SELECTED_DEFAULT_NODE_COLOR);
         }
         else
         {

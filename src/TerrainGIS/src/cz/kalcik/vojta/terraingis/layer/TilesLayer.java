@@ -47,7 +47,6 @@ public class TilesLayer extends AbstractLayer
     private double scale;
     private Rect currentRect = new Rect();
     private Envelope currentRealRect = new Envelope();
-    private Navigator navigator = Navigator.getInstance();
     
     /**
      * constructor
@@ -80,15 +79,15 @@ public class TilesLayer extends AbstractLayer
     @Override
     public void draw(Canvas canvas, Envelope rect)
     {
-        int zoomLevel = Navigator.mpxToZoomLevel(navigator.getZoom());
+        int zoomLevel = Navigator.mpxToZoomLevel(mNavigator.getZoom());
         zoomLevel = Math.max(Math.min(zoomLevel, mTileProvider.getMaximumZoomLevel()), mTileProvider.getMinimumZoomLevel());
         double tilesZoom = Navigator.zoomLevelToMpx(zoomLevel);
         
-        scale = navigator.getZoom() / tilesZoom;
+        scale = mNavigator.getZoom() / tilesZoom;
                
         mWorldSize_2 = TileSystem.MapSize(zoomLevel) >> 1;
         
-        navigator.getPxRectangle(currentRealRect);
+        mNavigator.getPxRectangle(currentRealRect);
         
         rectRealToTiles(currentRealRect, currentRect);
 

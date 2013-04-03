@@ -350,8 +350,7 @@ public class MapView extends SurfaceView
                 {
                     VectorLayer vectorLayer = (VectorLayer) layer;
                     Coordinate clickedPoint = navigator.surfacePxToM(mTouchPoint, null);
-                    double bufferDistance = navigator.pxToM(ConvertUnits.dp2px(Settings.DP_RADIUS_CLICK));
-                    vectorLayer.clickedObject(navigator.getMRectangle(null), clickedPoint, bufferDistance);
+                    vectorLayer.clickedObject(navigator.getMRectangle(null), clickedPoint);
                     
                     invalidate();
                 }

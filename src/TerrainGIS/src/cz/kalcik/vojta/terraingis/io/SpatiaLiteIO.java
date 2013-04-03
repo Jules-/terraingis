@@ -347,7 +347,7 @@ public class SpatiaLiteIO
     {
         try
         {
-            String cmd = String.format("SELECT ROWID, AsBinary(Transform(%s, ?)) " +
+            String cmd = String.format("SELECT ROWID, AsBinary(Transform(\"%s\", ?)) " +
             		"FROM \"%s\" WHERE %s", column, name, getObjectCondition(
             		        envelope, name, column, layerSrid, outputSrid, useRTree));
             Stmt stmt = db.prepare(cmd);;
@@ -361,6 +361,45 @@ public class SpatiaLiteIO
         }
         
         return null;
+    }
+    
+    /**
+     * return object with rowid
+     * @param name
+     * @param column
+     * @param outputSrid
+     * @param rowid
+     * @return
+     */
+    public Geometry getObject(String name, String column, int outputSrid, int rowid)
+    {
+        Geometry result = null;
+        
+        try
+        {
+            String cmd = String.format("SELECT AsBinary(Transform(\"%s\", ?)) " +
+            "FROM \"%s\" WHERE ROWID = ?", column, name);
+            Stmt stmt = db.prepare(cmd);;
+            stmt.bind(1, outputSrid);
+            stmt.bind(2, rowid);
+            
+            if(stmt.step())
+            {
+                result = wkbReader.read(stmt.column_bytes(0));
+            }
+            
+            stmt.close();
+        }
+        catch (Exception e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        catch (ParseException e)
+        {
+            Log.e("TerrainGIS", e.getMessage());
+        }
+        
+        return result;
     }
     
     /**

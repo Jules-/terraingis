@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.components.Drawer;
+import cz.kalcik.vojta.terraingis.components.Navigator;
 
 import android.graphics.Canvas;
 
@@ -34,6 +35,7 @@ public abstract class AbstractLayer
     protected Drawer mDrawer = Drawer.getInstance();
     protected LayerManager mLayerManager = LayerManager.getInstance();
     protected AbstractLayerData data = new AbstractLayerData(true);
+    protected Navigator mNavigator = Navigator.getInstance();
 
     // abstract methods ========================================================
     public abstract void draw(final Canvas canvas, Envelope rect);

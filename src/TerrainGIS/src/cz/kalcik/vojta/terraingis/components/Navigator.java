@@ -333,6 +333,27 @@ public class Navigator
     }
     
     /**
+     * convert points in m to surface px
+     * @param input
+     * @return
+     */
+    public PointF[] mToSurfacePx(Coordinate[] input)
+    {
+        int size = input.length;        
+        PointF[] result = new PointF[size];
+        
+        Coordinate pointPx = new Coordinate();
+        
+        for(int i = 0; i < size; i++)
+        {
+            mToPx(input[i], pointPx);
+            result[i] = pxToSurfacePx(pointPx, null);
+        }
+        
+        return result;
+    }
+    
+    /**
      * convert pixel coordinates of canvas to meters
      * @param input
      * @param output
