@@ -69,7 +69,7 @@ public class LayersFragment extends Fragment
     {
         mListView.deselect();
         
-        mMainActivity.getMapFragment().changeRecordButtons();
+        mMainActivity.getMapFragment().setMapTools();
     }
     
     /**

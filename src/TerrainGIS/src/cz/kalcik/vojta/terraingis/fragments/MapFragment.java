@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,7 +21,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import cz.kalcik.vojta.terraingis.components.LonLatFormat;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog;
-import cz.kalcik.vojta.terraingis.dialogs.SetAttributesDialog;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
@@ -73,94 +71,21 @@ public class MapFragment extends Fragment
     private ImageButton mButtonRecordAuto;
     private ImageButton mButtonRecordEndObject;
     private ImageButton mButtonRecordPoint;
-    private TextView mCoordinatesText;
+    private TextView mCoordinatesLocationText;
+    private TextView mCoordinatesAddPointText;
 
     private Coordinate mLocationM = new Coordinate(0,0); // location from GPS or Wi-Fi
+    private Coordinate mAddPointLocationM = null; // location of point for insert point to object
     private boolean mLocationValid = false;
 
     // public methods =====================================================
     /**
-     * set visibility of record buttons
+     * set visibility of tools in map
      */
-    public void changeRecordButtons()
+    public void setMapTools()
     {
-        boolean showObjectButton = false;
-        boolean showPointButton = false;
-        boolean showAutoButton = false;
-        
-        
-        ActivityMode mode = mMainActivity.getActivityMode();
-        // recording
-        if(mode == ActivityMode.RECORD)
-        {
-            AbstractLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayer();
-            // is selected layer
-            if(selectedLayer != null)
-            {
-                if(selectedLayer instanceof VectorLayer)
-                {
-                    VectorLayer selectedVectorLayer = (VectorLayer)selectedLayer;
-                    VectorLayerType type = selectedVectorLayer.getType();
-                    // point button
-                    showPointButton = true;
-    
-                    // object button
-                    if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
-                    {
-                        showAutoButton = true;
-                        if (selectedVectorLayer.haveOpenedRecordObject())
-                        {
-                            showObjectButton = true;
-                        }
-                    }
-                }
-            }
-            
-            //run automatic recording
-            if(data.isRunAutoRecord)
-            {
-                showAutoButton = true;
-            }
-        }
-        
-        if(showObjectButton)
-        {
-            mButtonRecordEndObject.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            mButtonRecordEndObject.setVisibility(View.GONE);
-        }
-        
-        if(showPointButton)
-        {
-            mButtonRecordPoint.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            mButtonRecordPoint.setVisibility(View.GONE);
-        }
-        
-        if(showAutoButton)
-        {
-            mButtonRecordAuto.setVisibility(View.VISIBLE);
-            if(data.isRunAutoRecord)
-            {
-                mButtonRecordAuto.setContentDescription(getString(R.string.record_auto_stop));
-                mButtonRecordAuto.setImageDrawable(
-                        getResources().getDrawable(R.drawable.button_auto_record_on));
-            }
-            else
-            {
-                mButtonRecordAuto.setContentDescription(getString(R.string.record_auto_start));
-                mButtonRecordAuto.setImageDrawable(
-                        getResources().getDrawable(R.drawable.button_auto_record_off));
-            }
-        }
-        else
-        {
-            mButtonRecordAuto.setVisibility(View.GONE);
-        }
+        setRecordButtons();
+        setVisibilitiCoordinatesTexts();
     }
     
     /**
@@ -174,7 +99,7 @@ public class MapFragment extends Fragment
             mAutoRecordLayer.addPoints(points, SpatiaLiteIO.EPSG_LONLAT);
         }
         
-        changeRecordButtons();
+        setMapTools();
         mMap.invalidate();
     }
 
@@ -213,7 +138,7 @@ public class MapFragment extends Fragment
      */
     public void startLocation()
     {
-        setCoordinateText();
+        setMapTools();
     }
     
     /**
@@ -222,13 +147,13 @@ public class MapFragment extends Fragment
     public void stopLocation()
     {
         setLocationValid(false);
-        hideCoordinateTextView();
+        setMapTools();
         
         mMap.invalidate();
     }
     
     /**
-     * set location
+     * set location from location services
      * @param location
      */
     public synchronized void setLonLatLocation(Coordinate location)
@@ -236,8 +161,20 @@ public class MapFragment extends Fragment
         mLocationM = mLayerManager.lonLatWGS84ToM(location);
         mLocationValid = true;
         
-        setCoordinateText();
+        setCoordinatesLocationText();
         
+        mMap.invalidate();
+    }
+    
+    /**
+     * set coordinates of clicked point
+     * @param location
+     */
+    public void setCoordinatesAddPointM(Coordinate location)
+    {
+        mAddPointLocationM = location;
+        
+        setCoordinatesAddPointText();
         mMap.invalidate();
     }
     // getter, setter =====================================================
@@ -264,7 +201,7 @@ public class MapFragment extends Fragment
      * else return null
      * @return
      */
-    public synchronized Coordinate getLocation()
+    public synchronized Coordinate getCoordinatesLocation()
     {
         if(mLocationValid)
         {
@@ -276,6 +213,13 @@ public class MapFragment extends Fragment
         }
     }
 
+    /**
+     * @return add point coordinates
+     */
+    public Coordinate getCoordinatesAddPoint()
+    {
+        return mAddPointLocationM;
+    }
     // on methods =========================================================
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -292,7 +236,8 @@ public class MapFragment extends Fragment
         mButtonRecordPoint.setOnClickListener(addPointHandler);
         
         // coordinate text
-        mCoordinatesText = (TextView)myView.findViewById(R.id.textView_coordinates);
+        mCoordinatesLocationText = (TextView)myView.findViewById(R.id.textView_coordinates);
+        mCoordinatesAddPointText = (TextView)myView.findViewById(R.id.textView_add_point_coordinates);
         
         // Map view state
         mMap = (MapView) myView.findViewById(R.id.map);
@@ -377,7 +322,7 @@ public class MapFragment extends Fragment
             endObject(layer);
         }
         
-        changeRecordButtons();
+        setMapTools();
         mMap.invalidate();
     }
 
@@ -391,7 +336,7 @@ public class MapFragment extends Fragment
         mMainActivity.startService(mServiceIntent);
         bindAutoRecordService();
         data.isRunAutoRecord = true;
-        changeRecordButtons();
+        setMapTools();
     }
     
     /**
@@ -402,7 +347,7 @@ public class MapFragment extends Fragment
         mMainActivity.stopService(mServiceIntent);
         mAutoRecordLayer = null;
         data.isRunAutoRecord = false;
-        changeRecordButtons();
+        setMapTools();
     }
     
     /**
@@ -467,7 +412,7 @@ public class MapFragment extends Fragment
     /**
      * @return text of current location
      */
-    private synchronized String getCoordinateText()
+    private synchronized String getCoordinatesLocationText()
     {
         if(mLocationValid)
         {
@@ -479,26 +424,168 @@ public class MapFragment extends Fragment
             return getString(R.string.location_fix_error);
         }
     }
-    
+
     /**
-     * set text of coordinates
+     * @return text of current location
      */
-    private void setCoordinateText()
+    private String getCoordinatesAddPointText()
     {
-        if(mCoordinatesText.getVisibility() != View.VISIBLE)
+        if(mAddPointLocationM != null)
         {
-            mCoordinatesText.setVisibility(View.VISIBLE);
+            Coordinate location = mLayerManager.mToLonLatWGS84(mAddPointLocationM);
+            return LonLatFormat.getFormatDM(location);
         }
-        
-        mCoordinatesText.setText(getCoordinateText());
+        else
+        {
+            return getString(R.string.not_selected_position);
+        }
     }
     
     /**
-     * hide coordinate TextView
+     * set text of location coordinates
      */
-    private void hideCoordinateTextView()
+    private void setCoordinatesLocationText()
+    {        
+        mCoordinatesLocationText.setText(getCoordinatesLocationText());
+    }
+
+    /**
+     * set text of location coordinates
+     */
+    private void setCoordinatesAddPointText()
+    {        
+        mCoordinatesAddPointText.setText(getCoordinatesAddPointText());
+    }
+    
+    /**
+     * set visibility of record buttons
+     */
+    private void setRecordButtons()
     {
-        mCoordinatesText.setVisibility(View.GONE);
+        boolean showObjectButton = false;
+        boolean showPointButton = false;
+        boolean showAutoButton = false;
+        
+        
+        ActivityMode mode = mMainActivity.getActivityMode();
+        AbstractLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayer();
+        // recording
+        if(mode == ActivityMode.RECORD)
+        {
+            // is selected layer
+            if(selectedLayer != null)
+            {
+                if(selectedLayer instanceof VectorLayer)
+                {
+                    VectorLayer selectedVectorLayer = (VectorLayer)selectedLayer;
+                    VectorLayerType type = selectedVectorLayer.getType();
+                    // point button
+                    showPointButton = true;
+    
+                    // object button
+                    if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
+                    {
+                        showAutoButton = true;
+                        if (selectedVectorLayer.haveOpenedRecordObject())
+                        {
+                            showObjectButton = true;
+                        }
+                    }
+                }
+            }
+            
+            //run automatic recording
+            if(data.isRunAutoRecord)
+            {
+                if(selectedLayer instanceof VectorLayer)
+                {
+                    showAutoButton = true;
+                }
+            }
+        }
+        else if(mode == ActivityMode.EDIT)
+        {
+            if(mMainActivity.isAddPointMode())
+            {
+                showPointButton = true;
+            }
+        }
+        
+        if(showObjectButton)
+        {
+            mButtonRecordEndObject.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            mButtonRecordEndObject.setVisibility(View.GONE);
+        }
+        
+        if(showPointButton)
+        {
+            mButtonRecordPoint.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            mButtonRecordPoint.setVisibility(View.GONE);
+        }
+        
+        if(showAutoButton)
+        {
+            mButtonRecordAuto.setVisibility(View.VISIBLE);
+            if(data.isRunAutoRecord)
+            {
+                mButtonRecordAuto.setContentDescription(getString(R.string.record_auto_stop));
+                mButtonRecordAuto.setImageDrawable(
+                        getResources().getDrawable(R.drawable.button_auto_record_on));
+            }
+            else
+            {
+                mButtonRecordAuto.setContentDescription(getString(R.string.record_auto_start));
+                mButtonRecordAuto.setImageDrawable(
+                        getResources().getDrawable(R.drawable.button_auto_record_off));
+            }
+        }
+        else
+        {
+            mButtonRecordAuto.setVisibility(View.GONE);
+        }
+    }
+    
+    /**
+     * set visibiliti of coordinate texts
+     */
+    private void setVisibilitiCoordinatesTexts()
+    {       
+        // coordinates location
+        if(mMainActivity.getLocationWorker().isRunLocation())
+        {
+            if(mCoordinatesLocationText.getVisibility() != View.VISIBLE)
+            {
+                mCoordinatesLocationText.setVisibility(View.VISIBLE);
+            }
+            
+            setCoordinatesLocationText();            
+        }
+        else
+        {
+            mCoordinatesLocationText.setVisibility(View.GONE);            
+        }
+        
+        // coordinates add point
+        if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
+                mMainActivity.isAddPointMode())
+        {
+            if(mCoordinatesAddPointText.getVisibility() != View.VISIBLE)
+            {
+                mCoordinatesAddPointText.setVisibility(View.VISIBLE);
+            }
+            
+            setCoordinatesAddPointText();            
+        }
+        else
+        {
+            mCoordinatesAddPointText.setVisibility(View.GONE);            
+        }        
     }
     // handlers ===============================================================
     
@@ -512,13 +599,25 @@ public class MapFragment extends Fragment
         {
             VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
 
-            if(!mLocationValid)
+            if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
             {
-                Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
-                return;
-            }            
-            
-            recordPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
+                if(!mLocationValid)
+                {
+                    Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
+                    return;
+                }            
+                
+                recordPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
+            }
+            else if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
+                    mMainActivity.isAddPointMode())
+            {
+                if(mAddPointLocationM == null)
+                {
+                    Toast.makeText(mMainActivity, R.string.not_selected_position, Toast.LENGTH_LONG).show();
+                    return;                    
+                }
+            }
         }        
     };
     
@@ -546,7 +645,7 @@ public class MapFragment extends Fragment
                 Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
             }
             
-            changeRecordButtons();
+            setMapTools();
             mMap.invalidate();
         }        
     };
@@ -568,7 +667,7 @@ public class MapFragment extends Fragment
                 startAutoRecord();
             }
             
-            changeRecordButtons();
+            setMapTools();
         }        
     };
     

@@ -91,7 +91,7 @@ public class LayersView extends DragSortListView
         {
             setMySelectedPosition(position);
             invalidateViews();
-            mMainActivity.getMapFragment().changeRecordButtons();
+            mMainActivity.getMapFragment().setMapTools();
         }
     };
     

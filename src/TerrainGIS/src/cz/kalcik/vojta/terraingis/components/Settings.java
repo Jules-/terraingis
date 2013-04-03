@@ -27,6 +27,7 @@ public class Settings
     
     // attributes ===================================================================
     private int locationIcon = R.drawable.location;
+    private int locationAddPontIcon = R.drawable.location_add_point;
     private boolean hideActionBar = true;
     private int timeHideActionBar = 8000;
     private int mAutoRecordMinDist = 10;
@@ -41,6 +42,11 @@ public class Settings
     public int getLocationIcon()
     {
         return locationIcon;
+    }
+    
+    public int getLocationAddPointIcon()
+    {
+        return locationAddPontIcon;
     }
     
     public boolean isHideActionBar()

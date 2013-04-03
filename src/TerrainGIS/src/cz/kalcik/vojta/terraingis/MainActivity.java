@@ -38,11 +38,13 @@ public class MainActivity extends AbstractActivity
     public static class MainActivityData implements Serializable
     {
         private static final long serialVersionUID = 1L;
-        public ActivityMode mActivityMode;
+        public ActivityMode activityMode;
+        public boolean addPointMode;
 
-        public MainActivityData(ActivityMode mActivityMode)
+        public MainActivityData(ActivityMode activityMode, boolean addPointMode)
         {
-            this.mActivityMode = mActivityMode;
+            this.activityMode = activityMode;
+            this.addPointMode = addPointMode;
         }
     }
     
@@ -50,6 +52,7 @@ public class MainActivity extends AbstractActivity
     private MenuItem mMenuShowLocation;
     private MenuItem mMenuRecord;
     private MenuItem mMenuEdit;
+    private MenuItem mMenuAddPoint;
     private Timer timer;
     private LocationWorker mLocationWorker;
     private Settings mSettings = Settings.getInstance();
@@ -57,7 +60,7 @@ public class MainActivity extends AbstractActivity
     private LayersFragment mLayersFragment;
     private LinearLayout mMapLayout;
     private LinearLayout mLayersLayout;
-    private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE);
+    private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE, false);
     
     // public methods =====================================================
     
@@ -150,7 +153,7 @@ public class MainActivity extends AbstractActivity
      */
     public ActivityMode getActivityMode()
     {
-        return data.mActivityMode;
+        return data.activityMode;
     }
     
     /**
@@ -175,6 +178,14 @@ public class MainActivity extends AbstractActivity
     public LocationWorker getLocationWorker()
     {
         return mLocationWorker;
+    }
+    
+    /**
+     * @return if is run add point mode of edit
+     */
+    public boolean isAddPointMode()
+    {
+        return data.addPointMode;
     }
     // on methods =========================================================
     @Override
@@ -213,6 +224,7 @@ public class MainActivity extends AbstractActivity
         mMenuShowLocation = menu.findItem(R.id.menu_show_location);
         mMenuRecord = menu.findItem(R.id.menu_record);
         mMenuEdit = menu.findItem(R.id.menu_edit);
+        mMenuAddPoint = menu.findItem(R.id.menu_add_point);
         setActionBarIcons();
         
         return true;
@@ -249,7 +261,7 @@ public class MainActivity extends AbstractActivity
         // record
         else if(mMenuRecord.getItemId() == id)
         {
-            if(data.mActivityMode == ActivityMode.RECORD)
+            if(data.activityMode == ActivityMode.RECORD)
             {
                 startExploreMode();
             }
@@ -258,10 +270,23 @@ public class MainActivity extends AbstractActivity
                 startRecordMode();
             }
         }
-        // record
+        // add point mode
+        else if(mMenuAddPoint.getItemId() == id)
+        {
+            if(data.addPointMode)
+            {
+                data.addPointMode = false;
+                mMapFragment.setCoordinatesAddPointM(null);
+            }
+            else
+            {
+                data.addPointMode = true;
+            }
+        }
+        // edit
         else if(mMenuEdit.getItemId() == id)
         {
-            if(data.mActivityMode == ActivityMode.EDIT)
+            if(data.activityMode == ActivityMode.EDIT)
             {
                 getLayersFragment().removeSelectedObject();
                 startExploreMode();
@@ -278,6 +303,7 @@ public class MainActivity extends AbstractActivity
         }        
         
         setActionBarIcons();
+        mMapFragment.setMapTools();
      
         return true;
     }
@@ -330,7 +356,7 @@ public class MainActivity extends AbstractActivity
         //MainActivity state
         data = (MainActivityData) savedInstanceState.getSerializable(MAIN_ACTIVITY_DATA);
         
-        mMapFragment.changeRecordButtons();
+        mMapFragment.setMapTools();
         setActionBarIcons();
     }
     
@@ -377,7 +403,7 @@ public class MainActivity extends AbstractActivity
         }
         
         // record icon
-        if(data.mActivityMode == ActivityMode.RECORD)
+        if(data.activityMode == ActivityMode.RECORD)
         {
             mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_on));
         }
@@ -387,13 +413,25 @@ public class MainActivity extends AbstractActivity
         }
         
         // edit icon
-        if(data.mActivityMode == ActivityMode.EDIT)
+        if(data.activityMode == ActivityMode.EDIT)
         {
             mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_on));
+            
+            // add point icon
+            mMenuAddPoint.setVisible(true);
+            if(data.addPointMode)
+            {
+                mMenuAddPoint.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_add_point_on));
+            }
+            else
+            {
+                mMenuAddPoint.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_add_point_off));
+            }
         }
         else
         {
             mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_off));
+            mMenuAddPoint.setVisible(false);
         }
     }
 
@@ -402,8 +440,9 @@ public class MainActivity extends AbstractActivity
      */
     private void startLocation()
     {
-        mMapFragment.startLocation();
         mLocationWorker.start();
+        
+        mMapFragment.startLocation();
     }
     
     /**
@@ -411,12 +450,13 @@ public class MainActivity extends AbstractActivity
      */
     private void stopLocation()
     {
-        if(data.mActivityMode == ActivityMode.RECORD)
+        if(data.activityMode == ActivityMode.RECORD)
         {
             startExploreMode();
         }
         
         mLocationWorker.stop();
+        
         mMapFragment.stopLocation();        
     }
     
@@ -425,12 +465,11 @@ public class MainActivity extends AbstractActivity
      */
     private void startRecordMode()
     {
-        data.mActivityMode = ActivityMode.RECORD;
+        data.activityMode = ActivityMode.RECORD;
         if(!mLocationWorker.isRunLocation())
         {
             startLocation();
         }
-        mMapFragment.changeRecordButtons();
     }
 
     /**
@@ -438,8 +477,7 @@ public class MainActivity extends AbstractActivity
      */
     private void startExploreMode()
     {
-        data.mActivityMode = ActivityMode.EXPLORE;
-        mMapFragment.changeRecordButtons();
+        data.activityMode = ActivityMode.EXPLORE;
     }
 
     /**
@@ -447,8 +485,7 @@ public class MainActivity extends AbstractActivity
      */
     private void startEditMode()
     {
-        data.mActivityMode = ActivityMode.EDIT;
-        mMapFragment.changeRecordButtons();
+        data.activityMode = ActivityMode.EDIT;
     }
     
     /**

@@ -4,6 +4,11 @@
         android:showAsAction="always"
         android:icon="@drawable/ic_menu_edit_off"
         android:title="@string/title_edit"/>
+    <item android:id="@+id/menu_add_point"
+        android:checkable="true"
+        android:showAsAction="always"
+        android:icon="@drawable/ic_menu_add_point_off"
+        android:title="@string/title_add_point"/>
     <item android:id="@+id/menu_record"
         android:checkable="true"
         android:showAsAction="always"

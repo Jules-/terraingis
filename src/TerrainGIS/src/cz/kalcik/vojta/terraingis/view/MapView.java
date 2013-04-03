@@ -49,15 +49,16 @@ public class MapView extends SurfaceView
     
     // attributes =========================================================================
     private LayerManager layerManager = LayerManager.getInstance();
-    private Navigator navigator = Navigator.getInstance();
+    private Navigator mNavigator = Navigator.getInstance();
     private Settings settings = Settings.getInstance();
     private Drawer mDrawer = Drawer.getInstance();
     private GestureDetector gestureDetector;
-    private MainActivity mainActivity;
+    private MainActivity mMainActivity;
     private MapFragment mMapFragment;
     
     private MapViewData data = new MapViewData();
     private Drawable locationIcon;
+    private Drawable locationAddPointIcon;
 
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -81,6 +82,7 @@ public class MapView extends SurfaceView
         super(context, attrs);
         
         locationIcon = context.getResources().getDrawable(settings.getLocationIcon());
+        locationAddPointIcon = context.getResources().getDrawable(settings.getLocationAddPointIcon());
         this.setWillNotDraw(false);
         
         gestureDetector =  new GestureDetector(context, new MySimpleOnGestureListener());
@@ -92,7 +94,7 @@ public class MapView extends SurfaceView
      */
     public void zoomToEnvelopeM(Envelope zoomingEnvelope)
     {
-        navigator.zoomToEnvelopeM(zoomingEnvelope);
+        mNavigator.zoomToEnvelopeM(zoomingEnvelope);
         invalidate();
     }
     
@@ -100,10 +102,10 @@ public class MapView extends SurfaceView
     
     public MapViewData getData()
     {
-        Coordinate position = navigator.getPositionM();
+        Coordinate position = mNavigator.getPositionM();
         data.position.x = position.x;
         data.position.y = position.y;
-        data.zoom = navigator.getZoom();
+        data.zoom = mNavigator.getZoom();
         return data;
     }
     
@@ -112,8 +114,8 @@ public class MapView extends SurfaceView
         this.data = (MapViewData)data;
         
         Coordinate position = new Coordinate(this.data.position.x, this.data.position.y);
-        navigator.setPositionM(position);
-        navigator.setZoom(this.data.zoom);
+        mNavigator.setPositionM(position);
+        mNavigator.setZoom(this.data.zoom);
     }
     
     /**
@@ -122,7 +124,7 @@ public class MapView extends SurfaceView
      */
     public void setZoom(double zoom)
     {
-        navigator.setZoom(zoom);
+        mNavigator.setZoom(zoom);
         invalidate();
     }
     
@@ -133,7 +135,7 @@ public class MapView extends SurfaceView
      */
     public synchronized void setLonLatPosition(double lon, double lat)
     {
-        navigator.setLonLatPosition(lon, lat);
+        mNavigator.setLonLatPosition(lon, lat);
         invalidate();
     }
         
@@ -143,8 +145,8 @@ public class MapView extends SurfaceView
      */
     public void setMainActivity(MainActivity mainActivity)
     {
-        this.mainActivity = mainActivity;
-        mMapFragment = this.mainActivity.getMapFragment();
+        this.mMainActivity = mainActivity;
+        mMapFragment = this.mMainActivity.getMapFragment();
     }
      
     // on methods ==========================================================================
@@ -168,7 +170,7 @@ public class MapView extends SurfaceView
         
         mDrawer.draw(canvas, getWidth(), getHeight());
         
-        drawLocation(canvas);
+        drawLocations(canvas);
     }
     
     @Override
@@ -260,7 +262,7 @@ public class MapView extends SurfaceView
     {
         if(Math.abs(mTouchDiff.x) >= 0.5 || Math.abs(mTouchDiff.y) >= 0.5)
         {
-            navigator.offsetSurfacePx(-mTouchDiff.x, -mTouchDiff.y);
+            mNavigator.offsetSurfacePx(-mTouchDiff.x, -mTouchDiff.y);
             mTouchDiff.set(0, 0);
             
             invalidate();
@@ -274,18 +276,24 @@ public class MapView extends SurfaceView
     {
         if(mScale != 1)
         {
-            navigator.zoomByScale(mScale, mPivot);
+            mNavigator.zoomByScale(mScale, mPivot);
             
             invalidate();
         }
     }
     
-    private synchronized void drawLocation(Canvas canvas)
+    private synchronized void drawLocations(Canvas canvas)
     {
-        Coordinate location = mMapFragment.getLocation();
+        Coordinate location = mMapFragment.getCoordinatesLocation();
         if(location != null)
         {
             mDrawer.drawIconM(canvas, location, locationIcon);
+        }
+        
+        location = mMapFragment.getCoordinatesAddPoint();
+        if(location != null)
+        {
+            mDrawer.drawIconM(canvas, location, locationAddPointIcon);
         }
     }
     
@@ -334,25 +342,31 @@ public class MapView extends SurfaceView
         @Override
         public boolean onSingleTapUp(MotionEvent arg0) 
         {
-            MainActivity acticity = (MainActivity) getContext();
-            if(mTouchPoint.y <= mainActivity.getActionBarHeight())
+            if(mTouchPoint.y <= mMainActivity.getActionBarHeight())
             {
-                mainActivity.showActionBar();
+                mMainActivity.showActionBar();
             }
-            else if(mTouchPoint.x <= mainActivity.getActionBarHeight() && mainActivity.isHiddenLayersFragment())
+            else if(mTouchPoint.x <= mMainActivity.getActionBarHeight() && mMainActivity.isHiddenLayersFragment())
             {
-                mainActivity.showLayersFragment();
+                mMainActivity.showLayersFragment();
             }
-            else if(acticity.getActivityMode() == ActivityMode.EDIT)
+            else if(mMainActivity.getActivityMode() == ActivityMode.EDIT)
             {
-                AbstractLayer layer = acticity.getLayersFragment().getSelectedLayer();
-                if(layer instanceof VectorLayer)
+                if(mMainActivity.isAddPointMode())
                 {
-                    VectorLayer vectorLayer = (VectorLayer) layer;
-                    Coordinate clickedPoint = navigator.surfacePxToM(mTouchPoint, null);
-                    vectorLayer.clickedObject(navigator.getMRectangle(null), clickedPoint);
-                    
-                    invalidate();
+                    mMapFragment.setCoordinatesAddPointM(mNavigator.surfacePxToM(mTouchPoint, null));
+                }
+                else
+                {
+                    AbstractLayer layer = mMainActivity.getLayersFragment().getSelectedLayer();
+                    if(layer instanceof VectorLayer)
+                    {
+                        VectorLayer vectorLayer = (VectorLayer) layer;
+                        Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
+                        vectorLayer.clickedObject(mNavigator.getMRectangle(null), clickedPoint);
+                        
+                        invalidate();
+                    }
                 }
             }
             
