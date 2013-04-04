@@ -220,7 +220,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
             
             spatialite.createEmptyLayer(name, layerType, 
                     createAttributeTable().createSQLColumns(), SpatiaLiteIO.EPSG_LONLAT);
-            LayerManager.getInstance().loadSpatialite();
+            LayerManager.getInstance().loadSpatialite(mMainActivity.getMapFragment());
             ((MainActivity)getActivity()).getLayersFragment().invalidateListView();
             
             getDialog().dismiss();

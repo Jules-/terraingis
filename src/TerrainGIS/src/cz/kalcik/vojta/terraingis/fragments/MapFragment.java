@@ -21,6 +21,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import cz.kalcik.vojta.terraingis.components.LonLatFormat;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog;
+import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog.InsertObjectType;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
@@ -96,7 +97,7 @@ public class MapFragment extends Fragment
     {
         if(mAutoRecordLayer != null)
         {
-            mAutoRecordLayer.addPoints(points, SpatiaLiteIO.EPSG_LONLAT);
+            mAutoRecordLayer.addPointsRecording(points, SpatiaLiteIO.EPSG_LONLAT);
         }
         
         setMapTools();
@@ -111,7 +112,7 @@ public class MapFragment extends Fragment
     {
         if(mAutoRecordLayer != null)
         {
-            recordPoint(point, mAutoRecordLayer, SpatiaLiteIO.EPSG_LONLAT);
+            recordInsertPoint(point, mAutoRecordLayer, SpatiaLiteIO.EPSG_LONLAT);
         }
     }
     
@@ -177,6 +178,17 @@ public class MapFragment extends Fragment
         setCoordinatesAddPointText();
         mMap.invalidate();
     }
+    
+    /**
+     * end recorded object
+     */
+    public void endObject(VectorLayer layer, InsertObjectType insertObjectType)
+    {
+        InsertAttributesDialog dialog = new InsertAttributesDialog();
+        dialog.setInsertObjectType(insertObjectType);
+        dialog.setLayer(layer);
+        mMainActivity.showDialog(dialog);
+    }
     // getter, setter =====================================================
     
     /**
@@ -231,7 +243,7 @@ public class MapFragment extends Fragment
         mButtonRecordAuto = (ImageButton)myView.findViewById(R.id.button_record_auto);
         mButtonRecordAuto.setOnClickListener(autoRecordObjectHandler);
         mButtonRecordEndObject = (ImageButton)myView.findViewById(R.id.button_record_end_object);
-        mButtonRecordEndObject.setOnClickListener(endObjectHandler);
+        mButtonRecordEndObject.setOnClickListener(endRecordedObjectHandler);
         mButtonRecordPoint = (ImageButton)myView.findViewById(R.id.button_record_point);
         mButtonRecordPoint.setOnClickListener(addPointHandler);
         
@@ -241,7 +253,7 @@ public class MapFragment extends Fragment
         
         // Map view state
         mMap = (MapView) myView.findViewById(R.id.map);
-        mLayerManager.loadLayers((Context)mMainActivity, mMap);
+        mLayerManager.loadLayers(mMainActivity, this, mMap);
         
         return myView;
     }
@@ -314,18 +326,24 @@ public class MapFragment extends Fragment
      * add point to layer
      * @param location
      */
-    private void recordPoint(Coordinate location, VectorLayer layer, int srid)
+    private void recordInsertPoint(Coordinate location, VectorLayer layer, int srid)
     {
         layer.addPoint(location, srid);
         if(layer.getType() == VectorLayerType.POINT)
         {
-            endObject(layer);
+            endObject(layer, InsertObjectType.RECORDING);
         }
-        
-        setMapTools();
-        mMap.invalidate();
     }
 
+    private void editInsertPoint(Coordinate location, VectorLayer layer)
+    {
+        layer.addPointEdit(location);
+        if(layer.getType() == VectorLayerType.POINT)
+        {
+            endObject(layer, InsertObjectType.EDITING);
+        }
+    }
+    
     /**
      * start automatic recording of points
      */
@@ -397,16 +415,6 @@ public class MapFragment extends Fragment
         {
             mAutoRecordLayer = mLayerManager.getLayerByName(data.autoRecordLayerString);
         }
-    }
-    
-    /**
-     * end recorded object
-     */
-    private void endObject(VectorLayer layer)
-    {
-        InsertAttributesDialog dialog = new InsertAttributesDialog();
-        dialog.setLayer(layer);
-        mMainActivity.showDialog(dialog);
     }
     
     /**
@@ -607,7 +615,7 @@ public class MapFragment extends Fragment
                     return;
                 }            
                 
-                recordPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
+                recordInsertPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
             }
             else if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
                     mMainActivity.isAddPointMode())
@@ -617,14 +625,19 @@ public class MapFragment extends Fragment
                     Toast.makeText(mMainActivity, R.string.not_selected_position, Toast.LENGTH_LONG).show();
                     return;                    
                 }
+                
+                editInsertPoint(mAddPointLocationM, selectedLayer);
             }
+            
+            setMapTools();
+            mMap.invalidate();
         }        
     };
     
     /**
      * end object
      */
-    View.OnClickListener endObjectHandler = new View.OnClickListener()
+    View.OnClickListener endRecordedObjectHandler = new View.OnClickListener()
     {
         @Override
         public synchronized void onClick(View v)
@@ -633,7 +646,7 @@ public class MapFragment extends Fragment
 
             try
             {
-                endObject(selectedLayer);
+                endObject(selectedLayer, InsertObjectType.RECORDING);
                 
                 if(selectedLayer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
                 {

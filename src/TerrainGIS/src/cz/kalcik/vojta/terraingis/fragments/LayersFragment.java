@@ -58,7 +58,6 @@ public class LayersFragment extends Fragment
     private LayerManager mLayerManager = LayerManager.getInstance();
     private AbstractLayer mContextMenuSelectedlayer;
     private ListBackgroundColors mBackgroundColors;
-    private MapView mMapView;
         
     // public methods =====================================================
     

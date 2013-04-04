@@ -10,6 +10,7 @@ import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field;
 import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field.FieldType;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
+import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
@@ -40,7 +41,8 @@ public class ShapeFileIO
      * @param file
      * @throws Exception 
      */
-    public void load(String folder, String filename, String layerName, int srid) throws Exception
+    public void load(String folder, String filename, String layerName, int srid,
+            MapFragment mapFragment) throws Exception
     {
         ShapeFile shapeFile = null;
 
@@ -55,7 +57,7 @@ public class ShapeFileIO
         spatialiteManager.createEmptyLayer(layerName, getTypeString(type),
                 createAttributeHeader(shapeFile).createSQLColumns(), srid);
         
-        layerManager.loadSpatialite();
+        layerManager.loadSpatialite(mapFragment);
         VectorLayer layer = layerManager.getLayerByName(layerName);
         layer.importObjects(new ShapeFileIterator(shapeFile));
     }

@@ -17,9 +17,18 @@ import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
  */
 public class InsertAttributesDialog extends SetAttributesDialog
 {
-
-    // public methods ================================================================================
+    public enum InsertObjectType{RECORDING, EDITING};
+    // attributes =======================================================================================
+    private InsertObjectType mInsertObjectType;
     
+    // public methods ===================================================================================
+    /**
+     * @param insertObjectType the mInsertObjectType to set
+     */
+    public void setInsertObjectType(InsertObjectType insertObjectType)
+    {
+        this.mInsertObjectType = insertObjectType;
+    }
     // protected methods ================================================================================    
     @Override
     protected String getValueOfAttribute(Column column, int i)
@@ -37,9 +46,21 @@ public class InsertAttributesDialog extends SetAttributesDialog
     @Override
     protected void execute()
     {
-        String[] values = getValues();
-        
-        mLayer.endObject(new AttributeRecord(mLayer.getAttributeHeader(), values));
+        AttributeRecord attributes = new AttributeRecord(mLayer.getAttributeHeader(), getValues());
+        if(mInsertObjectType == InsertObjectType.RECORDING)
+        {
+            mLayer.insertRecordedObject(attributes);
+        }
+        else if(mInsertObjectType == InsertObjectType.EDITING)
+        {
+            mLayer.insertEditedObject(attributes);
+        }
+    }
+    
+    @Override
+    protected void emptyExecute()
+    {
+        execute();
     }
     
     

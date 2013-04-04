@@ -504,24 +504,14 @@ public class SpatiaLiteIO
      * @param name
      * @param column
      * @param inputSrid
-     * @param tableSrid
+     * @param layerSrid
      * @return
      * @throws Exception
      */
-    public Stmt prepareInsert(String name, String column, int inputSrid, int tableSrid,
+    public Stmt prepareInsert(String name, String column, int inputSrid, int layerSrid,
             AttributeHeader header, boolean usePK) throws Exception
     {
-        String geomDefinition;
-        
-        if(inputSrid == tableSrid)
-        {
-            geomDefinition = String.format(Locale.UK, "GeomFromWKB(?, %d)", inputSrid);
-        }
-        else
-        {
-            geomDefinition = String.format(Locale.UK, "Transform(GeomFromWKB(?, %d), %d)", inputSrid, tableSrid);
-        }
-        
+        String geomDefinition = getGeomDefinition(inputSrid, layerSrid);
 
         String query = String.format("INSERT INTO \"%s\" (\"%s\"%s) VALUES (%s%s)",
                 name, column, header.getComaNameColumns(usePK, true),
@@ -787,6 +777,30 @@ public class SpatiaLiteIO
         
         return result;
     }
+    
+    /**
+     * update geometry by rowid
+     * @param name
+     * @param column
+     * @param rowid
+     * @param geometry
+     * @param layerSrid
+     * @param mapSrid
+     * @throws Exception
+     */
+    public void updateObject(String name, String column, int rowid, Geometry geometry,
+            int layerSrid, int mapSrid) throws Exception
+    {
+        String geomDefinition = getGeomDefinition(mapSrid, layerSrid);
+        
+        String query = String.format("UPDATE \"%s\" SET \"%s\"=%s WHERE ROWID=?",
+                name, column, geomDefinition);
+        Stmt stmt = db.prepare(query);
+        stmt.bind(1, mWKBWriter.write(geometry));
+        stmt.bind(2, rowid);
+        
+        stmt.step();
+    }
     // private methods =======================================================================
     /**
      * open spatialite database
@@ -842,6 +856,23 @@ public class SpatiaLiteIO
             return String.format(Locale.UK, "MbrIntersects(BuildMBR(%f, %f, %f, %f), " +
             		"Transform(%s, %d)) = 1", envelope.getMinX(), envelope.getMinY(),
                     envelope.getMaxX(), envelope.getMaxY(), column, mapSrid);           
+        }        
+    }
+    
+    /**
+     * @param inputSrid
+     * @param layerSrid
+     * @return geom definition
+     */
+    private String getGeomDefinition(int inputSrid, int layerSrid)
+    {
+        if(inputSrid == layerSrid)
+        {
+            return String.format(Locale.UK, "GeomFromWKB(?, %d)", inputSrid);
+        }
+        else
+        {
+            return String.format(Locale.UK, "Transform(GeomFromWKB(?, %d), %d)", inputSrid, layerSrid);
         }        
     }
     // classes ===============================================================================

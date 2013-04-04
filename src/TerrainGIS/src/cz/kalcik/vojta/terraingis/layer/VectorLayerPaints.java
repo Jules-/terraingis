@@ -84,7 +84,7 @@ public class VectorLayerPaints
         result.setStyle(Paint.Style.FILL);
         
         // transparency
-        if(paintType == PaintType.NOT_SAVED)
+        if(paintType == PaintType.NOT_SAVED || paintType == PaintType.SELECTED)
         {
             result.setAlpha(TRANCPARENCE_NOTSAVED);
         }

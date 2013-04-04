@@ -53,6 +53,7 @@ public abstract class SetAttributesDialog extends DialogFragment
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
          mActivity = (Activity)getActivity();
+         checkCountAttributes();
         
          Builder dialogBuilder = new AlertDialog.Builder(mActivity);
          
@@ -144,6 +145,18 @@ public abstract class SetAttributesDialog extends DialogFragment
         }
     }
     
+    /**
+     * if layer doesn't attributes hide dialog
+     */
+    private void checkCountAttributes()
+    {
+        AttributeHeader attributeHeader = mLayer.getAttributeHeader();
+        if(attributeHeader.getCountColumnsWithoutPK() == 0)
+        {
+            emptyExecute();
+            dismiss();
+        }
+    }
     // handlers =======================================================================================
     
     protected DialogInterface.OnClickListener positiveHandler = new DialogInterface.OnClickListener()
@@ -166,5 +179,6 @@ public abstract class SetAttributesDialog extends DialogFragment
     /**
      * run action with inserted attributes
      */
+    protected abstract void emptyExecute();
     protected abstract void execute();
 }

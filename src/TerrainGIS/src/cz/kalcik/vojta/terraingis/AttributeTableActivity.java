@@ -96,11 +96,12 @@ public class AttributeTableActivity extends AbstractActivity
         // actionbar
         ActionBar actionBar = getActionBar();
         actionBar.setTitle(layerName);
+        actionBar.setHomeButtonEnabled(true);
         
         // load values
         if(values != null)
         {
-            mLayer = LayerManager.createVectorLayer(values, mSpatialite);
+            mLayer = LayerManager.createVectorLayer(values, mSpatialite, null);
             loadAttributes();
         }
     }
@@ -176,6 +177,11 @@ public class AttributeTableActivity extends AbstractActivity
                 showDialog(dialog);
             }
         }
+        // home button
+        else if(android.R.id.home == id)
+        {
+            finish();
+        }  
      
         return true;
     }

@@ -1,17 +1,14 @@
 package cz.kalcik.vojta.terraingis.layer;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
-import cz.kalcik.vojta.terraingis.components.ConvertUnits;
+import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
 import cz.kalcik.vojta.terraingis.layer.VectorLayerPaints.PaintType;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 
 public class PointsLayer extends VectorLayer
 {
@@ -19,9 +16,9 @@ public class PointsLayer extends VectorLayer
     
     // public methods =========================================================
     public PointsLayer(String name, int srid,
-                       SpatiaLiteIO spatialite)
+                       SpatiaLiteIO spatialite, MapFragment mapFragment)
     {
-        super(VectorLayerType.POINT, name, srid, spatialite);
+        super(VectorLayerType.POINT, name, srid, spatialite, mapFragment);
     }
 	
 	/**
@@ -34,18 +31,22 @@ public class PointsLayer extends VectorLayer
         while(iter.hasNext())
         {
             float radius;
+            Coordinate coordinate;
             
+            Geometry geometry = iter.next();
             if(isSelectedObject(iter))
             {
                 radius = VectorLayerPaints.getPointRadius(PaintType.SELECTED);
+                coordinate = childData.selectedObjectPoints.get(0);
             }
             else
             {
                 radius = VectorLayerPaints.getPointRadius(PaintType.DEFAULT);
+                coordinate = geometry.getCoordinate();
             }
             
             mDrawer.drawCircleM(canvas, selectObjectPaint(iter),
-                    iter.next().getCoordinate(), radius);
+                    coordinate, radius);
         }
     }
 }

@@ -59,4 +59,10 @@ public class UpdateAttributesDialog extends SetAttributesDialog
             Toast.makeText(activity, R.string.database_error, Toast.LENGTH_LONG).show();
         }
     }
+
+    @Override
+    protected void emptyExecute()
+    {
+        // do nothing
+    }
 }

@@ -1,6 +1,5 @@
 package cz.kalcik.vojta.terraingis.layer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
@@ -15,6 +14,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO.Layer;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer.AbstractLayerData;
@@ -46,7 +46,6 @@ public class LayerManager
     public static final double SPHERICAL_MERCATOR_DIST = 20037508.342789;
     
     // attributes =========================================================================
-    
     private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
     private SpatiaLiteIO spatialiteManager = null;
     private int srid = SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR;
@@ -83,7 +82,7 @@ public class LayerManager
      * load layers from spatialite database
      * @param path
      */
-    public void loadSpatialite()
+    public void loadSpatialite(MapFragment mapFragment)
     {
         if(spatialiteManager == null)
         {
@@ -102,7 +101,7 @@ public class LayerManager
                 continue;
             }
             
-            AbstractLayer newLayer = createVectorLayer(layer, spatialiteManager);
+            AbstractLayer newLayer = createVectorLayer(layer, spatialiteManager, mapFragment);
             
             mapLayers.put(newLayer.toString(), true);
             
@@ -129,9 +128,9 @@ public class LayerManager
      * @param context
      * @param map
      */
-    public void loadLayers(Context context, MapView map)
+    public void loadLayers(Context context, MapFragment mapFragment,MapView map)
     {
-        loadSpatialite();
+        loadSpatialite(mapFragment);
         addTilesLayer(context, map);
     }
 
@@ -253,7 +252,7 @@ public class LayerManager
     {
         return spatialiteManager;
     }
-    
+
     // public static method ==================================================================
     /**
      * create VectorLayer by layer attributes from spatialite
@@ -261,21 +260,21 @@ public class LayerManager
      * @param spatialite
      * @return
      */
-    public static VectorLayer createVectorLayer(Layer layer, SpatiaLiteIO spatialite)
+    public static VectorLayer createVectorLayer(Layer layer, SpatiaLiteIO spatialite, MapFragment mapFragment)
     {
         VectorLayer result = null;
         
         if(layer.type.equals("POINT") || layer.type.equals("MULTIPOINT"))
         {
-            result = new PointsLayer(layer.name, layer.srid, spatialite);
+            result = new PointsLayer(layer.name, layer.srid, spatialite, mapFragment);
         }
         else if(layer.type.equals("LINESTRING") || layer.type.equals("MULTILINESTRING"))
         {
-            result = new LinesLayer(layer.name, layer.srid, spatialite);
+            result = new LinesLayer(layer.name, layer.srid, spatialite, mapFragment);
         }
         else if(layer.type.equals("POLYGON") || layer.type.equals("MULTIPOLYGON"))
         {
-            result = new PolygonsLayer(layer.name, layer.srid, spatialite);
+            result = new PolygonsLayer(layer.name, layer.srid, spatialite, mapFragment);
         }
         
         return result;

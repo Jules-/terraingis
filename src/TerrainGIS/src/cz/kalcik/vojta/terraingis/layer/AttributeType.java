@@ -1,5 +1,7 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import java.util.Locale;
+
 import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field.FieldType;
 
 /**
@@ -13,15 +15,16 @@ public enum AttributeType
     
     public static AttributeType getTypeSpatialite(String spatialiteType)
     {
-        if(spatialiteType.equals("TEXT"))
+        spatialiteType = spatialiteType.toLowerCase(Locale.UK);
+        if(spatialiteType.equals("text"))
         {
             return TEXT;
         }
-        else if(spatialiteType.equals("INTEGER"))
+        else if(spatialiteType.equals("integer"))
         {
             return INTEGER;
         }
-        else if(spatialiteType.equals("REAL"))
+        else if(spatialiteType.equals("real"))
         {
             return REAL;
         }

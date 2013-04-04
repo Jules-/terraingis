@@ -114,7 +114,8 @@ public class ShapefileDialog extends CreateLayerDialog
                 
                 try
                 {
-                    ShapeFileIO.getInstance().load(mFile.getParent(), mNameNoSuffix, name, Integer.parseInt(sridString));
+                    ShapeFileIO.getInstance().load(mFile.getParent(), mNameNoSuffix, name,
+                            Integer.parseInt(sridString), mMainActivity.getMapFragment());
                 }
                 catch (Exception e)
                 {

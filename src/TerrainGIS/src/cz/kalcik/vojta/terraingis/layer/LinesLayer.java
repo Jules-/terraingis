@@ -1,5 +1,6 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 
 public class LinesLayer extends PolyPointsLayer
@@ -8,8 +9,8 @@ public class LinesLayer extends PolyPointsLayer
     
     // public methods =========================================================
     public LinesLayer(String name, int srid,
-                      SpatiaLiteIO spatialite)
+                      SpatiaLiteIO spatialite, MapFragment mapFragment)
     {
-        super(VectorLayerType.LINE, name, srid, spatialite);
+        super(VectorLayerType.LINE, name, srid, spatialite, mapFragment);
     }
 }
