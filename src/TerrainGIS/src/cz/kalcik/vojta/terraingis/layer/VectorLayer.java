@@ -90,6 +90,7 @@ public abstract class VectorLayer extends AbstractLayer
     private boolean mHasIndex;
 
     protected Paint mPaint;
+    protected Paint mPaintPoint;
     protected Paint mSelectedPaint;
     protected Paint mNotSavedPaint;
     protected VectorLayerType mType;
@@ -122,6 +123,9 @@ public abstract class VectorLayer extends AbstractLayer
         updateEnvelope();
     }
 
+    // abstract methods =======================================================
+    abstract protected int getMinCountPoints();
+    
     // public methods =========================================================    
     @Override
     public void detach()
@@ -132,7 +136,7 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * @return if layer has opened recorded object
      */
-    public boolean haveOpenedRecordObject()
+    public boolean hasOpenedRecordObject()
     {
         return (vectorLayerData.recordedPoints.size() != 0);
     }
@@ -343,58 +347,10 @@ public abstract class VectorLayer extends AbstractLayer
                     vectorLayerData.selectedNodeIndex, position);
         }        
     }
-    // public static ============================================================
     
-    /**
-     * convert points to geometry
-     * @param points
-     * @param type
-     * @param geometryFactory
-     * @return
-     */
-    public static Geometry createGeometry(ArrayList<Coordinate> points, VectorLayerType type)
+    public boolean hasRecordedObjectEnoughPoints()
     {
-        Geometry result = null;
-        
-        // for polygon add first point
-        if(type == VectorLayerType.POLYGON)
-        {
-            points.add(points.get(0));
-        }
-        
-        CoordinateArraySequence coordinates =
-                new CoordinateArraySequence(points.toArray(new Coordinate[points.size()]));
-        
-        if(type == VectorLayerType.POINT)
-        {
-            if(points.size() == 0)
-            {
-                throw new CreateObjectException("Few points for object.");
-            }
-            
-            result = new Point(coordinates, GEOMETRY_FACTORY);
-        }
-        else if(type == VectorLayerType.LINE)
-        {
-            if(points.size() < 2)
-            {
-                throw new CreateObjectException("Few points for object.");
-            }
-            
-            result = new LineString(coordinates, GEOMETRY_FACTORY);
-        }
-        else if(type == VectorLayerType.POLYGON)
-        {
-            if(points.size() < 4)
-            {
-                throw new CreateObjectException("Few points for object.");
-            }
-            
-            LinearRing ring = new LinearRing(coordinates, GEOMETRY_FACTORY);
-            result = new Polygon(ring, null, GEOMETRY_FACTORY);
-        }
-        
-        return result;
+        return vectorLayerData.recordedPoints.size() >= getMinCountPoints();
     }
     
     // getter, setter =========================================================
@@ -442,6 +398,60 @@ public abstract class VectorLayer extends AbstractLayer
     public AttributeHeader getAttributeHeader()
     {
         return mAttributeHeader;
+    }
+    
+    // public static ============================================================
+    
+    /**
+     * convert points to geometry
+     * @param points
+     * @param type
+     * @param geometryFactory
+     * @return
+     */
+    public static Geometry createGeometry(ArrayList<Coordinate> points, VectorLayerType type)
+    {
+        Geometry result = null;
+        
+        // for polygon add first point
+        if(type == VectorLayerType.POLYGON)
+        {
+            points.add(points.get(0));
+        }
+        
+        CoordinateArraySequence coordinates =
+                new CoordinateArraySequence(points.toArray(new Coordinate[points.size()]));
+        
+        if(type == VectorLayerType.POINT)
+        {
+            if(points.size() < PointsLayer.MIN_POINTS)
+            {
+                throw new CreateObjectException("Few points for object.");
+            }
+            
+            result = new Point(coordinates, GEOMETRY_FACTORY);
+        }
+        else if(type == VectorLayerType.LINE)
+        {
+            if(points.size() < LinesLayer.MIN_POINTS)
+            {
+                throw new CreateObjectException("Few points for object.");
+            }
+            
+            result = new LineString(coordinates, GEOMETRY_FACTORY);
+        }
+        else if(type == VectorLayerType.POLYGON)
+        {
+            if(points.size() < PolygonsLayer.MIN_POINTS + 1)
+            {
+                throw new CreateObjectException("Few points for object.");
+            }
+            
+            LinearRing ring = new LinearRing(coordinates, GEOMETRY_FACTORY);
+            result = new Polygon(ring, null, GEOMETRY_FACTORY);
+        }
+        
+        return result;
     }
     
     // protected methods ========================================================
@@ -501,6 +511,8 @@ public abstract class VectorLayer extends AbstractLayer
      */
     private void setPaints()
     {
+        mPaintPoint = VectorLayerPaints.getPoint(PaintType.SELECTED_SELECTED_NODE);
+        
         if(mType == VectorLayerType.POINT)
         {
             mPaint = VectorLayerPaints.getPoint(PaintType.DEFAULT);

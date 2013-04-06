@@ -13,6 +13,7 @@ import android.graphics.Canvas;
 public class PointsLayer extends VectorLayer
 {
     // constants ==============================================================
+    public static final int MIN_POINTS = 1;
     
     // public methods =========================================================
     public PointsLayer(String name, int srid,
@@ -48,5 +49,11 @@ public class PointsLayer extends VectorLayer
             mDrawer.drawCircleM(canvas, selectObjectPaint(iter),
                     coordinate, radius);
         }
+    }
+    
+    @Override
+    protected int getMinCountPoints()
+    {
+        return MIN_POINTS;
     }
 }

@@ -62,10 +62,13 @@ public abstract class PolyPointsLayer extends VectorLayer
         {
             Coordinate[] metersCoordinates = vectorLayerData.recordedPoints.toArray(
                     new Coordinate[vectorLayerData.recordedPoints.size()]);
+            PointF[] points = mNavigator.mToSurfacePx(metersCoordinates);
             
             mDrawer.drawCanvasPathSurfacePx(canvas,
-                    mNavigator.mToSurfacePx(metersCoordinates),
-                    mNotSavedPaint);
+                    points, mNotSavedPaint);
+            
+            mDrawer.drawPathNodesSurfacePx(canvas, points, mPaintPoint,
+                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT));
         }
         
         // selected object

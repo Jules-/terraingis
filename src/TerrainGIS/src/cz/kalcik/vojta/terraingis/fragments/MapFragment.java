@@ -356,9 +356,9 @@ public class MapFragment extends Fragment
      */
     private void startAutoRecord()
     {
-        VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+        mAutoRecordLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
         
-        if(selectedLayer != null)
+        if(mAutoRecordLayer != null)
         {
             mMainActivity.startService(mServiceIntent);
             bindAutoRecordService();
@@ -504,7 +504,8 @@ public class MapFragment extends Fragment
                 if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
                 {
                     showAutoButton = true;
-                    if (selectedLayer.haveOpenedRecordObject())
+                    if (selectedLayer.hasOpenedRecordObject() &&
+                            selectedLayer.hasRecordedObjectEnoughPoints())
                     {
                         showEndObjectButton = true;
                     }
@@ -686,13 +687,13 @@ public class MapFragment extends Fragment
             if(selectedLayer != null)
             {
                 try
-                {
-                    endObject(selectedLayer, InsertObjectType.RECORDING);
-                    
+                {                   
                     if(selectedLayer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
                     {
                         stopAutoRecord();
                     }
+                    
+                    endObject(selectedLayer, InsertObjectType.RECORDING);
                 }
                 catch (CreateObjectException e)
                 {

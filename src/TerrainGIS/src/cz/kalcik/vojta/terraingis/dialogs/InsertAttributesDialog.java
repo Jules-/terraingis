@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import android.content.DialogInterface;
 
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
@@ -50,6 +51,8 @@ public class InsertAttributesDialog extends SetAttributesDialog
         if(mInsertObjectType == InsertObjectType.RECORDING)
         {
             mLayer.insertRecordedObject(attributes);
+            
+            ((MainActivity)getActivity()).getMapFragment().setMapTools();
         }
         else if(mInsertObjectType == InsertObjectType.EDITING)
         {

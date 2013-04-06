@@ -95,7 +95,7 @@ public class Drawer
     }
     
     /**
-     * draw points
+     * draw circles in points
      * @param canvas
      * @param points
      * @param paintDefault
@@ -114,6 +114,19 @@ public class Drawer
             
             canvas.drawCircle(points[i].x, points[i].y, radius, paint);
         }        
+    }
+
+    /**
+     * draw circles in points
+     * @param canvas
+     * @param points
+     * @param paintDefault
+     * @param radius
+     */
+    public void drawPathNodesSurfacePx(Canvas canvas, PointF[] points,
+            Paint paintDefault, float radius)
+    {
+        drawPathNodesSurfacePx(canvas, points, paintDefault, null, radius, -1);
     }
     
     /**
@@ -152,6 +165,4 @@ public class Drawer
             icon.draw(canvas);
         }
     }
-    
-        
 }
