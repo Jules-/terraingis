@@ -58,10 +58,10 @@ public abstract class PolyPointsLayer extends VectorLayer
         }
         
         // recording of object
-        if(childData.recordedPoints.size() > 0)
+        if(vectorLayerData.recordedPoints.size() > 0)
         {
-            Coordinate[] metersCoordinates = childData.recordedPoints.toArray(
-                    new Coordinate[childData.recordedPoints.size()]);
+            Coordinate[] metersCoordinates = vectorLayerData.recordedPoints.toArray(
+                    new Coordinate[vectorLayerData.recordedPoints.size()]);
             
             mDrawer.drawCanvasPathSurfacePx(canvas,
                     mNavigator.mToSurfacePx(metersCoordinates),
@@ -69,11 +69,11 @@ public abstract class PolyPointsLayer extends VectorLayer
         }
         
         // selected object
-        if(!childData.selectedObjectPoints.isEmpty())
+        if(!vectorLayerData.selectedObjectPoints.isEmpty())
         {
             PointF[] points = mNavigator.mToSurfacePx(
-                    childData.selectedObjectPoints.toArray(
-                            new Coordinate[childData.selectedObjectPoints.size()]));
+                    vectorLayerData.selectedObjectPoints.toArray(
+                            new Coordinate[vectorLayerData.selectedObjectPoints.size()]));
             
             mDrawer.drawCanvasPathSurfacePx(canvas,
                     points, 
@@ -89,7 +89,7 @@ public abstract class PolyPointsLayer extends VectorLayer
             
             mDrawer.drawPathNodesSurfacePx(canvas, points, mNodesSelectedObjectPaint,
                     mSelectedNodeSelectedObjectPaint,
-                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT), childData.selectedNodeIndex);
+                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT), vectorLayerData.selectedNodeIndex);
         }
     }
 }

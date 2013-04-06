@@ -68,7 +68,7 @@ public abstract class VectorLayer extends AbstractLayer
     };
     
     // attributes ==============================================================
-    public static class VectorLayerData implements Serializable
+    protected static class VectorLayerData implements Serializable
     {
         private static final long serialVersionUID = 1L;
         
@@ -76,6 +76,7 @@ public abstract class VectorLayer extends AbstractLayer
         public String selectedRowid;
         public ArrayList<Coordinate> selectedObjectPoints; // in srid of map
         public int selectedNodeIndex;
+        public Coordinate clickedPoint;
 
         public VectorLayerData(ArrayList<Coordinate> recordedPoints,
                 ArrayList<Coordinate> selectedObjectPoints, int selectedNodeIndex)
@@ -94,7 +95,7 @@ public abstract class VectorLayer extends AbstractLayer
     protected VectorLayerType mType;
     protected SpatiaLiteIO mSpatialite;
     protected String mGeometryColumn;
-    protected VectorLayerData childData = new VectorLayerData(new ArrayList<Coordinate>(),
+    protected VectorLayerData vectorLayerData = new VectorLayerData(new ArrayList<Coordinate>(),
             new ArrayList<Coordinate>(), -1);
     protected AttributeHeader mAttributeHeader;
     protected MapFragment mMapFragment;
@@ -125,8 +126,7 @@ public abstract class VectorLayer extends AbstractLayer
     @Override
     public void detach()
     {
-        // TODO Auto-generated method stub
-        
+
     }
     
     /**
@@ -134,7 +134,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public boolean haveOpenedRecordObject()
     {
-        return (childData.recordedPoints.size() != 0);
+        return (vectorLayerData.recordedPoints.size() != 0);
     }
     
     /**
@@ -148,7 +148,7 @@ public abstract class VectorLayer extends AbstractLayer
         {
             coordinate = mSpatialite.transformSRS(coordinate, srid, layerManagerSrid);
         }
-        childData.recordedPoints.add(coordinate);
+        vectorLayerData.recordedPoints.add(coordinate);
     }
 
     /**
@@ -162,7 +162,7 @@ public abstract class VectorLayer extends AbstractLayer
         {
             points = mSpatialite.transformSRS(points, srid, layerManagerSrid);
         }
-        childData.recordedPoints.addAll(points);
+        vectorLayerData.recordedPoints.addAll(points);
     }
     
     /**
@@ -172,7 +172,7 @@ public abstract class VectorLayer extends AbstractLayer
     public void insertRecordedObject(AttributeRecord attributes)
     {
         insertObject(attributes, createRecordedGeometry());
-        childData.recordedPoints.clear(); 
+        vectorLayerData.recordedPoints.clear(); 
     }
 
     /**
@@ -181,8 +181,8 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public void insertEditedObject(AttributeRecord attributes)
     {
-        insertObject(attributes, createGeometry(childData.selectedObjectPoints, mType));
-        childData.selectedObjectPoints.clear(); 
+        insertObject(attributes, createGeometry(vectorLayerData.selectedObjectPoints, mType));
+        vectorLayerData.selectedObjectPoints.clear(); 
     }
     
     public void importObjects(Iterator<ShapeFileRecord> iterGeometries) throws Exception
@@ -218,20 +218,15 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public void clickedObject(Envelope envelope, Coordinate point)
     {
-        double bufferDistance = mNavigator.pxToM(ConvertUnits.dp2px(Settings.DP_RADIUS_CLICK));
+        vectorLayerData.clickedPoint = point;
+        double bufferDistance = mNavigator.getBufferDistance();
         String rowid = mSpatialite.getRowidNearCoordinate(envelope, data.name,
                 mGeometryColumn, mSrid, mLayerManager.getSrid(), mHasIndex, point, bufferDistance);
         changeSelectionOfObject(rowid);
         
-        if(childData.selectedRowid != null)
+        if(vectorLayerData.selectedRowid != null)
         {
-            Geometry object = mSpatialite.getObject(data.name, mGeometryColumn,
-                    mLayerManager.getSrid(), Integer.parseInt(childData.selectedRowid));
-            childData.selectedObjectPoints = new ArrayList<Coordinate>(Arrays.asList(object.getCoordinates()));
-            if(mType != VectorLayerType.POINT)
-            {
-                checkSelectedNode(point, bufferDistance);
-            }
+            loadSelectedPoints();
         }
     }
     
@@ -252,20 +247,67 @@ public abstract class VectorLayer extends AbstractLayer
         if(mType == VectorLayerType.POINT)
         {
             removeSelectionOfObject();
-            childData.selectedObjectPoints.clear();
-            childData.selectedObjectPoints.add(point);
+            vectorLayerData.selectedObjectPoints.clear();
+            vectorLayerData.selectedObjectPoints.add(point);
         }
         else
         {
-            if(childData.selectedNodeIndex > 0)
+            if(vectorLayerData.selectedNodeIndex >= 0)
             {
-                childData.selectedObjectPoints.add(childData.selectedNodeIndex, point);
-                childData.selectedNodeIndex++;
+                vectorLayerData.selectedObjectPoints.add(vectorLayerData.selectedNodeIndex, point);
+                vectorLayerData.selectedNodeIndex++;
             }
             else
             {
-                childData.selectedObjectPoints.add(point);
+                vectorLayerData.selectedObjectPoints.add(point);
             }
+        }
+    }
+    
+    /**
+     * remove selected object
+     */
+    public void removeSelected()
+    {
+        if(vectorLayerData.selectedNodeIndex >= 0)
+        {
+            vectorLayerData.selectedObjectPoints.remove(vectorLayerData.selectedNodeIndex);
+            if(vectorLayerData.selectedNodeIndex >= vectorLayerData.selectedObjectPoints.size())
+            {
+                vectorLayerData.selectedNodeIndex = vectorLayerData.selectedObjectPoints.size()-1;
+            }
+        }
+        else
+        {
+            if(vectorLayerData.selectedRowid != null)
+            {
+                try
+                {
+                    mSpatialite.removeObject(data.name, Integer.parseInt(vectorLayerData.selectedRowid));
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(mMapFragment.getActivity(), R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+            
+            vectorLayerData.selectedObjectPoints.clear();
+        }
+    }
+    
+    /**
+     * cancel not saved changes
+     */
+    public void cancelNotSavedChanges()
+    {
+        if(vectorLayerData.selectedRowid != null)
+        {
+            loadSelectedPoints();
+        }
+        else
+        {
+            vectorLayerData.selectedObjectPoints.clear();
         }
     }
     // public static ============================================================
@@ -347,17 +389,17 @@ public abstract class VectorLayer extends AbstractLayer
     public AbstractLayerData getData()
     {
         AbstractLayerData result = super.getData();
-        result.childData = childData;
+        result.childData = vectorLayerData;
         return result;
     }
 
     /**
-     * @param childData the data to set
+     * @param vectorLayerData the data to set
      */
     public void setData(AbstractLayerData inData)
     {
         super.setData(inData);
-        childData = (VectorLayerData)data.childData;
+        vectorLayerData = (VectorLayerData)data.childData;
     }
     
     
@@ -391,7 +433,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     protected boolean isSelectedObject(SpatialiteGeomIterator geomIterator)
     {
-        return geomIterator.getLastROWID().equals(childData.selectedRowid);
+        return geomIterator.getLastROWID().equals(vectorLayerData.selectedRowid);
     }
     
     /**
@@ -401,7 +443,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     protected Paint selectObjectPaint(SpatialiteGeomIterator geomIterator)
     {
-        if(geomIterator.getLastROWID().equals(childData.selectedRowid))
+        if(geomIterator.getLastROWID().equals(vectorLayerData.selectedRowid))
         {
             return mSelectedPaint;
         }
@@ -418,7 +460,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     private Geometry createRecordedGeometry()
     {
-        return createGeometry(childData.recordedPoints, mType);
+        return createGeometry(vectorLayerData.recordedPoints, mType);
     }
     
     /**
@@ -452,13 +494,13 @@ public abstract class VectorLayer extends AbstractLayer
      */
     private void checkSelectedNode(Coordinate point, Double bufferDistance)
     {       
-        int size = childData.selectedObjectPoints.size();
+        int size = vectorLayerData.selectedObjectPoints.size();
         double minDistance = bufferDistance;
         int minIndex = -1;
         
         for(int i=0; i < size; i++)
         {
-            Double distance = childData.selectedObjectPoints.get(i).distance(point);
+            Double distance = vectorLayerData.selectedObjectPoints.get(i).distance(point);
             if(distance < minDistance)
             {
                 minDistance = distance;
@@ -466,7 +508,7 @@ public abstract class VectorLayer extends AbstractLayer
             }
         }
         
-        childData.selectedNodeIndex = minIndex;
+        vectorLayerData.selectedNodeIndex = minIndex;
     }
     
     /**
@@ -491,21 +533,21 @@ public abstract class VectorLayer extends AbstractLayer
      */
     private void changeSelectionOfObject(String rowid)
     {
-        if(!childData.selectedObjectPoints.isEmpty())
+        if(!vectorLayerData.selectedObjectPoints.isEmpty())
         {
             
-            if(childData.selectedRowid == null)
+            if(vectorLayerData.selectedRowid == null)
             {
                 mMapFragment.endObject(this, InsertObjectType.EDITING);
             }
-            else if(childData.selectedRowid != null)
+            else if(vectorLayerData.selectedRowid != null)
             {
-                Geometry geometry = createGeometry(childData.selectedObjectPoints, mType);
+                Geometry geometry = createGeometry(vectorLayerData.selectedObjectPoints, mType);
                 
                 try
                 {
                     mSpatialite.updateObject(data.name, mGeometryColumn,
-                            Integer.parseInt(childData.selectedRowid), geometry,
+                            Integer.parseInt(vectorLayerData.selectedRowid), geometry,
                             mSrid, mLayerManager.getSrid());
                 }
                 catch (Exception e)
@@ -514,10 +556,29 @@ public abstract class VectorLayer extends AbstractLayer
                             Toast.LENGTH_LONG).show();
                 }
                 
-                childData.selectedObjectPoints.clear();
+                vectorLayerData.selectedObjectPoints.clear();
             }
         }
         
-        childData.selectedRowid = rowid;
+        vectorLayerData.selectedNodeIndex = -1;
+        vectorLayerData.selectedRowid = rowid;
+    }
+    
+
+    /**
+     * load points of selected object
+     * @param bufferDistance
+     */
+    private void loadSelectedPoints()
+    {
+        double bufferDistance = mNavigator.getBufferDistance();
+        Geometry object = mSpatialite.getObject(data.name, mGeometryColumn,
+                mLayerManager.getSrid(), Integer.parseInt(vectorLayerData.selectedRowid));
+        vectorLayerData.selectedObjectPoints = new ArrayList<Coordinate>(Arrays.asList(object.getCoordinates()));
+        
+        if(mType != VectorLayerType.POINT)
+        {
+            checkSelectedNode(vectorLayerData.clickedPoint, bufferDistance);
+        }
     }
 }

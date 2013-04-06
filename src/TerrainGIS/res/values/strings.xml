@@ -30,11 +30,13 @@
     <string name="load_shapefile_error">Can not load shapefile!</string>
     <string name="layer_attribu_tetable_error">This layer does not have attributes!</string>
     <string name="database_error">Problem with using database!</string>
-    <!-- record buttons -->
-    <string name="record_point">Add point</string>
-    <string name="record_end_object">End object</string>
-    <string name="record_auto_start">Start automatic</string>
-    <string name="record_auto_stop">Stop automatic</string>
+    <!-- map buttons -->
+    <string name="button_record_point">Add point</string>
+    <string name="button_record_end_object">End object</string>
+    <string name="button_record_auto_start">Start automatic</string>
+    <string name="button_record_auto_stop">Stop automatic</string>
+    <string name="button_remove">Remove selected</string>
+    <string name="button_back">Back</string>
     <!-- icon titles -->
     <string name="title_record">on/off recording</string>
     <string name="title_gps">on/off location service</string>

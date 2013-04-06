@@ -72,6 +72,9 @@ public class MapFragment extends Fragment
     private ImageButton mButtonRecordAuto;
     private ImageButton mButtonRecordEndObject;
     private ImageButton mButtonRecordPoint;
+    private ImageButton mButtonBack;
+    private ImageButton mButtonRemove;
+    
     private TextView mCoordinatesLocationText;
     private TextView mCoordinatesAddPointText;
 
@@ -85,7 +88,7 @@ public class MapFragment extends Fragment
      */
     public void setMapTools()
     {
-        setRecordButtons();
+        setMapButtons();
         setVisibilitiCoordinatesTexts();
     }
     
@@ -246,6 +249,10 @@ public class MapFragment extends Fragment
         mButtonRecordEndObject.setOnClickListener(endRecordedObjectHandler);
         mButtonRecordPoint = (ImageButton)myView.findViewById(R.id.button_record_point);
         mButtonRecordPoint.setOnClickListener(addPointHandler);
+        mButtonBack = (ImageButton)myView.findViewById(R.id.button_back);
+        mButtonBack.setOnClickListener(backHandler);
+        mButtonRemove = (ImageButton)myView.findViewById(R.id.button_remove);
+        mButtonRemove.setOnClickListener(removeHandler);
         
         // coordinate text
         mCoordinatesLocationText = (TextView)myView.findViewById(R.id.textView_coordinates);
@@ -468,11 +475,13 @@ public class MapFragment extends Fragment
     /**
      * set visibility of record buttons
      */
-    private void setRecordButtons()
+    private void setMapButtons()
     {
-        boolean showObjectButton = false;
+        boolean showEndObjectButton = false;
         boolean showPointButton = false;
         boolean showAutoButton = false;
+        boolean showBackButton = false;
+        boolean showRemoveButton = false;
         
         
         ActivityMode mode = mMainActivity.getActivityMode();
@@ -496,7 +505,7 @@ public class MapFragment extends Fragment
                         showAutoButton = true;
                         if (selectedVectorLayer.haveOpenedRecordObject())
                         {
-                            showObjectButton = true;
+                            showEndObjectButton = true;
                         }
                     }
                 }
@@ -516,10 +525,16 @@ public class MapFragment extends Fragment
             if(mMainActivity.isAddPointMode())
             {
                 showPointButton = true;
+                showBackButton = true;
+            }
+            else
+            {
+                showRemoveButton = true;
             }
         }
         
-        if(showObjectButton)
+        // end object button
+        if(showEndObjectButton)
         {
             mButtonRecordEndObject.setVisibility(View.VISIBLE);
         }
@@ -528,6 +543,7 @@ public class MapFragment extends Fragment
             mButtonRecordEndObject.setVisibility(View.GONE);
         }
         
+        // add point button
         if(showPointButton)
         {
             mButtonRecordPoint.setVisibility(View.VISIBLE);
@@ -537,18 +553,19 @@ public class MapFragment extends Fragment
             mButtonRecordPoint.setVisibility(View.GONE);
         }
         
+        // auto record button
         if(showAutoButton)
         {
             mButtonRecordAuto.setVisibility(View.VISIBLE);
             if(data.isRunAutoRecord)
             {
-                mButtonRecordAuto.setContentDescription(getString(R.string.record_auto_stop));
+                mButtonRecordAuto.setContentDescription(getString(R.string.button_record_auto_stop));
                 mButtonRecordAuto.setImageDrawable(
                         getResources().getDrawable(R.drawable.button_auto_record_on));
             }
             else
             {
-                mButtonRecordAuto.setContentDescription(getString(R.string.record_auto_start));
+                mButtonRecordAuto.setContentDescription(getString(R.string.button_record_auto_start));
                 mButtonRecordAuto.setImageDrawable(
                         getResources().getDrawable(R.drawable.button_auto_record_off));
             }
@@ -556,6 +573,26 @@ public class MapFragment extends Fragment
         else
         {
             mButtonRecordAuto.setVisibility(View.GONE);
+        }
+        
+        // back button
+        if(showBackButton)
+        {
+            mButtonBack.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            mButtonBack.setVisibility(View.GONE);
+        }
+        
+        // remove button
+        if(showRemoveButton)
+        {
+            mButtonRemove.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            mButtonRemove.setVisibility(View.GONE);
         }
     }
     
@@ -683,6 +720,29 @@ public class MapFragment extends Fragment
             setMapTools();
         }        
     };
+
+    View.OnClickListener backHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+            selectedLayer.cancelNotSavedChanges();
+            
+            mMap.invalidate();
+        }        
+    };
     
+    View.OnClickListener removeHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+            selectedLayer.removeSelected();
+            
+            mMap.invalidate();
+        }        
+    };    
     // classes =================================================================
 }

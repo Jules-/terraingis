@@ -375,6 +375,14 @@ public class Navigator
         return inputValue * zoom;
     }
     
+
+    /**
+     * @return buffer distance by zoom
+     */
+    public double getBufferDistance()
+    {
+        return pxToM(ConvertUnits.dp2px(Settings.DP_RADIUS_CLICK));
+    }
     // static public methods ==============================================================
     
     static public int mpxToZoomLevel(double zoom)

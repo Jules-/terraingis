@@ -21,7 +21,7 @@
             android:id="@+id/button_record_end_object"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/record_end_object"
+            android:contentDescription="@string/button_record_end_object"
             android:visibility="gone"
             android:padding="20dp"
             android:layout_gravity="right"
@@ -31,7 +31,7 @@
             android:id="@+id/button_record_auto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/record_auto_start"
+            android:contentDescription="@string/button_record_auto_start"
             android:visibility="gone"
             android:padding="20dp"
             android:layout_gravity="right"
@@ -41,18 +41,39 @@
             android:id="@+id/button_record_point"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/record_point"
+            android:contentDescription="@string/button_record_point"
             android:visibility="gone"
             android:padding="20dp"
             android:layout_gravity="right"
             android:src="@drawable/button_add_point"/>
 
+        <ImageButton
+            android:id="@+id/button_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/button_back"
+            android:visibility="gone"
+            android:padding="20dp"
+            android:layout_gravity="right"
+            android:src="@drawable/button_back"/>
+        
+        <ImageButton
+            android:id="@+id/button_remove"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/button_remove"
+            android:visibility="gone"
+            android:padding="20dp"
+            android:layout_gravity="right"
+            android:src="@drawable/button_remove"/>
+        
 	    <TextView
 	        android:id="@+id/textView_add_point_coordinates"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:textAppearance="?android:attr/textAppearanceMedium"
 	        android:textColor="@color/coordinates_add_point"
+	        android:layout_gravity="right"
 	        android:visibility="gone" />
         	    
 	    <TextView
@@ -60,6 +81,7 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:textAppearance="?android:attr/textAppearanceMedium"
+	        android:layout_gravity="right"
 	        android:visibility="gone" />
     </LinearLayout>
 
