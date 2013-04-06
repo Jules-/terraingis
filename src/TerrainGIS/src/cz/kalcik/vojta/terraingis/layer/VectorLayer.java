@@ -310,6 +310,39 @@ public abstract class VectorLayer extends AbstractLayer
             vectorLayerData.selectedObjectPoints.clear();
         }
     }
+    
+    /**
+     * check if point is near selected point
+     * @param point
+     * @return
+     */
+    public boolean isNearSelectedPoint(Coordinate point)
+    {
+        if(vectorLayerData.selectedNodeIndex >= 0)
+        {
+            Double distance = vectorLayerData.selectedObjectPoints.get(
+                    vectorLayerData.selectedNodeIndex).distance(point);
+            double bufferDistance = mNavigator.getBufferDistance();
+            
+            return distance < bufferDistance;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * set new position of selected point
+     * position is not cloned
+     * @param position
+     */
+    public void setPositionSelectedPoint(Coordinate position)
+    {
+        if(vectorLayerData.selectedNodeIndex >= 0)
+        {
+            vectorLayerData.selectedObjectPoints.set(
+                    vectorLayerData.selectedNodeIndex, position);
+        }        
+    }
     // public static ============================================================
     
     /**
@@ -493,7 +526,13 @@ public abstract class VectorLayer extends AbstractLayer
      * @param bufferDistance
      */
     private void checkSelectedNode(Coordinate point, Double bufferDistance)
-    {       
+    {
+        if(mType == VectorLayerType.POINT)
+        {
+            vectorLayerData.selectedNodeIndex = 0;
+            return;
+        }
+        
         int size = vectorLayerData.selectedObjectPoints.size();
         double minDistance = bufferDistance;
         int minIndex = -1;
@@ -567,7 +606,7 @@ public abstract class VectorLayer extends AbstractLayer
 
     /**
      * load points of selected object
-     * @param bufferDistance
+     * rowid can not be null
      */
     private void loadSelectedPoints()
     {
@@ -576,9 +615,12 @@ public abstract class VectorLayer extends AbstractLayer
                 mLayerManager.getSrid(), Integer.parseInt(vectorLayerData.selectedRowid));
         vectorLayerData.selectedObjectPoints = new ArrayList<Coordinate>(Arrays.asList(object.getCoordinates()));
         
-        if(mType != VectorLayerType.POINT)
+        if(mType == VectorLayerType.POLYGON)
         {
-            checkSelectedNode(vectorLayerData.clickedPoint, bufferDistance);
+            vectorLayerData.selectedObjectPoints.remove(
+                    vectorLayerData.selectedObjectPoints.size()-1);
         }
+        
+        checkSelectedNode(vectorLayerData.clickedPoint, bufferDistance);
     }
 }

@@ -68,6 +68,7 @@ public class MapView extends SurfaceView
     private TouchStatus mTouchStatus = TouchStatus.IDLE;
     private float mScale;
     private PointF mPivot = new PointF();
+    private boolean mMovingSelectedPoint = false;
     
     // static attributes
     
@@ -190,6 +191,7 @@ public class MapView extends SurfaceView
             
             mTouchPoint.set(e.getX(), e.getY());
             mTouchDiff.set(0, 0);
+            checkTouchPointMoving();
         }
         // pinch down
         else if(action == MotionEvent.ACTION_POINTER_DOWN)
@@ -204,7 +206,7 @@ public class MapView extends SurfaceView
         // moving fingers
         else if(action == MotionEvent.ACTION_MOVE)
         {
-            // moving map
+            // moving
             if(mTouchStatus == TouchStatus.TOUCH)
             {
                 float x = e.getX();
@@ -213,11 +215,15 @@ public class MapView extends SurfaceView
                 float diffX = x - mTouchPoint.x;
                 float diffY = y - mTouchPoint.y;
                 
-                if(Math.abs(diffX - mTouchDiff.x) > 1 || Math.abs(diffY - mTouchDiff.y) > 1)
+                // moving selected point
+                if(mMovingSelectedPoint)
                 {
-                    mTouchDiff.set(diffX, diffY);
-                    
-                    invalidate();
+                    movePoint(x, y);
+                }
+                // moving map
+                else
+                {
+                    moveMap(diffX, diffY);
                 }
             }
             //zooming map
@@ -372,5 +378,61 @@ public class MapView extends SurfaceView
             
             return true;
         }        
+    }
+    
+    /**
+     * @param diffX
+     * @param diffY
+     */
+    private void moveMap(float diffX, float diffY)
+    {
+        if(Math.abs(diffX - mTouchDiff.x) > 1 || Math.abs(diffY - mTouchDiff.y) > 1)
+        {
+            mTouchDiff.set(diffX, diffY);
+            
+            invalidate();
+        }
+    }
+    
+    /**
+     * move selected point to postion
+     * @param x
+     * @param y
+     */
+    private void movePoint(float x, float y)
+    {
+        VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+        if(selectedLayer != null)
+        {
+            Coordinate point = mNavigator.surfacePxToM(new PointF(x, y), null);
+            selectedLayer.setPositionSelectedPoint(point);
+            
+            invalidate();
+        }
+    }
+    
+    /**
+     * check if is moving of point
+     * @param x
+     * @param y
+     */
+    private void checkTouchPointMoving()
+    {
+        mMovingSelectedPoint = false;
+        
+        if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
+                !mMainActivity.isAddPointMode())
+        {
+            VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+            if(selectedLayer != null)
+            {
+                Coordinate point = mNavigator.surfacePxToM(mTouchPoint, null);
+                
+                if(selectedLayer.isNearSelectedPoint(point))
+                {
+                    mMovingSelectedPoint = true;
+                }
+            }
+        }
     }
 }

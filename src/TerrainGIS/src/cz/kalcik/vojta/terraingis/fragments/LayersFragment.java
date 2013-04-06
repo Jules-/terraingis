@@ -25,6 +25,7 @@ import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.MainActivity.ActivityMode;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
@@ -90,6 +91,8 @@ public class LayersFragment extends Fragment
     }
     
     // getter, setter =====================================================
+    
+    // public method ======================================================
     /**
      * when layer is not selected return null
      * @return selected layer
@@ -107,8 +110,23 @@ public class LayersFragment extends Fragment
             return mArrayAdapter.getItem(position);
         }
     }
+
+    /**
+     * @return selected vector layer else null
+     */
+    public VectorLayer getSelectedLayerIfVector()
+    {
+
+        AbstractLayer selectedLayer = getSelectedLayer();
+
+        if(selectedLayer instanceof VectorLayer)
+        {
+            return (VectorLayer)selectedLayer;
+        }
+        
+        return null;
+    }
     
-    // public method ======================================================
     /**
      * remove selected object in selected layer
      */

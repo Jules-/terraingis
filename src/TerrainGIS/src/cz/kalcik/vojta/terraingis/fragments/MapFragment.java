@@ -356,12 +356,15 @@ public class MapFragment extends Fragment
      */
     private void startAutoRecord()
     {
-        mAutoRecordLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
+        VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
         
-        mMainActivity.startService(mServiceIntent);
-        bindAutoRecordService();
-        data.isRunAutoRecord = true;
-        setMapTools();
+        if(selectedLayer != null)
+        {
+            mMainActivity.startService(mServiceIntent);
+            bindAutoRecordService();
+            data.isRunAutoRecord = true;
+            setMapTools();
+        }
     }
     
     /**
@@ -485,51 +488,49 @@ public class MapFragment extends Fragment
         
         
         ActivityMode mode = mMainActivity.getActivityMode();
-        AbstractLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayer();
-        // recording
-        if(mode == ActivityMode.RECORD)
+        VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+
+        // is selected layer
+        if(selectedLayer != null)
         {
-            // is selected layer
-            if(selectedLayer != null)
+            // recording
+            if(mode == ActivityMode.RECORD)
             {
-                if(selectedLayer instanceof VectorLayer)
-                {
-                    VectorLayer selectedVectorLayer = (VectorLayer)selectedLayer;
-                    VectorLayerType type = selectedVectorLayer.getType();
-                    // point button
-                    showPointButton = true;
+                VectorLayerType type = selectedLayer.getType();
+                // point button
+                showPointButton = true;
     
-                    // object button
-                    if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
+                // object button
+                if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
+                {
+                    showAutoButton = true;
+                    if (selectedLayer.haveOpenedRecordObject())
+                    {
+                        showEndObjectButton = true;
+                    }
+                }
+                
+                //run automatic recording
+                if(data.isRunAutoRecord)
+                {
+                    if(selectedLayer instanceof VectorLayer)
                     {
                         showAutoButton = true;
-                        if (selectedVectorLayer.haveOpenedRecordObject())
-                        {
-                            showEndObjectButton = true;
-                        }
                     }
                 }
             }
-            
-            //run automatic recording
-            if(data.isRunAutoRecord)
+            // editing
+            else if(mode == ActivityMode.EDIT)
             {
-                if(selectedLayer instanceof VectorLayer)
+                if(mMainActivity.isAddPointMode())
                 {
-                    showAutoButton = true;
+                    showBackButton = true;
+                    showPointButton = true;
                 }
-            }
-        }
-        else if(mode == ActivityMode.EDIT)
-        {
-            if(mMainActivity.isAddPointMode())
-            {
-                showPointButton = true;
-                showBackButton = true;
-            }
-            else
-            {
-                showRemoveButton = true;
+                else
+                {
+                    showRemoveButton = true;
+                }
             }
         }
         
@@ -642,32 +643,34 @@ public class MapFragment extends Fragment
         @Override
         public synchronized void onClick(View v)
         {
-            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-
-            if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
+            VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+            if(selectedLayer != null)
             {
-                if(!mLocationValid)
+                if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
                 {
-                    Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
-                    return;
-                }            
-                
-                recordInsertPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
-            }
-            else if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
-                    mMainActivity.isAddPointMode())
-            {
-                if(mAddPointLocationM == null)
+                    if(!mLocationValid)
+                    {
+                        Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
+                        return;
+                    }            
+                    
+                    recordInsertPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
+                }
+                else if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
+                        mMainActivity.isAddPointMode())
                 {
-                    Toast.makeText(mMainActivity, R.string.not_selected_position, Toast.LENGTH_LONG).show();
-                    return;                    
+                    if(mAddPointLocationM == null)
+                    {
+                        Toast.makeText(mMainActivity, R.string.not_selected_position, Toast.LENGTH_LONG).show();
+                        return;                    
+                    }
+                    
+                    editInsertPoint(mAddPointLocationM, selectedLayer);
                 }
                 
-                editInsertPoint(mAddPointLocationM, selectedLayer);
+                setMapTools();
+                mMap.invalidate();
             }
-            
-            setMapTools();
-            mMap.invalidate();
         }        
     };
     
@@ -679,24 +682,26 @@ public class MapFragment extends Fragment
         @Override
         public synchronized void onClick(View v)
         {
-            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-
-            try
+            VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+            if(selectedLayer != null)
             {
-                endObject(selectedLayer, InsertObjectType.RECORDING);
-                
-                if(selectedLayer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
+                try
                 {
-                    stopAutoRecord();
+                    endObject(selectedLayer, InsertObjectType.RECORDING);
+                    
+                    if(selectedLayer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
+                    {
+                        stopAutoRecord();
+                    }
                 }
+                catch (CreateObjectException e)
+                {
+                    Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
+                }
+                
+                setMapTools();
+                mMap.invalidate();
             }
-            catch (CreateObjectException e)
-            {
-                Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
-            }
-            
-            setMapTools();
-            mMap.invalidate();
         }        
     };
 
@@ -726,10 +731,13 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-            selectedLayer.cancelNotSavedChanges();
+            VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+            if(selectedLayer != null)
+            {
+                selectedLayer.cancelNotSavedChanges();
             
-            mMap.invalidate();
+                mMap.invalidate();
+            }
         }        
     };
     
@@ -738,10 +746,13 @@ public class MapFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            VectorLayer selectedLayer = (VectorLayer)mMainActivity.getLayersFragment().getSelectedLayer();
-            selectedLayer.removeSelected();
-            
-            mMap.invalidate();
+            VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+            if(selectedLayer != null)
+            {
+                selectedLayer.removeSelected();
+                
+                mMap.invalidate();
+            }
         }        
     };    
     // classes =================================================================

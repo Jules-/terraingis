@@ -25,8 +25,8 @@ public class VectorLayerPaints
     private static final float VALUE_STEP = 0.2f;
     private static final float MIN_VALUE = 0.3f;
     private static final float[] DEFAULT_HSV = {0, 1, 1};
-    private static final int SELECTED_COLOR = Color.YELLOW;
-    private static final int SELECTED_DEFAULT_NODE_COLOR = Color.BLACK;
+    private static final int SELECTED_COLOR = Color.argb(255, 255, 127, 0);
+    private static final int SELECTED_DEFAULT_NODE_COLOR = Color.YELLOW;
     private static final float[] DASHED_PARAMS = {10, 5};
     private final static int TRANCPARENCE_NOTSAVED = 64;
     // static atributes ============================================================

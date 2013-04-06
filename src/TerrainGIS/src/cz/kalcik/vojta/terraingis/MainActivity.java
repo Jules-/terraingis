@@ -289,6 +289,7 @@ public class MainActivity extends AbstractActivity
             if(data.activityMode == ActivityMode.EDIT)
             {
                 getLayersFragment().removeSelectedObject();
+                data.addPointMode = false;
                 startExploreMode();
             }
             else
