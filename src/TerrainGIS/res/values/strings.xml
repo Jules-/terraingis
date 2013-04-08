@@ -64,4 +64,5 @@
     <!-- other -->
     <string name="confirm_remove_message">Really remove %s layer?</string>
     <string name="confirm_remove_object_message">Really remove selected object?</string>
+    <string name="exit_message">Do you want to exit?</string>
 </resources>

@@ -684,6 +684,15 @@ public class SpatiaLiteIO
         
         stmt.step();
     }
+    
+    /**
+     * close database
+     * @throws Exception
+     */
+    public void close() throws Exception
+    {
+        db.close();
+    }
     // private methods =======================================================================
     /**
      * open spatialite database

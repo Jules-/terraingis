@@ -360,7 +360,23 @@ public class MapFragment extends Fragment
         mMainActivity = (MainActivity)activity;
         mServiceIntent = new Intent(mMainActivity, AutoRecordService.class);
     }
-    
+
+    @Override
+    public void onDestroy()
+    {
+        try
+        {
+            mLayerManager.closeDatabase();
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }
+        
+        super.onDestroy();
+    }    
+        
     // private methods ========================================================
 
     /**

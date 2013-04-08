@@ -41,7 +41,7 @@ public class InsertAttributesDialog extends SetAttributesDialog
 
         if(column.name.equals(DATETIME_NAME) && column.type == DATETIME_TYPE)
         {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mmZ", Locale.UK);
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ", Locale.UK);
             return df.format(new Date());
         }
         

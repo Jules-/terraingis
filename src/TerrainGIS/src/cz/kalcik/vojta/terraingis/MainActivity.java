@@ -11,6 +11,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.Settings;
+import cz.kalcik.vojta.terraingis.dialogs.ExitDialog;
 import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.location.LocationWorker;
@@ -263,11 +265,11 @@ public class MainActivity extends AbstractActivity
         {
             if(data.activityMode == ActivityMode.RECORD)
             {
-                startExploreMode();
+                changeMode(ActivityMode.EXPLORE);
             }
             else
             {
-                startRecordMode();
+                changeMode(ActivityMode.RECORD);
             }
         }
         // add point mode
@@ -288,13 +290,11 @@ public class MainActivity extends AbstractActivity
         {
             if(data.activityMode == ActivityMode.EDIT)
             {
-                getLayersFragment().removeSelectedObject();
-                data.addPointMode = false;
-                startExploreMode();
+                changeMode(ActivityMode.EXPLORE);
             }
             else
             {
-                startEditMode();
+                changeMode(ActivityMode.EDIT);
             }
         }
         // hide icon
@@ -361,8 +361,27 @@ public class MainActivity extends AbstractActivity
         setActionBarIcons();
     }
     
-    // private methods ========================================================
     
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            if(mLayersLayout.isShown())
+            {
+                hideLayersFragment();
+            }
+            else
+            {
+                ExitDialog dialog = new ExitDialog();
+                dialog.setMessage(getString(R.string.exit_message));
+                showDialog(dialog);
+            }
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+    // private methods ========================================================
+
     /**
      * timer for hidding ActionBar
      */
@@ -453,7 +472,7 @@ public class MainActivity extends AbstractActivity
     {
         if(data.activityMode == ActivityMode.RECORD)
         {
-            startExploreMode();
+            changeMode(ActivityMode.EXPLORE);
         }
         
         mLocationWorker.stop();
@@ -461,32 +480,25 @@ public class MainActivity extends AbstractActivity
         mMapFragment.stopLocation();        
     }
     
-    /**
-     * start record mode of activity
-     */
-    private void startRecordMode()
+    private void changeMode(ActivityMode mode)
     {
-        data.activityMode = ActivityMode.RECORD;
-        if(!mLocationWorker.isRunLocation())
+        // old mode
+        if(data.activityMode == ActivityMode.EDIT)
         {
-            startLocation();
+            getLayersFragment().removeSelectedObject();
+            data.addPointMode = false;
         }
-    }
-
-    /**
-     * start explore mode of activity
-     */
-    private void startExploreMode()
-    {
-        data.activityMode = ActivityMode.EXPLORE;
-    }
-
-    /**
-     * start edit mode of activity
-     */
-    private void startEditMode()
-    {
-        data.activityMode = ActivityMode.EDIT;
+        
+        data.activityMode = mode;
+        
+        // new mode
+        if(data.activityMode == ActivityMode.RECORD)
+        {
+            if(!mLocationWorker.isRunLocation())
+            {
+                startLocation();
+            }
+        }
     }
     
     /**

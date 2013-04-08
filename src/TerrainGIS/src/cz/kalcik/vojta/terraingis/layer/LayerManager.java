@@ -260,6 +260,15 @@ public class LayerManager
         
         return null;
     }
+    
+    /**
+     * close database
+     * @throws Exception
+     */
+    public void closeDatabase() throws Exception
+    {
+        spatialiteManager.close();
+    }
     // getter setter =======================================================================
     
     /**
