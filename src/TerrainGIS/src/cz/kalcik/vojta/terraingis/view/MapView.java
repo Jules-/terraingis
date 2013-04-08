@@ -366,11 +366,13 @@ public class MapView extends SurfaceView
         @Override
         public boolean onSingleTapUp(MotionEvent arg0) 
         {
-            if(mTouchPoint.y <= mMainActivity.getActionBarHeight())
+            int size = ConvertUnits.dp2px(Settings.DP_SIZE_SIDE_CLICK);
+            
+            if(mTouchPoint.y <= size)
             {
                 mMainActivity.showActionBar();
             }
-            else if(mTouchPoint.x <= mMainActivity.getActionBarHeight() && mMainActivity.isHiddenLayersFragment())
+            else if(mTouchPoint.x <= size && mMainActivity.isHiddenLayersFragment())
             {
                 mMainActivity.showLayersFragment();
             }

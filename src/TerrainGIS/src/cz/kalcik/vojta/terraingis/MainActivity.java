@@ -134,14 +134,6 @@ public class MainActivity extends AbstractActivity
     // getter, setter =====================================================
     
     /**
-     * @return height of ActionBar
-     */
-    public int getActionBarHeight()
-    {
-        return getActionBar().getHeight();
-    }
-    
-    /**
      * check if LayersFragment is hidden
      * @return
      */

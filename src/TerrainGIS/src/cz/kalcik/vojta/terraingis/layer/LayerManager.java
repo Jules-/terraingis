@@ -27,6 +27,7 @@ import cz.kalcik.vojta.terraingis.view.MapView;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -157,6 +158,7 @@ public class LayerManager
         {
             Toast.makeText(context, R.string.database_error,
                     Toast.LENGTH_LONG).show();
+            Log.d("TerrainGIS", e.getMessage());
         }
         addTilesLayer(context, map);
     }
