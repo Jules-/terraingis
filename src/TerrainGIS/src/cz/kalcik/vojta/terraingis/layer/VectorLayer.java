@@ -348,9 +348,20 @@ public abstract class VectorLayer extends AbstractLayer
         }        
     }
     
+    /**
+     * @return true if recorded object has enough points
+     */
     public boolean hasRecordedObjectEnoughPoints()
     {
         return vectorLayerData.recordedPoints.size() >= getMinCountPoints();
+    }
+
+    /**
+     * @return true if selected object has enough points
+     */
+    public boolean hasSelectedObjectEnoughPoints()
+    {
+        return vectorLayerData.selectedObjectPoints.size() >= getMinCountPoints();
     }
     
     // getter, setter =========================================================
@@ -589,17 +600,30 @@ public abstract class VectorLayer extends AbstractLayer
             
             if(vectorLayerData.selectedRowid == null)
             {
-                mMapFragment.endObject(this, InsertObjectType.EDITING);
+                if(hasSelectedObjectEnoughPoints())
+                {
+                    mMapFragment.endObject(this, InsertObjectType.EDITING);
+                }
+                else
+                {
+                    vectorLayerData.selectedObjectPoints.clear();
+                }
             }
             else if(vectorLayerData.selectedRowid != null)
-            {
-                Geometry geometry = createGeometry(vectorLayerData.selectedObjectPoints, mType);
-                
+            {                
                 try
                 {
-                    mSpatialite.updateObject(data.name, mGeometryColumn,
-                            Integer.parseInt(vectorLayerData.selectedRowid), geometry,
-                            mSrid, mLayerManager.getSrid());
+                    if(hasSelectedObjectEnoughPoints())
+                    {
+                        Geometry geometry = createGeometry(vectorLayerData.selectedObjectPoints, mType);
+                        mSpatialite.updateObject(data.name, mGeometryColumn,
+                                Integer.parseInt(vectorLayerData.selectedRowid), geometry,
+                                mSrid, mLayerManager.getSrid());
+                    }
+                    else
+                    {
+                        mSpatialite.removeObject(data.name, Integer.parseInt(vectorLayerData.selectedRowid));
+                    }
                 }
                 catch (Exception e)
                 {
