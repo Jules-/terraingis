@@ -2,8 +2,11 @@ package cz.kalcik.vojta.terraingis.components;
 
 import java.util.ArrayList;
 
+import jsqlite.Exception;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.io.ParseException;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -70,8 +73,11 @@ public class Navigator
      * set position by longitude and latitude
      * @param lon
      * @param lat
+     * @throws ParseException 
+     * @throws Exception 
      */
     public void setLonLatPosition(double lon, double lat)
+            throws Exception, ParseException
     {
         setLonLatPosition(new Coordinate(lon, lat));
     }
@@ -79,8 +85,11 @@ public class Navigator
     /**
      * set position by longitude and latitude
      * @param lonLatPosition
+     * @throws ParseException 
+     * @throws Exception 
      */
     public void setLonLatPosition(Coordinate lonLatPosition)
+            throws Exception, ParseException
     {
         positionM = layerManager.lonLatWGS84ToM(lonLatPosition);
         updateDuplicateAttributes();
@@ -424,30 +433,6 @@ public class Navigator
         output.y = pxToM(input.y);
         
         return output;
-    }
-
-    /**
-     * convert px coordinates to longitude latitude coordinates
-     * @param input
-     * @param output
-     * @return
-     */
-    private Coordinate pxToLonLat(Coordinate input)
-    {
-        return layerManager.mToLonLatWGS84(pxToM(input, null));
-    }
-    
-    /**
-     * convert longitude latitude coordinates to px coordinates
-     * @param input
-     * @param output
-     * @return
-     */
-    private Coordinate lonLatToPx(Coordinate input, Coordinate output)
-    {
-        Coordinate meters = layerManager.lonLatWGS84ToM(input);
-        
-        return mToPx(meters, output);
     }
     
     /**

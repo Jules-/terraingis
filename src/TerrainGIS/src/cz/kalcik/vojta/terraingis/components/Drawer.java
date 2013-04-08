@@ -3,6 +3,7 @@
  */
 package cz.kalcik.vojta.terraingis.components;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -44,7 +45,7 @@ public class Drawer
      * @param width
      * @param height
      */
-    public void draw(Canvas canvas, int width, int height)
+    public void draw(Canvas canvas, int width, int height, Context context)
     {
         Rect screen = mNavigator.getScreen();
         
@@ -54,7 +55,7 @@ public class Drawer
             mNavigator.setScreen(screen);
         }
         
-        mLayerManager.redraw(canvas, mNavigator.getMRectangle(null));
+        mLayerManager.redraw(canvas, mNavigator.getMRectangle(null), context);
     }   
     
     /**

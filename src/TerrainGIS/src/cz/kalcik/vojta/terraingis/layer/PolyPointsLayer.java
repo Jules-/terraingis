@@ -3,6 +3,7 @@
  */
 package cz.kalcik.vojta.terraingis.layer;
 
+import jsqlite.Exception;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
@@ -10,6 +11,7 @@ import android.graphics.PointF;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
@@ -27,7 +29,7 @@ public abstract class PolyPointsLayer extends VectorLayer
     protected Paint mStrokePolygonPaint;
     
     public PolyPointsLayer(VectorLayerType type, String name, int srid,
-            SpatiaLiteIO spatialite, MapFragment mapFragment)
+            SpatiaLiteIO spatialite, MapFragment mapFragment) throws Exception
     {
         super(type, name, srid, spatialite, mapFragment);
         
@@ -38,9 +40,12 @@ public abstract class PolyPointsLayer extends VectorLayer
 
     /**
      * draw objects to canvas
+     * @throws ParseException 
+     * @throws Exception 
      */
     @Override
     public void draw(Canvas canvas, Envelope rect)
+            throws Exception, ParseException
     {
         // saved objects
         SpatialiteGeomIterator iter = getObjects(rect);

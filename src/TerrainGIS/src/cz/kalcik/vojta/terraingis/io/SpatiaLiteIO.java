@@ -46,8 +46,9 @@ public class SpatiaLiteIO
     /**
      * constructor
      * @param path
+     * @throws Exception 
      */
-    public SpatiaLiteIO(String path)
+    public SpatiaLiteIO(String path) throws Exception
     {
     	open(path);
     }
@@ -55,29 +56,24 @@ public class SpatiaLiteIO
     /**
      * get all layers in spatialite database
      * @return list of Layers
+     * @throws Exception 
      */
-    public ArrayList<Layer> getLayers()
+    public ArrayList<Layer> getLayers() throws Exception
     {
     	ArrayList<Layer> list = new ArrayList<Layer>();
     	
     	String query = "SELECT f_table_name, type, srid FROM geometry_columns";
-        try
-        {
-    		Stmt stmt = db.prepare(query);
-    		while(stmt.step())
-    		{
-    			Layer layer = new Layer();
-    			layer.name = stmt.column_string(0);
-    			layer.type = stmt.column_string(1);
-    			layer.srid = stmt.column_int(2);
-    			list.add(layer);
-    		}
-    		stmt.close();
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+
+		Stmt stmt = db.prepare(query);
+		while(stmt.step())
+		{
+			Layer layer = new Layer();
+			layer.name = stmt.column_string(0);
+			layer.type = stmt.column_string(1);
+			layer.srid = stmt.column_int(2);
+			list.add(layer);
+		}
+		stmt.close();
     	
     	return list;
     }
@@ -85,32 +81,27 @@ public class SpatiaLiteIO
     /**
      * get layer from spatialite db by name
      * @return list of Layers
+     * @throws Exception 
      */
-    public Layer getLayer(String name)
+    public Layer getLayer(String name) throws Exception
     {
         Layer result = null;
         
         String query = "SELECT f_table_name, type, srid FROM geometry_columns " +
         		"WHERE f_table_name = ?";
-        try
+
+        Stmt stmt = db.prepare(query);
+        stmt.bind(1, name);
+        
+        if(stmt.step())
         {
-            Stmt stmt = db.prepare(query);
-            stmt.bind(1, name);
-            
-            if(stmt.step())
-            {
-                result = new Layer();
-                result.name = stmt.column_string(0);
-                result.type = stmt.column_string(1);
-                result.srid = stmt.column_int(2);
-            }
-            
-            stmt.close();
+            result = new Layer();
+            result.name = stmt.column_string(0);
+            result.type = stmt.column_string(1);
+            result.srid = stmt.column_int(2);
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        
+        stmt.close();
         
         return result;
     }
@@ -119,26 +110,21 @@ public class SpatiaLiteIO
      * check if layer have index
      * @param name
      * @return
+     * @throws Exception 
      */
-    public boolean indexEnabled(String name)
+    public boolean indexEnabled(String name) throws Exception
     {
         boolean result = false;
         
         Stmt stmt;
-        try
+
+        stmt = db.prepare("SELECT spatial_index_enabled FROM geometry_columns WHERE f_table_name = ?");
+        stmt.bind(1, name);
+        if(stmt.step())
         {
-            stmt = db.prepare("SELECT spatial_index_enabled FROM geometry_columns WHERE f_table_name = ?");
-            stmt.bind(1, name);
-            if(stmt.step())
-            {
-                result = (stmt.column_int(0) == 1);
-            }
-            stmt.close();
+            result = (stmt.column_int(0) == 1);
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        stmt.close();
         
         return result;
     }
@@ -147,48 +133,42 @@ public class SpatiaLiteIO
      * return envelope of layer
      * @param name
      * @return
+     * @throws Exception 
      */
-    public Envelope getEnvelopeLayer(String name, String column, boolean useRTree)
+    public Envelope getEnvelopeLayer(String name, String column, boolean useRTree) throws Exception
     {
         Envelope result = null;
         
-        try
-        {
-            String[] args = {name};
-            
-            Stmt stmt;
+        String[] args = {name};
+        
+        Stmt stmt;
 
-            if(useRTree)
-            {
-                // TODO use idx_table_column_node
-                String cmd = String.format("SELECT MIN(xmin) As xmin, MAX(xmax) As xmax, " +
-                        "MIN(ymin) As ymin, MAX(ymax) As ymax "+
-                        "FROM \"idx_%s_%s\"", name, column);
-                stmt = db.prepare(cmd);
-            }
-            else
-            {
-                db.exec("SELECT UpdateLayerStatistics('%q')", null, args);
-                
-                stmt = db.prepare("SELECT extent_min_x, extent_max_x, extent_min_y, extent_max_y " +
-                                  "from LAYER_STATISTICS where table_name=?");
-                stmt.bind(1, name);
-            }
-            
-            if(stmt.step())
-            {
-                result = new Envelope(stmt.column_double(0),
-                        stmt.column_double(1),
-                        stmt.column_double(2),
-                        stmt.column_double(3));
-            }
-            
-            stmt.close();
-        }
-        catch (Exception e)
+        if(useRTree)
         {
-            Log.e("TerrainGIS", e.getMessage());
+            // TODO use idx_table_column_node
+            String cmd = String.format("SELECT MIN(xmin) As xmin, MAX(xmax) As xmax, " +
+                    "MIN(ymin) As ymin, MAX(ymax) As ymax "+
+                    "FROM \"idx_%s_%s\"", name, column);
+            stmt = db.prepare(cmd);
         }
+        else
+        {
+            db.exec("SELECT UpdateLayerStatistics('%q')", null, args);
+            
+            stmt = db.prepare("SELECT extent_min_x, extent_max_x, extent_min_y, extent_max_y " +
+                              "from LAYER_STATISTICS where table_name=?");
+            stmt.bind(1, name);
+        }
+        
+        if(stmt.step())
+        {
+            result = new Envelope(stmt.column_double(0),
+                    stmt.column_double(1),
+                    stmt.column_double(2),
+                    stmt.column_double(3));
+        }
+        
+        stmt.close();
         
         return result;        
     }
@@ -199,48 +179,38 @@ public class SpatiaLiteIO
      * @param from
      * @param to
      * @return
+     * @throws Exception 
+     * @throws ParseException 
      */
     public ArrayList<Coordinate> transformSRS(ArrayList<Coordinate> points, int from, int to)
+            throws Exception, ParseException
     {
         if(from == to)
         {
             return (ArrayList<Coordinate>)points.clone();
         }
         
-        try
-        {            
-            Stmt stmt = db.prepare("SELECT AsBinary(Transform(MakePoint(?, ?, ?), ?))");
-            
-            ArrayList<Coordinate> result = new ArrayList<Coordinate>();
-            for(Coordinate point: points)
+        Stmt stmt = db.prepare("SELECT AsBinary(Transform(MakePoint(?, ?, ?), ?))");
+        
+        ArrayList<Coordinate> result = new ArrayList<Coordinate>();
+        for(Coordinate point: points)
+        {
+            stmt.bind(1, point.x);
+            stmt.bind(2, point.y);
+            stmt.bind(3, from);
+            stmt.bind(4, to);
+            if(stmt.step())
             {
-                stmt.bind(1, point.x);
-                stmt.bind(2, point.y);
-                stmt.bind(3, from);
-                stmt.bind(4, to);
-                if(stmt.step())
-                {
-                    result.add(wkbReader.read(stmt.column_bytes(0)).getCoordinate());
-                }
-                
-                stmt.clear_bindings();
-                stmt.reset();
+                result.add(wkbReader.read(stmt.column_bytes(0)).getCoordinate());
             }
             
-            stmt.close();
-            
-            return result;
-        }
-        catch (ParseException e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
+            stmt.clear_bindings();
+            stmt.reset();
         }
         
-        return null;         
+        stmt.close();
+        
+        return result;        
     }
  
     /**
@@ -249,8 +219,11 @@ public class SpatiaLiteIO
      * @param from
      * @param to
      * @return
+     * @throws Exception 
+     * @throws ParseException 
      */
     public Coordinate transformSRS(Coordinate point, int from, int to)
+            throws Exception, ParseException
     {
         Coordinate result = null;
         
@@ -258,29 +231,18 @@ public class SpatiaLiteIO
         {
             return (Coordinate)point.clone();
         }
+                 
+        Stmt stmt = db.prepare("SELECT AsBinary(Transform(MakePoint(?, ?, ?), ?))");
         
-        try
-        {            
-            Stmt stmt = db.prepare("SELECT AsBinary(Transform(MakePoint(?, ?, ?), ?))");
-            
-            stmt.bind(1, point.x);
-            stmt.bind(2, point.y);
-            stmt.bind(3, from);
-            stmt.bind(4, to);
-            if(stmt.step())
-            {
-                result = wkbReader.read(stmt.column_bytes(0)).getCoordinate();
-            }
-            stmt.close();
-        }
-        catch (ParseException e)
+        stmt.bind(1, point.x);
+        stmt.bind(2, point.y);
+        stmt.bind(3, from);
+        stmt.bind(4, to);
+        if(stmt.step())
         {
-            Log.e("TerrainGIS", e.getMessage());
+            result = wkbReader.read(stmt.column_bytes(0)).getCoordinate();
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        stmt.close();
         
         return result;         
     }
@@ -291,8 +253,11 @@ public class SpatiaLiteIO
      * @param from
      * @param to
      * @return
+     * @throws Exception 
+     * @throws ParseException 
      */
     public Envelope transformSRSEnvelope(Envelope envelope, int from, int to)
+            throws Exception, ParseException
     {
         Envelope result = null;
         
@@ -301,33 +266,22 @@ public class SpatiaLiteIO
             return new Envelope(envelope.getMinX(), envelope.getMaxX(),
                                 envelope.getMinY(), envelope.getMaxY());
         }
+                  
+        Stmt stmt = db.prepare("SELECT AsBinary(Transform(BuildMbr(?, ?, ?, ?, ?), ?))");
         
-        try
-        {            
-            Stmt stmt = db.prepare("SELECT AsBinary(Transform(BuildMbr(?, ?, ?, ?, ?), ?))");
-            
-            stmt.bind(1, envelope.getMinX());
-            stmt.bind(2, envelope.getMinY());
-            stmt.bind(3, envelope.getMaxX());
-            stmt.bind(4, envelope.getMaxY());
-            stmt.bind(5, from);
-            stmt.bind(6, to);
-            
-            if(stmt.step())
-            {
-                result = wkbReader.read(stmt.column_bytes(0)).getEnvelope().getEnvelopeInternal();
-            }
-            
-            stmt.close();
-        }
-        catch (ParseException e)
+        stmt.bind(1, envelope.getMinX());
+        stmt.bind(2, envelope.getMinY());
+        stmt.bind(3, envelope.getMaxX());
+        stmt.bind(4, envelope.getMaxY());
+        stmt.bind(5, from);
+        stmt.bind(6, to);
+        
+        if(stmt.step())
         {
-            Log.e("TerrainGIS", e.getMessage());
+            result = wkbReader.read(stmt.column_bytes(0)).getEnvelope().getEnvelopeInternal();
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        
+        stmt.close();
         
         return result;
     }
@@ -341,26 +295,20 @@ public class SpatiaLiteIO
      * @param outputSrid
      * @param useRTree
      * @return
+     * @throws Exception 
+     * @throws ParseException 
      */
     public SpatialiteGeomIterator getObjects(Envelope envelope, String name, String column,
                                           int layerSrid, int outputSrid, boolean useRTree)
+                                                  throws Exception, ParseException
     {
-        try
-        {
-            String cmd = String.format("SELECT ROWID, AsBinary(Transform(\"%s\", ?)) " +
-            		"FROM \"%s\" WHERE %s", column, name, getObjectCondition(
-            		        envelope, name, column, layerSrid, outputSrid, useRTree));
-            Stmt stmt = db.prepare(cmd);;
-            stmt.bind(1, outputSrid);
-            
-            return new SpatialiteGeomIterator(stmt);
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        String cmd = String.format("SELECT ROWID, AsBinary(Transform(\"%s\", ?)) " +
+        		"FROM \"%s\" WHERE %s", column, name, getObjectCondition(
+        		        envelope, name, column, layerSrid, outputSrid, useRTree));
+        Stmt stmt = db.prepare(cmd);;
+        stmt.bind(1, outputSrid);
         
-        return null;
+        return new SpatialiteGeomIterator(stmt);
     }
     
     /**
@@ -370,34 +318,27 @@ public class SpatiaLiteIO
      * @param outputSrid
      * @param rowid
      * @return
+     * @throws Exception 
+     * @throws ParseException 
      */
     public Geometry getObject(String name, String column, int outputSrid, int rowid)
+            throws Exception, ParseException
     {
         Geometry result = null;
         
-        try
+
+        String cmd = String.format("SELECT AsBinary(Transform(\"%s\", ?)) " +
+        "FROM \"%s\" WHERE ROWID = ?", column, name);
+        Stmt stmt = db.prepare(cmd);;
+        stmt.bind(1, outputSrid);
+        stmt.bind(2, rowid);
+        
+        if(stmt.step())
         {
-            String cmd = String.format("SELECT AsBinary(Transform(\"%s\", ?)) " +
-            "FROM \"%s\" WHERE ROWID = ?", column, name);
-            Stmt stmt = db.prepare(cmd);;
-            stmt.bind(1, outputSrid);
-            stmt.bind(2, rowid);
-            
-            if(stmt.step())
-            {
-                result = wkbReader.read(stmt.column_bytes(0));
-            }
-            
-            stmt.close();
+            result = wkbReader.read(stmt.column_bytes(0));
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
-        catch (ParseException e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        
+        stmt.close();
         
         return result;
     }
@@ -406,25 +347,19 @@ public class SpatiaLiteIO
      * get name of column with geometry
      * @param name
      * @return
+     * @throws Exception 
      */
-    public String getColumnGeom(String name)
+    public String getColumnGeom(String name) throws Exception
     {
         String result = null;
         
-        try
+        Stmt stmt = db.prepare("SELECT f_geometry_column FROM geometry_columns WHERE f_table_name = ?");
+        stmt.bind(1, name);
+        if(stmt.step())
         {
-            Stmt stmt = db.prepare("SELECT f_geometry_column FROM geometry_columns WHERE f_table_name = ?");
-            stmt.bind(1, name);
-            if(stmt.step())
-            {
-                result = stmt.column_string(0);
-            }
-            stmt.close();
+            result = stmt.column_string(0);
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        stmt.close();
         
         return result;        
     }
@@ -435,68 +370,56 @@ public class SpatiaLiteIO
      * @param name
      * @param column
      * @param srid
+     * @throws Exception 
      */
     public void insertObject(Geometry geom, String name, String column, int inputSrid, int tableSrid,
-            AttributeHeader header, AttributeRecord attributesValues, boolean usePK)
+            AttributeHeader header, AttributeRecord attributesValues, boolean usePK) throws Exception
     {
-        try
-        {
-            Stmt stmt = prepareInsert(name, column, inputSrid, tableSrid, header, usePK);
-            insertObject(stmt, geom, attributesValues, usePK);
-            
-            stmt.close();
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }    
+        Stmt stmt = prepareInsert(name, column, inputSrid, tableSrid, header, usePK);
+        insertObject(stmt, geom, attributesValues, usePK);
+        
+        stmt.close(); 
     }
 
     /**
      * insert geometry (can be reused)
      * @param stmt
      * @param geom
+     * @throws Exception 
      */
-    public void insertObject(Stmt stmt, Geometry geom, AttributeRecord attributes, boolean usePK)
+    public void insertObject(Stmt stmt, Geometry geom, AttributeRecord attributes, boolean usePK) throws Exception
     {
-        try
+        stmt.bind(1, mWKBWriter.write(geom));
+        String[] values = usePK ? attributes.getValues() : attributes.getValues();
+        int count = values.length;
+        int bindIndex = 2;
+        for (int i = 0; i < count; i++)
         {
-            stmt.bind(1, mWKBWriter.write(geom));
-            String[] values = usePK ? attributes.getValues() : attributes.getValues();
-            int count = values.length;
-            int bindIndex = 2;
-            for (int i = 0; i < count; i++)
+            if(!usePK && attributes.isColumnPK(i))
             {
-                if(!usePK && attributes.isColumnPK(i))
-                {
-                    continue;
-                }
-                
-                AttributeType type = attributes.getColumnType(i);
-                if(values[i] == null || type == AttributeType.TEXT)
-                {
-                    stmt.bind(bindIndex, values[i]);
-                }
-                else if(type == AttributeType.INTEGER)
-                {
-                    stmt.bind(bindIndex, Integer.parseInt(values[i]));
-                }
-                else if(type == AttributeType.REAL)
-                {
-                    stmt.bind(bindIndex, Double.parseDouble(values[i]));
-                }
-                
-                bindIndex++;
+                continue;
             }
-            stmt.step();
             
-            stmt.clear_bindings();
-            stmt.reset();
+            AttributeType type = attributes.getColumnType(i);
+            if(values[i] == null || type == AttributeType.TEXT)
+            {
+                stmt.bind(bindIndex, values[i]);
+            }
+            else if(type == AttributeType.INTEGER)
+            {
+                stmt.bind(bindIndex, Integer.parseInt(values[i]));
+            }
+            else if(type == AttributeType.REAL)
+            {
+                stmt.bind(bindIndex, Double.parseDouble(values[i]));
+            }
+            
+            bindIndex++;
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }    
+        stmt.step();
+        
+        stmt.clear_bindings();
+        stmt.reset();   
     }
     
     /**
@@ -525,134 +448,105 @@ public class SpatiaLiteIO
      * @param geometryColumn
      * @param type
      * @param srid
+     * @throws Exception 
      */
-    public void createEmptyLayer(String name, String type, String columns, int srid)
+    public void createEmptyLayer(String name, String type, String columns, int srid) throws Exception
     {
         String[] argsTable = {name};
         String[] argsGeom = {name, GEOMETRY_COLUMN_NAME, Integer.toString(srid), type};
         String[] argsIndex = {name, GEOMETRY_COLUMN_NAME};
         
-        try
-        {
-            String query = "CREATE TABLE \"%q\" " + columns;
-            db.exec(query, null, argsTable);
-            db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
-            db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+
+        String query = "CREATE TABLE \"%q\" " + columns;
+        db.exec(query, null, argsTable);
+        db.exec("SELECT AddGeometryColumn('%q', '%q', %q, '%q', 'XY')", null, argsGeom);
+        db.exec("SELECT CreateSpatialIndex('%q', '%q')", null, argsIndex);
     }
     
     /**
      * remove layer from spatialite db
      * @param name
      * @param geometryColumn
+     * @throws Exception 
      */
-    public void removeLayer(String name, String geometryColumn, boolean hasIndex)
+    public void removeLayer(String name, String geometryColumn, boolean hasIndex) throws Exception
     {
         String[] argsTable = {name};
         String[] argsGeom = {name, geometryColumn};
         
-        try
+        if(hasIndex)
         {
-            if(hasIndex)
-            {
-                db.exec("SELECT DisableSpatialIndex('%q', '%q');", null, argsGeom);
-                db.exec("DROP TABLE \"idx_%q_%q\";", null, argsGeom);
-            }
-            db.exec("SELECT DiscardGeometryColumn('%q', '%q');", null, argsGeom);
-            db.exec("DROP TABLE \"%q\";", null, argsTable);
-            db.exec("VACUUM;", null, argsTable);
+            db.exec("SELECT DisableSpatialIndex('%q', '%q');", null, argsGeom);
+            db.exec("DROP TABLE \"idx_%q_%q\";", null, argsGeom);
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        db.exec("SELECT DiscardGeometryColumn('%q', '%q');", null, argsGeom);
+        db.exec("DROP TABLE \"%q\";", null, argsTable);
+        db.exec("VACUUM;", null, argsTable);
     }
     
     /**
      * @param name of table
      * @return attribute table
+     * @throws Exception 
      */
-    public AttributeHeader getAttributeTable(String name)
+    public AttributeHeader getAttributeTable(String name) throws Exception
     {
         AttributeHeader result = new AttributeHeader();
 
-        try
+        Stmt stmt = db.prepare(String.format("PRAGMA table_info('%s');", name));
+        
+        while(stmt.step())
         {
-            Stmt stmt = db.prepare(String.format("PRAGMA table_info('%s');", name));
+            //  0  |  1   |   2  |    3    |     4      | 5
+            // cid | name | type | notnull | dflt_value | pk
             
-            while(stmt.step())
+            boolean isPK = (stmt.column_int(5) == 1);
+            AttributeType type = AttributeType.getTypeSpatialite(stmt.column_string(2));
+            if(type != null)
             {
-                //  0  |  1   |   2  |    3    |     4      | 5
-                // cid | name | type | notnull | dflt_value | pk
+                String nameColumn = stmt.column_string(1);
                 
-                boolean isPK = (stmt.column_int(5) == 1);
-                AttributeType type = AttributeType.getTypeSpatialite(stmt.column_string(2));
-                if(type != null)
-                {
-                    String nameColumn = stmt.column_string(1);
-                    
-                    result.addColumn(nameColumn, type, isPK);
-                }
+                result.addColumn(nameColumn, type, isPK);
             }
-            
-            stmt.close();
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        
+        stmt.close();
         
         return result;
     }
     
     /**
      * Initialize spatialite DB
+     * @throws Exception 
      */
-    public void initDB()
+    public void initDB() throws Exception
     {
-        try
-        {
-            db.exec("SELECT InitSpatialMetaData();", null, null);
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }        
+        db.exec("SELECT InitSpatialMetaData();", null, null);       
     }
     
     /**
      * @param filter names
      * @return SRS names
+     * @throws Exception 
      */
-    public ArrayList<SpatialiteSRS> findSRSByName(String name)
+    public ArrayList<SpatialiteSRS> findSRSByName(String name) throws Exception
     {
         ArrayList<SpatialiteSRS> result = new ArrayList<SpatialiteSRS>();
         
-        try
+        Stmt stmt = db.prepare("SELECT srid, ref_sys_name FROM spatial_ref_sys " +
+        		"WHERE ref_sys_name LIKE ? ORDER BY ref_sys_name");
+        
+        stmt.bind(1, "%"+name+"%");
+        
+        while(stmt.step())
         {
-            Stmt stmt = db.prepare("SELECT srid, ref_sys_name FROM spatial_ref_sys " +
-            		"WHERE ref_sys_name LIKE ? ORDER BY ref_sys_name");
-            
-            stmt.bind(1, "%"+name+"%");
-            
-            while(stmt.step())
-            {
-                SpatialiteSRS item = new SpatialiteSRS();
-                item.srid = stmt.column_int(0);
-                item.name = stmt.column_string(1);
-                result.add(item);
-            }
-            
-            stmt.close();
+            SpatialiteSRS item = new SpatialiteSRS();
+            item.srid = stmt.column_int(0);
+            item.name = stmt.column_string(1);
+            result.add(item);
         }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        
+        stmt.close();
         
         return result;
     }
@@ -662,23 +556,16 @@ public class SpatiaLiteIO
      * @param name
      * @param header
      * @return
+     * @throws Exception 
      */
     public Iterator<String[]> getAttributes(String name, AttributeHeader header)
+            throws Exception
     {
-        try
-        {
-            String query = String.format("SELECT ROWID, %s FROM \"%s\"",
-                    header.getComaNameColumns(true, false), name);
-            Stmt stmt = db.prepare(query);
-            
-            return new SpatialiteAttributesIterator(stmt, header.getCountColumns());
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
-        }
+        String query = String.format("SELECT ROWID, %s FROM \"%s\"",
+                header.getComaNameColumns(true, false), name);
+        Stmt stmt = db.prepare(query);
         
-        return null;        
+        return new SpatialiteAttributesIterator(stmt, header.getCountColumns());       
     }
     
     /**
@@ -735,45 +622,41 @@ public class SpatiaLiteIO
      * @param point - in outputSrid projection
      * @param bufferDistance - in units of outputSrid projection
      * @return ROWID of object 
+     * @throws Exception 
+     * @throws ParseException 
      */
     public String getRowidNearCoordinate(Envelope envelope, String name, String column,
             int layerSrid, int mapSrid, boolean useRTree, Coordinate point, double bufferDistance)
+                    throws Exception, ParseException
     {
         String result = null;
         
-        try
+        String columnBufferCondition;
+        if(layerSrid != mapSrid)
         {
-            String columnBufferCondition;
-            if(layerSrid != mapSrid)
-            {
-                columnBufferCondition = String.format(Locale.UK, "Transform(\"%s\", %d)", column, mapSrid);
-            }
-            else
-            {
-                columnBufferCondition = "\""+column+"\"";
-            }
-            
-            String cmd = String.format(Locale.UK, "SELECT ROWID FROM \"%s\" WHERE " +
-            		"%s AND Intersects(Buffer(%s, ?), MakePoint(?, ?, ?)) = 1", name,
-            		getObjectCondition(envelope, name, column, layerSrid, mapSrid, useRTree),
-            		columnBufferCondition);
-            Stmt stmt = db.prepare(cmd);
-            stmt.bind(1, bufferDistance);
-            stmt.bind(2, point.x);
-            stmt.bind(3, point.y);
-            stmt.bind(4, mapSrid);
-            
-            if(stmt.step())
-            {
-                result = stmt.column_string(0);
-            }
-            
-            stmt.close();
+            columnBufferCondition = String.format(Locale.UK, "Transform(\"%s\", %d)", column, mapSrid);
         }
-        catch (Exception e)
+        else
         {
-            Log.e("TerrainGIS", e.getMessage());
+            columnBufferCondition = "\""+column+"\"";
         }
+        
+        String cmd = String.format(Locale.UK, "SELECT ROWID FROM \"%s\" WHERE " +
+        		"%s AND Intersects(Buffer(%s, ?), MakePoint(?, ?, ?)) = 1", name,
+        		getObjectCondition(envelope, name, column, layerSrid, mapSrid, useRTree),
+        		columnBufferCondition);
+        Stmt stmt = db.prepare(cmd);
+        stmt.bind(1, bufferDistance);
+        stmt.bind(2, point.x);
+        stmt.bind(3, point.y);
+        stmt.bind(4, mapSrid);
+        
+        if(stmt.step())
+        {
+            result = stmt.column_string(0);
+        }
+        
+        stmt.close();
         
         return result;
     }
@@ -805,28 +688,23 @@ public class SpatiaLiteIO
     /**
      * open spatialite database
      * @param path
+     * @throws Exception 
      */
-    private void open(String path)
+    private void open(String path) throws Exception
     {
         File spatialDbFile = new File(path);
         
         db = new Database();
-        try
+
+        File file = new File(path);
+        boolean exist = file.exists();
+        
+        db.open(spatialDbFile.getAbsolutePath(), Constants.SQLITE_OPEN_READWRITE | Constants.SQLITE_OPEN_CREATE);
+        db.exec("PRAGMA temp_store = 2;", null, null); // not use temporery files
+        
+        if(!exist)
         {
-            File file = new File(path);
-            boolean exist = file.exists();
-            
-            db.open(spatialDbFile.getAbsolutePath(), Constants.SQLITE_OPEN_READWRITE | Constants.SQLITE_OPEN_CREATE);
-            db.exec("PRAGMA temp_store = 2;", null, null); // not use temporery files
-            
-            if(!exist)
-            {
-                initDB();
-            }
-        }
-        catch (Exception e)
-        {
-            Log.e("TerrainGIS", e.getMessage());
+            initDB();
         }
     }
     
@@ -835,9 +713,11 @@ public class SpatiaLiteIO
      * @param column
      * @param useRTree
      * @return condition for objects in envelope
+     * @throws ParseException 
+     * @throws Exception 
      */
     private String getObjectCondition(Envelope envelope, String name, String column,
-            int layerSrid, int mapSrid, boolean useRTree)
+            int layerSrid, int mapSrid, boolean useRTree) throws Exception, ParseException
     {
         if(useRTree)
         {

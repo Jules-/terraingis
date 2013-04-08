@@ -1,8 +1,11 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import jsqlite.Exception;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
@@ -18,15 +21,19 @@ public class PointsLayer extends VectorLayer
     // public methods =========================================================
     public PointsLayer(String name, int srid,
                        SpatiaLiteIO spatialite, MapFragment mapFragment)
+                               throws Exception
     {
         super(VectorLayerType.POINT, name, srid, spatialite, mapFragment);
     }
 	
 	/**
      * draw objects to canvas
+	 * @throws ParseException 
+	 * @throws Exception 
      */
     @Override
     public void draw(Canvas canvas, Envelope rect)
+            throws Exception, ParseException
     {
         SpatialiteGeomIterator iter = getObjects(rect);
         while(iter.hasNext())

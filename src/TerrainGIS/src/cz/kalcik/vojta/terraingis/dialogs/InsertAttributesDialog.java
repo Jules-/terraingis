@@ -5,9 +5,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import jsqlite.Exception;
+
 import android.content.DialogInterface;
+import android.widget.Toast;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
@@ -48,15 +52,23 @@ public class InsertAttributesDialog extends SetAttributesDialog
     protected void execute()
     {
         AttributeRecord attributes = new AttributeRecord(mLayer.getAttributeHeader(), getValues());
-        if(mInsertObjectType == InsertObjectType.RECORDING)
+        try
         {
-            mLayer.insertRecordedObject(attributes);
-            
-            ((MainActivity)getActivity()).getMapFragment().setMapTools();
+            if(mInsertObjectType == InsertObjectType.RECORDING)
+            {
+                mLayer.insertRecordedObject(attributes);
+                
+                ((MainActivity)getActivity()).getMapFragment().setMapTools();
+            }
+            else if(mInsertObjectType == InsertObjectType.EDITING)
+            {
+                mLayer.insertEditedObject(attributes);
+            }
         }
-        else if(mInsertObjectType == InsertObjectType.EDITING)
+        catch (Exception e)
         {
-            mLayer.insertEditedObject(attributes);
+            Toast.makeText(getActivity(), R.string.database_error,
+                    Toast.LENGTH_LONG).show();
         }
     }
     

@@ -17,6 +17,7 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
@@ -107,9 +108,11 @@ public abstract class VectorLayer extends AbstractLayer
      * constructor
      * @param type
      * @param paint
+     * @throws Exception 
      */
     public VectorLayer(VectorLayerType type, String name, int srid,
                        SpatiaLiteIO spatialite, MapFragment mapFragment)
+                               throws Exception
     {
         mMapFragment = mapFragment;
         mType = type;
@@ -144,10 +147,14 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * add lon lat point to recorded object
      * @param coordinate
+     * @throws ParseException 
+     * @throws Exception 
      */
     public void addPoint(Coordinate coordinate, int srid)
+            throws Exception, ParseException
     {
         int layerManagerSrid = mLayerManager.getSrid();
+
         if(layerManagerSrid != srid)
         {
             coordinate = mSpatialite.transformSRS(coordinate, srid, layerManagerSrid);
@@ -158,10 +165,14 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * add lon lat points to recorded objects
      * @param points
+     * @throws ParseException 
+     * @throws Exception 
      */
     public void addPointsRecording(ArrayList<Coordinate> points, int srid)
+            throws Exception, ParseException
     {
         int layerManagerSrid = mLayerManager.getSrid();
+
         if(layerManagerSrid != srid)
         {
             points = mSpatialite.transformSRS(points, srid, layerManagerSrid);
@@ -172,8 +183,10 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * insert recorded object
      * @param attributes
+     * @throws Exception 
      */
     public void insertRecordedObject(AttributeRecord attributes)
+            throws Exception
     {
         insertObject(attributes, createRecordedGeometry());
         vectorLayerData.recordedPoints.clear(); 
@@ -182,8 +195,10 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * insert edited object
      * @param attributes
+     * @throws Exception 
      */
     public void insertEditedObject(AttributeRecord attributes)
+            throws Exception
     {
         insertObject(attributes, createGeometry(vectorLayerData.selectedObjectPoints, mType));
         vectorLayerData.selectedObjectPoints.clear(); 
@@ -209,8 +224,9 @@ public abstract class VectorLayer extends AbstractLayer
     
     /**
      * remove layer from db
+     * @throws Exception 
      */
-    public void remove()
+    public void remove() throws Exception
     {
         mSpatialite.removeLayer(super.data.name, mGeometryColumn, mHasIndex);
     }
@@ -219,15 +235,18 @@ public abstract class VectorLayer extends AbstractLayer
      * set ROWID of clicked object
      * @param point
      * @param bufferDistance
+     * @throws ParseException 
+     * @throws Exception 
      */
     public void clickedObject(Envelope envelope, Coordinate point)
+            throws Exception, ParseException
     {
         vectorLayerData.clickedPoint = point;
         double bufferDistance = mNavigator.getBufferDistance();
+
         String rowid = mSpatialite.getRowidNearCoordinate(envelope, data.name,
                 mGeometryColumn, mSrid, mLayerManager.getSrid(), mHasIndex, point, bufferDistance);
         changeSelectionOfObject(rowid);
-        
         if(vectorLayerData.selectedRowid != null)
         {
             loadSelectedPoints();
@@ -236,8 +255,9 @@ public abstract class VectorLayer extends AbstractLayer
     
     /**
      * remove selected rowid
+     * @throws Exception 
      */
-    public void removeSelectionOfObject()
+    public void removeSelectionOfObject() throws Exception
     {
         changeSelectionOfObject(null);
     }
@@ -245,8 +265,10 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * insert point to selected layer by edit
      * @param point
+     * @throws Exception 
      */
     public void addPointEdit(Coordinate point)
+            throws Exception
     {
         if(mType == VectorLayerType.POINT)
         {
@@ -270,8 +292,10 @@ public abstract class VectorLayer extends AbstractLayer
     
     /**
      * remove selected object
+     * @throws Exception 
+     * @throws NumberFormatException 
      */
-    public void removeSelected()
+    public void removeSelected() throws Exception
     {
         if(vectorLayerData.selectedNodeIndex >= 0)
         {
@@ -285,15 +309,7 @@ public abstract class VectorLayer extends AbstractLayer
         {
             if(vectorLayerData.selectedRowid != null)
             {
-                try
-                {
-                    mSpatialite.removeObject(data.name, Integer.parseInt(vectorLayerData.selectedRowid));
-                }
-                catch (Exception e)
-                {
-                    Toast.makeText(mMapFragment.getActivity(), R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                }
+                mSpatialite.removeObject(data.name, Integer.parseInt(vectorLayerData.selectedRowid));
             }
             
             vectorLayerData.selectedObjectPoints.clear();
@@ -302,8 +318,11 @@ public abstract class VectorLayer extends AbstractLayer
     
     /**
      * cancel not saved changes
+     * @throws ParseException 
+     * @throws Exception 
      */
     public void cancelNotSavedChanges()
+            throws Exception, ParseException
     {
         if(vectorLayerData.selectedRowid != null)
         {
@@ -467,6 +486,7 @@ public abstract class VectorLayer extends AbstractLayer
     
     // protected methods ========================================================
     protected SpatialiteGeomIterator getObjects(Envelope envelope)
+            throws Exception, ParseException
     {
         return mSpatialite.getObjects(envelope, super.data.name, mGeometryColumn, mSrid,
                                       mLayerManager.getSrid(), mHasIndex);
@@ -474,8 +494,9 @@ public abstract class VectorLayer extends AbstractLayer
     
     /**
      * update envelope of Layer
+     * @throws Exception 
      */
-    protected void updateEnvelope()
+    protected void updateEnvelope() throws Exception
     {
         mEnvelope = mSpatialite.getEnvelopeLayer(super.data.name, mGeometryColumn, mHasIndex);
     }
@@ -577,8 +598,10 @@ public abstract class VectorLayer extends AbstractLayer
      * insert object to DB
      * @param attributes
      * @param geometry
+     * @throws Exception 
      */
     private void insertObject(AttributeRecord attributes, Geometry geometry)
+            throws Exception
     {
         mSpatialite.insertObject(geometry, data.name, mGeometryColumn,
                 mLayerManager.getSrid(), mSrid,
@@ -594,6 +617,7 @@ public abstract class VectorLayer extends AbstractLayer
      * @throws NumberFormatException 
      */
     private void changeSelectionOfObject(String rowid)
+            throws Exception
     {
         if(!vectorLayerData.selectedObjectPoints.isEmpty())
         {
@@ -611,24 +635,16 @@ public abstract class VectorLayer extends AbstractLayer
             }
             else if(vectorLayerData.selectedRowid != null)
             {                
-                try
+                if(hasSelectedObjectEnoughPoints())
                 {
-                    if(hasSelectedObjectEnoughPoints())
-                    {
-                        Geometry geometry = createGeometry(vectorLayerData.selectedObjectPoints, mType);
-                        mSpatialite.updateObject(data.name, mGeometryColumn,
-                                Integer.parseInt(vectorLayerData.selectedRowid), geometry,
-                                mSrid, mLayerManager.getSrid());
-                    }
-                    else
-                    {
-                        mSpatialite.removeObject(data.name, Integer.parseInt(vectorLayerData.selectedRowid));
-                    }
+                    Geometry geometry = createGeometry(vectorLayerData.selectedObjectPoints, mType);
+                    mSpatialite.updateObject(data.name, mGeometryColumn,
+                            Integer.parseInt(vectorLayerData.selectedRowid), geometry,
+                            mSrid, mLayerManager.getSrid());
                 }
-                catch (Exception e)
+                else
                 {
-                    Toast.makeText(mMapFragment.getActivity(), R.string.database_error,
-                            Toast.LENGTH_LONG).show();
+                    mSpatialite.removeObject(data.name, Integer.parseInt(vectorLayerData.selectedRowid));
                 }
                 
                 vectorLayerData.selectedObjectPoints.clear();
@@ -643,8 +659,11 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * load points of selected object
      * rowid can not be null
+     * @throws ParseException 
+     * @throws Exception
      */
     private void loadSelectedPoints()
+            throws Exception, ParseException
     {
         double bufferDistance = mNavigator.getBufferDistance();
         Geometry object = mSpatialite.getObject(data.name, mGeometryColumn,

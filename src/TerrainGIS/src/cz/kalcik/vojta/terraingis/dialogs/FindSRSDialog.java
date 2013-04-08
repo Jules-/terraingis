@@ -2,6 +2,8 @@ package cz.kalcik.vojta.terraingis.dialogs;
 
 import java.util.ArrayList;
 
+import jsqlite.Exception;
+
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
@@ -18,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class FindSRSDialog extends DialogFragment
 {
@@ -70,12 +73,21 @@ public class FindSRSDialog extends DialogFragment
         @Override
         public void onClick(View v)
         {
-            ArrayList<SpatialiteSRS> foundSRS = mSpatiaLite.findSRSByName(mNameSRS.getText().toString());
-            ArrayAdapter<SpatialiteSRS> adapter = new ArrayAdapter<SpatialiteSRS>(mMainActivity,
-                    android.R.layout.simple_list_item_1, android.R.id.text1,
-                    foundSRS.toArray(new SpatialiteSRS[foundSRS.size()]));
-            mSRSListView.setAdapter(adapter);
-            mSRSListView.setOnItemClickListener(clickSRSHandler);
+            ArrayList<SpatialiteSRS> foundSRS;
+            try
+            {
+                foundSRS = mSpatiaLite.findSRSByName(mNameSRS.getText().toString());
+                ArrayAdapter<SpatialiteSRS> adapter = new ArrayAdapter<SpatialiteSRS>(mMainActivity,
+                        android.R.layout.simple_list_item_1, android.R.id.text1,
+                        foundSRS.toArray(new SpatialiteSRS[foundSRS.size()]));
+                mSRSListView.setAdapter(adapter);
+                mSRSListView.setOnItemClickListener(clickSRSHandler);
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
         }        
     };
     

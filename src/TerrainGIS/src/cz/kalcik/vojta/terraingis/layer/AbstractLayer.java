@@ -2,7 +2,10 @@ package cz.kalcik.vojta.terraingis.layer;
 
 import java.io.Serializable;
 
+import jsqlite.Exception;
+
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
@@ -38,7 +41,7 @@ public abstract class AbstractLayer
     protected Navigator mNavigator = Navigator.getInstance();
 
     // abstract methods ========================================================
-    public abstract void draw(final Canvas canvas, Envelope rect);
+    public abstract void draw(final Canvas canvas, Envelope rect) throws Exception, ParseException;
     public abstract void detach();
     
     // getter, setter ==========================================================

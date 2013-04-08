@@ -6,6 +6,8 @@ package cz.kalcik.vojta.terraingis.dialogs;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
+import jsqlite.Exception;
+
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
@@ -218,10 +220,18 @@ public class EmptyLayerDialog extends CreateLayerDialog
                        
             SpatiaLiteIO spatialite = LayerManager.getInstance().getSpatialiteIO();
             
-            spatialite.createEmptyLayer(name, layerType, 
-                    createAttributeTable().createSQLColumns(), SpatiaLiteIO.EPSG_LONLAT);
-            LayerManager.getInstance().loadSpatialite(mMainActivity.getMapFragment());
-            ((MainActivity)getActivity()).getLayersFragment().invalidateListView();
+            try
+            {
+                spatialite.createEmptyLayer(name, layerType, 
+                        createAttributeTable().createSQLColumns(), SpatiaLiteIO.EPSG_LONLAT);
+                LayerManager.getInstance().loadSpatialite(mMainActivity.getMapFragment());
+                mMainActivity.getLayersFragment().invalidateListView();
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
             
             getDialog().dismiss();
         }        

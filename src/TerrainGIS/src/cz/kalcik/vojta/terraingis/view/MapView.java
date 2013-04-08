@@ -2,11 +2,15 @@ package cz.kalcik.vojta.terraingis.view;
 
 import java.io.Serializable;
 
+import jsqlite.Exception;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.MainActivity.ActivityMode;
+import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
@@ -25,6 +29,7 @@ import android.util.FloatMath;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 /**
  * main class for viewing map
@@ -136,8 +141,21 @@ public class MapView extends SurfaceView
      */
     public synchronized void setLonLatPosition(double lon, double lat)
     {
-        mNavigator.setLonLatPosition(lon, lat);
-        invalidate();
+        try
+        {
+            mNavigator.setLonLatPosition(lon, lat);
+            invalidate();
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }
+        catch (ParseException e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }
     }
         
     /**
@@ -169,7 +187,7 @@ public class MapView extends SurfaceView
             canvas.translate(mTouchDiff.x, mTouchDiff.y);
         }
         
-        mDrawer.draw(canvas, getWidth(), getHeight());
+        mDrawer.draw(canvas, getWidth(), getHeight(), mMainActivity);
         
         drawLocations(canvas);
     }
@@ -369,7 +387,20 @@ public class MapView extends SurfaceView
                     {
                         VectorLayer vectorLayer = (VectorLayer) layer;
                         Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
-                        vectorLayer.clickedObject(mNavigator.getMRectangle(null), clickedPoint);
+                        try
+                        {
+                            vectorLayer.clickedObject(mNavigator.getMRectangle(null), clickedPoint);
+                        }
+                        catch (Exception e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        catch (ParseException e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
                         
                         invalidate();
                     }

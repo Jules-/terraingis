@@ -5,6 +5,8 @@ package cz.kalcik.vojta.terraingis;
 
 import java.util.ArrayList;
 
+import jsqlite.Exception;
+
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveObjectDialog;
 import cz.kalcik.vojta.terraingis.dialogs.UpdateAttributesDialog;
@@ -29,6 +31,7 @@ import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author jules
@@ -90,19 +93,28 @@ public class AttributeTableActivity extends AbstractActivity
         // layer
         Bundle bundle = getIntent().getExtras();
         String layerName = bundle.getString(LayersFragment.LAYER_ATTRIBUTE_TABLE);
-        mSpatialite = new SpatiaLiteIO(MainActivity.DB_FILE.getAbsolutePath());
-        Layer values = mSpatialite.getLayer(layerName);
-        
-        // actionbar
-        ActionBar actionBar = getActionBar();
-        actionBar.setTitle(layerName);
-        actionBar.setHomeButtonEnabled(true);
-        
-        // load values
-        if(values != null)
+        try
         {
-            mLayer = LayerManager.createVectorLayer(values, mSpatialite, null);
-            loadAttributes();
+            mSpatialite = new SpatiaLiteIO(MainActivity.DB_FILE.getAbsolutePath());
+            Layer values = mSpatialite.getLayer(layerName);
+            
+            // actionbar
+            ActionBar actionBar = getActionBar();
+            actionBar.setTitle(layerName);
+            actionBar.setHomeButtonEnabled(true);
+            
+            // load values
+            if(values != null)
+            {
+                mLayer = LayerManager.createVectorLayer(values, mSpatialite, null);
+                loadAttributes();
+            }
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(this, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+            finish();
         }
     }
     
@@ -188,8 +200,9 @@ public class AttributeTableActivity extends AbstractActivity
     // private methods =========================================================
     /**
      * load attributes from db
+     * @throws Exception 
      */
-    private void loadAttributes()
+    private void loadAttributes() throws Exception
     {
         LayoutInflater inflater = getLayoutInflater();
         

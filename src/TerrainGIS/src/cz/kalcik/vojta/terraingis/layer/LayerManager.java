@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
+import jsqlite.Exception;
+
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
@@ -12,8 +14,10 @@ import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO.Layer;
@@ -23,6 +27,7 @@ import cz.kalcik.vojta.terraingis.view.MapView;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Handler;
+import android.widget.Toast;
 
 /**
  * class which communicate with all layers
@@ -52,7 +57,7 @@ public class LayerManager
 
     // public methods ======================================================================
     
-    public void redraw(Canvas canvas, Envelope rect)
+    public void redraw(Canvas canvas, Envelope rect, Context context)
     {
         int size = layers.size();
         
@@ -62,7 +67,20 @@ public class LayerManager
             
             if(layer.isVisible())
             {
-                layer.draw(canvas, rect);
+                try
+                {
+                    layer.draw(canvas, rect);
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(context, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
+                catch (ParseException e)
+                {
+                    Toast.makeText(context, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
@@ -81,8 +99,9 @@ public class LayerManager
     /**
      * load layers from spatialite database
      * @param path
+     * @throws Exception 
      */
-    public void loadSpatialite(MapFragment mapFragment)
+    public void loadSpatialite(MapFragment mapFragment) throws Exception
     {
         if(spatialiteManager == null)
         {
@@ -130,7 +149,15 @@ public class LayerManager
      */
     public void loadLayers(Context context, MapFragment mapFragment,MapView map)
     {
-        loadSpatialite(mapFragment);
+        try
+        {
+            loadSpatialite(mapFragment);
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(context, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }
         addTilesLayer(context, map);
     }
 
@@ -138,8 +165,11 @@ public class LayerManager
      * convert lon lat coordinates to meters
      * @param input
      * @return
+     * @throws ParseException 
+     * @throws Exception 
      */
     public Coordinate lonLatWGS84ToM(Coordinate input)
+            throws Exception, ParseException
     {        
         return spatialiteManager.transformSRS(input, SpatiaLiteIO.EPSG_LONLAT, srid);
     }
@@ -148,8 +178,11 @@ public class LayerManager
      * convert meters coordinates to lon lat
      * @param input
      * @return
+     * @throws ParseException 
+     * @throws Exception 
      */
     public Coordinate mToLonLatWGS84(Coordinate input)
+            throws Exception, ParseException
     {
         return spatialiteManager.transformSRS(input, srid, SpatiaLiteIO.EPSG_LONLAT);
     }
@@ -259,8 +292,10 @@ public class LayerManager
      * @param layer
      * @param spatialite
      * @return
+     * @throws Exception 
      */
     public static VectorLayer createVectorLayer(Layer layer, SpatiaLiteIO spatialite, MapFragment mapFragment)
+            throws Exception
     {
         VectorLayer result = null;
         

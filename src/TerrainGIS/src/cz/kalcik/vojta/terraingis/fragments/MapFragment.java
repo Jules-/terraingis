@@ -4,6 +4,8 @@ package cz.kalcik.vojta.terraingis.fragments;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import jsqlite.Exception;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.components.LonLatFormat;
 import cz.kalcik.vojta.terraingis.components.Navigator;
@@ -100,7 +103,22 @@ public class MapFragment extends Fragment
     {
         if(mAutoRecordLayer != null)
         {
-            mAutoRecordLayer.addPointsRecording(points, SpatiaLiteIO.EPSG_LONLAT);
+            try
+            {
+                mAutoRecordLayer.addPointsRecording(points, SpatiaLiteIO.EPSG_LONLAT);
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+            catch (ParseException e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
         }
         
         setMapTools();
@@ -162,7 +180,23 @@ public class MapFragment extends Fragment
      */
     public synchronized void setLonLatLocation(Coordinate location)
     {
-        mLocationM = mLayerManager.lonLatWGS84ToM(location);
+        try
+        {
+            mLocationM = mLayerManager.lonLatWGS84ToM(location);
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        catch (ParseException e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        
         mLocationValid = true;
         
         setCoordinatesLocationText();
@@ -335,7 +369,22 @@ public class MapFragment extends Fragment
      */
     private void recordInsertPoint(Coordinate location, VectorLayer layer, int srid)
     {
-        layer.addPoint(location, srid);
+        try
+        {
+            layer.addPoint(location, srid);
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        catch (ParseException e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
         if(layer.getType() == VectorLayerType.POINT)
         {
             endObject(layer, InsertObjectType.RECORDING);
@@ -344,7 +393,17 @@ public class MapFragment extends Fragment
 
     private void editInsertPoint(Coordinate location, VectorLayer layer)
     {
-        layer.addPointEdit(location);
+        try
+        {
+            layer.addPointEdit(location);
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        
         if(layer.getType() == VectorLayerType.POINT)
         {
             endObject(layer, InsertObjectType.EDITING);
@@ -434,8 +493,24 @@ public class MapFragment extends Fragment
     {
         if(mLocationValid)
         {
-            Coordinate location = mLayerManager.mToLonLatWGS84(mLocationM);
-            return LonLatFormat.getFormatDM(location);
+            try
+            {
+                Coordinate location = mLayerManager.mToLonLatWGS84(mLocationM);
+                return LonLatFormat.getFormatDM(location);
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+                return getString(R.string.location_fix_error);
+            }
+            catch (ParseException e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+                return getString(R.string.location_fix_error);
+            }
+            
         }
         else
         {
@@ -450,8 +525,24 @@ public class MapFragment extends Fragment
     {
         if(mAddPointLocationM != null)
         {
-            Coordinate location = mLayerManager.mToLonLatWGS84(mAddPointLocationM);
-            return LonLatFormat.getFormatDM(location);
+            try
+            {
+                Coordinate location = mLayerManager.mToLonLatWGS84(mAddPointLocationM);
+                return LonLatFormat.getFormatDM(location);
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+                return getString(R.string.not_selected_position);
+            }
+            catch (ParseException e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+                return getString(R.string.not_selected_position);
+            }
+            
         }
         else
         {
@@ -735,9 +826,22 @@ public class MapFragment extends Fragment
             VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
             if(selectedLayer != null)
             {
-                selectedLayer.cancelNotSavedChanges();
+                try
+                {
+                    selectedLayer.cancelNotSavedChanges();
+                    mMap.invalidate();
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
+                catch (ParseException e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
             
-                mMap.invalidate();
             }
         }        
     };
@@ -750,9 +854,16 @@ public class MapFragment extends Fragment
             VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
             if(selectedLayer != null)
             {
-                selectedLayer.removeSelected();
-                
-                mMap.invalidate();
+                try
+                {
+                    selectedLayer.removeSelected();
+                    mMap.invalidate();
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
             }
         }        
     };    

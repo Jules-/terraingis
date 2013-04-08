@@ -2,6 +2,8 @@ package cz.kalcik.vojta.terraingis.fragments;
 
 import java.io.File;
 
+import jsqlite.Exception;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
@@ -22,6 +24,7 @@ import android.widget.Toast;
 
 import com.mobeta.android.dslv.DragSortListView;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import cz.kalcik.vojta.terraingis.MainActivity;
@@ -136,9 +139,17 @@ public class LayersFragment extends Fragment
         
         if(abstrctLayer instanceof VectorLayer)
         {
-            ((VectorLayer)abstrctLayer).removeSelectionOfObject();
+            try
+            {
+                ((VectorLayer)abstrctLayer).removeSelectionOfObject();
+                mMainActivity.getMapFragment().getMap().invalidate();
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
             
-            mMainActivity.getMapFragment().getMap().invalidate();
         }        
     }
     
@@ -339,7 +350,22 @@ public class LayersFragment extends Fragment
             
             if(from != to)
             {
-                envelope = spatialite.transformSRSEnvelope(envelope, from, to);
+                try
+                {
+                    envelope = spatialite.transformSRSEnvelope(envelope, from, to);
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                catch (ParseException e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
             }
             
             // empty layer
