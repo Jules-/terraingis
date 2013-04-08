@@ -69,5 +69,25 @@ public class AttributeRecord
         return mValues;
     }
     
+    /**
+     * @return values without PK
+     */
+    public String[] getValuesWithoutPK()
+    {
+        String[] result = new String[mHeader.getCountColumnsWithoutPK()];
+        int resultIndex = 0;
+        
+        int count = getCountValues();
+        for(int i=0; i<count; i++)
+        {
+            if(!isColumnPK(i))
+            {
+                result[resultIndex] = mValues[i];
+                resultIndex++;
+            }
+        }        
+        
+        return result;
+    }
     // private methods =======================================================================
 }

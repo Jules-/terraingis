@@ -567,6 +567,40 @@ public class SpatiaLiteIO
         
         return new SpatialiteAttributesIterator(stmt, header.getCountColumns());       
     }
+
+    /**
+     * get attributes of one object
+     * @param name
+     * @param header
+     * @param rowid
+     * @return
+     * @throws Exception
+     */
+    public String[] getAttributes(String name, AttributeHeader header, int rowid)
+            throws Exception
+    {
+        String[] result = null;
+        
+        String query = String.format("SELECT %s FROM \"%s\" WHERE ROWID=?",
+                header.getComaNameColumns(true, false), name);
+        Stmt stmt = db.prepare(query);
+        
+        stmt.bind(1, rowid);
+        if(stmt.step())
+        {
+            int count = header.getCountColumns();
+            result = new String[count];
+                        
+            for(int i=0; i < count; i++)
+            {
+                result[i] = stmt.column_string(i);
+            }
+        }
+        
+        stmt.close();
+        
+        return result;       
+    }
     
     /**
      * update attributes with new names

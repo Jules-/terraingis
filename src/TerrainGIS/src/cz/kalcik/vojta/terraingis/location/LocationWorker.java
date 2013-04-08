@@ -111,6 +111,13 @@ public class LocationWorker implements LocationListener
         }
     }
 
+    /**
+     * @return if device has GPS
+     */
+    public boolean hasGPSDevice()
+    {
+        return hasGPS;
+    }
     // getter setter =================================================================
     
     public LocationWorkerData getData()

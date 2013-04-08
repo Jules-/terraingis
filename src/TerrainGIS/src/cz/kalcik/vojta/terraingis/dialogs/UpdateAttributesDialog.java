@@ -9,7 +9,9 @@ import android.widget.Toast;
 import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
+import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
+import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.AttributeTableRow;
 
@@ -47,12 +49,18 @@ public class UpdateAttributesDialog extends SetAttributesDialog
     {
         AttributeTableActivity activity = (AttributeTableActivity)getActivity();
         SpatiaLiteIO spatialite = activity.getSpatialite();
+        AttributeHeader attributeHeader = mLayer.getAttributeHeader();
+        AttributeRecord record = new AttributeRecord(attributeHeader, getValues());
+        
+        int rowid = Integer.parseInt(mRow.getRowid());
         try
         {
-            spatialite.updateAttributes(mLayer.getData().name,
-                    mLayer.getAttributeHeader().getUpdateSQLArgs(false), mOriginValues,
-                    Integer.parseInt(mRow.getRowid()));
-            mRow.reloadCells(activity.getLayoutInflater(), getValues());
+            String name = mLayer.getData().name;
+            spatialite.updateAttributes(name,
+                    mLayer.getAttributeHeader().getUpdateSQLArgs(false), record.getValuesWithoutPK(),
+                    rowid);
+            String[] values = spatialite.getAttributes(name, attributeHeader, rowid);
+            mRow.reloadCells(activity.getLayoutInflater(), values);
         }
         catch (Exception e)
         {

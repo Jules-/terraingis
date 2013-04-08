@@ -415,6 +415,12 @@ public class MapFragment extends Fragment
      */
     private void startAutoRecord()
     {
+        if(!mMainActivity.getLocationWorker().hasGPSDevice())
+        {
+            Toast.makeText(getActivity(), R.string.device_no_gps_error, Toast.LENGTH_LONG).show();
+            return;
+        }        
+        
         mAutoRecordLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
         
         if(mAutoRecordLayer != null)
@@ -429,7 +435,7 @@ public class MapFragment extends Fragment
     /**
      * stop automatic recording of points
      */
-    private void stopAutoRecord()
+    public void stopAutoRecord()
     {
         mMainActivity.stopService(mServiceIntent);
         mAutoRecordLayer = null;

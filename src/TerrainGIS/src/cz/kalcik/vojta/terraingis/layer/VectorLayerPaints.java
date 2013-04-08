@@ -30,6 +30,7 @@ public class VectorLayerPaints
     private static final float[] DASHED_PARAMS = {10, 5};
     private final static int TRANCPARENCE_NOTSAVED = 64;
     // static atributes ============================================================
+    private static float[] mPreviousHSV = DEFAULT_HSV.clone();
     private static float[] mCurrentHSV = DEFAULT_HSV.clone();
     
     // public static methods =======================================================
@@ -133,21 +134,39 @@ public class VectorLayerPaints
         {
             result.setColor(SELECTED_DEFAULT_NODE_COLOR);
         }
+        else if(paintType == PaintType.NOT_SAVED)
+        {
+            result.setColor(getCurrentColor());
+        }
         else
         {
-            result.setColor(getColor());
+            result.setColor(getNextColor());
         }
         
         return result;
     }
     
     /**
+     * @return previous generated color
+     */
+    private static int getCurrentColor()
+    {
+        return Color.HSVToColor(mPreviousHSV);
+    }
+    
+    /**
      * change color
      * @return
      */
-    private static int getColor()
+    private static int getNextColor()
     {
         int result = Color.HSVToColor(mCurrentHSV);
+        
+        int size = mCurrentHSV.length;
+        for(int i=0; i < size; i++)
+        {
+            mPreviousHSV[i] = mCurrentHSV[i];
+        }
         
         mCurrentHSV[0] += HUE_STEP;
         if(mCurrentHSV[0] > 359f)

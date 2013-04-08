@@ -31,22 +31,6 @@ public class AttributeTableRow extends TableRow
     }
     
     /**
-     * @return values of attributes
-     */
-    public String[] getValues()
-    {
-        int count = getChildCount();
-        String[] result = new String[count];
-        for(int i=0; i<count; i++)
-        {
-            TextView text = (TextView) getChildAt(i);
-            result[i] = text.getText().toString();
-        }
-        
-        return result;
-    }
-    
-    /**
      * create cells of row
      * @param row
      * @param inflater
@@ -73,6 +57,22 @@ public class AttributeTableRow extends TableRow
         removeAllViews();
         createCells(inflater, values, values.length);
     }
+    
+    /**
+     * @return values of attributes
+     */
+    public String[] getValues()
+    {
+        int count = getChildCount();
+        String[] values = new String[count];
+        for(int i=0; i<count; i++)
+        {
+            TextView text = (TextView) getChildAt(i);
+            values[i] = text.getText().toString();
+        }
+        
+        return values;
+    } 
     // getter setter =================================================================
 
     /**
@@ -102,6 +102,6 @@ public class AttributeTableRow extends TableRow
         }
         
         return false;
-    }
+    }   
     // classes =======================================================================
 }

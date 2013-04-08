@@ -553,14 +553,14 @@ public abstract class VectorLayer extends AbstractLayer
         else if(mType == VectorLayerType.LINE)
         {
             mPaint = VectorLayerPaints.getLine(PaintType.DEFAULT);
-            mSelectedPaint = VectorLayerPaints.getLine(PaintType.SELECTED);
             mNotSavedPaint = VectorLayerPaints.getLine(PaintType.NOT_SAVED);
+            mSelectedPaint = VectorLayerPaints.getLine(PaintType.SELECTED);
         }
         else if(mType == VectorLayerType.POLYGON)
         {
             mPaint = VectorLayerPaints.getPolygon(PaintType.DEFAULT);
-            mSelectedPaint = VectorLayerPaints.getPolygon(PaintType.SELECTED);
             mNotSavedPaint = VectorLayerPaints.getPolygon(PaintType.NOT_SAVED);
+            mSelectedPaint = VectorLayerPaints.getPolygon(PaintType.SELECTED);
         }           
     }
     
