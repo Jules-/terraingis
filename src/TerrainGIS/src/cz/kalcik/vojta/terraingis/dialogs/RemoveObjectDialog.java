@@ -1,5 +1,8 @@
 package cz.kalcik.vojta.terraingis.dialogs;
 
+import java.io.Serializable;
+
+import android.os.Bundle;
 import android.widget.Toast;
 import jsqlite.Exception;
 import cz.kalcik.vojta.terraingis.AttributeTableActivity;
@@ -8,8 +11,22 @@ import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 
 public class RemoveObjectDialog extends SimpleDialog
 {
-    String mRowid;
-    String mLayerName;
+    // constatnts =============================================================
+    private final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.RemoveObjectDialogSaveState";
+    
+    // attributes =============================================================
+    private class RemoveObjectDialogData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        public String mRowid;
+        public String mLayerName;
+
+        public RemoveObjectDialogData()
+        {
+        }
+    }
+
+    RemoveObjectDialogData data = new RemoveObjectDialogData();
     
     // getter, setter =========================================================
     
@@ -18,7 +35,7 @@ public class RemoveObjectDialog extends SimpleDialog
      */
     public void setRowid(String rowid)
     {
-        this.mRowid = rowid;
+        this.data.mRowid = rowid;
     }
         
     /**
@@ -26,9 +43,29 @@ public class RemoveObjectDialog extends SimpleDialog
      */
     public void setLayerName(String layerName)
     {
-        this.mLayerName = layerName;
+        this.data.mLayerName = layerName;
     }
 
+    // on methods =============================================================
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        if(savedInstanceState != null)
+        {
+            data = (RemoveObjectDialogData)savedInstanceState.getSerializable(TAG_SAVESTATE);
+        }
+        
+        super.onActivityCreated(savedInstanceState);
+    }
+    
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        outState.putSerializable(TAG_SAVESTATE, data);
+        
+        super.onSaveInstanceState(outState);
+    }
+    
     // protected method =======================================================   
     @Override
     protected void execute()
@@ -38,7 +75,7 @@ public class RemoveObjectDialog extends SimpleDialog
         
         try
         {
-            spatialite.removeObject(mLayerName, Integer.parseInt(mRowid));
+            spatialite.removeObject(data.mLayerName, Integer.parseInt(data.mRowid));
             activity.removeSelectedRow();
         }
         catch (Exception e)

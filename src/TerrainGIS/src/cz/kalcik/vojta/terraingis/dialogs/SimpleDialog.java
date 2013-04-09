@@ -17,14 +17,17 @@ import android.os.Bundle;
  */
 public abstract class SimpleDialog extends DialogFragment
 {
-    private String mMessage;
+    // constatnts =====================================================================================
+    private final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.SimpleDialogSaveState";
     
+    // attributes =====================================================================================
+    private String mMessage = "";
+    
+    // on methods =====================================================================================
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
          Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-         
-         dialogBuilder.setTitle(mMessage);
          
          dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
          dialogBuilder.setNegativeButton(R.string.negative_button, null);
@@ -32,6 +35,26 @@ public abstract class SimpleDialog extends DialogFragment
          return dialogBuilder.create();
     }
     
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        if(savedInstanceState != null)
+        {
+            mMessage = savedInstanceState.getString(TAG_SAVESTATE);
+        }
+        
+        getDialog().setTitle(mMessage);
+        
+        super.onActivityCreated(savedInstanceState);
+    }
+    
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        outState.putString(TAG_SAVESTATE, mMessage);
+        
+        super.onSaveInstanceState(outState);
+    }
     // getters, setters ===============================================================================
     
     /**

@@ -390,7 +390,7 @@ public class SpatiaLiteIO
     public void insertObject(Stmt stmt, Geometry geom, AttributeRecord attributes, boolean usePK) throws Exception
     {
         stmt.bind(1, mWKBWriter.write(geom));
-        String[] values = usePK ? attributes.getValues() : attributes.getValues();
+        String[] values = attributes.getValues();
         int count = values.length;
         int bindIndex = 2;
         for (int i = 0; i < count; i++)

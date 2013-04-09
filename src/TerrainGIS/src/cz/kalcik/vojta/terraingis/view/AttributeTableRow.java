@@ -84,7 +84,7 @@ public class AttributeTableRow extends TableRow
     }
 
     /**
-     * @param mRowid the mRowid to set
+     * @param data.mRowid the mRowid to set
      */
     public void setRowid(String rowid)
     {

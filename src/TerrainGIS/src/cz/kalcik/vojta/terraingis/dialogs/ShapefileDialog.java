@@ -24,6 +24,8 @@ public class ShapefileDialog extends CreateLayerDialog
 {
     // constants =====================================================================================
     private final Set<String> SUFFIXS = new TreeSet<String>(Arrays.asList(".shp", ".shx", ".dbf")); 
+    
+    
     // attributes ====================================================================================
     MainActivity mMainActivity;
     private File mFile;

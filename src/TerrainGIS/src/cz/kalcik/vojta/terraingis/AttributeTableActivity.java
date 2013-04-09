@@ -61,6 +61,14 @@ public class AttributeTableActivity extends AbstractActivity
         mTable.removeView(mSelectedRow);
     }
     
+    /**
+     * @param index
+     * @return row with index
+     */
+    public AttributeTableRow getRowAtIndex(int index)
+    {
+        return (AttributeTableRow) mTable.getChildAt(index);
+    }
     // getter, setter ============================================================
     
     /**

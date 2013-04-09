@@ -3,20 +3,14 @@
  */
 package cz.kalcik.vojta.terraingis.dialogs;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 
-import jsqlite.Exception;
-
-import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
-import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
 import cz.kalcik.vojta.terraingis.layer.AttributeType;
+import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.AttributeValueLayout;
 import android.app.Activity;
@@ -29,7 +23,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.Toast;
 
 /**
  * @author jules
@@ -38,14 +31,25 @@ import android.widget.Toast;
 public abstract class SetAttributesDialog extends DialogFragment
 {
     // constants =====================================================================================
-    protected String DATETIME_NAME = "datetime";
-    protected AttributeType DATETIME_TYPE = AttributeType.TEXT;
+    protected final String DATETIME_NAME = "datetime";
+    protected final AttributeType DATETIME_TYPE = AttributeType.TEXT;
+    
+    private final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.SetAttributesDialogSaveState";
     // attributes ====================================================================================
+    private class SetAttributesDialogSaveData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        
+        public String layerName;
+        public String[] values = null;
+    }
+    
     private Activity mActivity;
     private LinearLayout mMainLayout;
     protected ArrayList<AttributeValueLayout> mAttributes = new ArrayList<AttributeValueLayout>();
     protected VectorLayer mLayer;
-    
+    protected SetAttributesDialogSaveData data = new SetAttributesDialogSaveData();
+
     // public methods ================================================================================
     
     // on methods ====================================================================================
@@ -53,7 +57,6 @@ public abstract class SetAttributesDialog extends DialogFragment
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
          mActivity = (Activity)getActivity();
-         checkCountAttributes();
         
          Builder dialogBuilder = new AlertDialog.Builder(mActivity);
          
@@ -66,14 +69,37 @@ public abstract class SetAttributesDialog extends DialogFragment
          scrollView.addView(mMainLayout);
          
          dialogBuilder.setView(scrollView);
-         loadAttributes();
          
          dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
          dialogBuilder.setNegativeButton(R.string.negative_button, null);
          
          return dialogBuilder.create();
     }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        super.onActivityCreated(savedInstanceState);
+
+        if(savedInstanceState != null)
+        {
+            data = (SetAttributesDialogSaveData)savedInstanceState.getSerializable(TAG_SAVESTATE);
+            mLayer = LayerManager.getInstance().getLayerByName(data.layerName);
+        }
+        
+        checkCountAttributes();
+        loadAttributes();
+    }
     
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        data.layerName = mLayer.getData().name;
+        data.values = getValues();
+        outState.putSerializable(TAG_SAVESTATE, data);
+        
+        super.onSaveInstanceState(outState);
+    }    
     // getter setter ==================================================================================
     /**
      * @param mLayer the mLayer to set
@@ -134,7 +160,16 @@ public abstract class SetAttributesDialog extends DialogFragment
                 item.setName(column.name);
                 item.setInputType(column.type);
                 
-                String value = getValueOfAttribute(column, i);
+                String value;
+                if(data.values != null)
+                {
+                    value = data.values[i];
+                }
+                else
+                {
+                    value = getValueOfAttribute(column, i);
+                }
+                
                 if(value != null)
                 {
                     item.setValue(value);
@@ -181,4 +216,7 @@ public abstract class SetAttributesDialog extends DialogFragment
      */
     protected abstract void emptyExecute();
     protected abstract void execute();
+    
+    // classes =======================================================================================
+
 }
