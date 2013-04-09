@@ -28,6 +28,7 @@ public class Navigator
     
     private final static double O_EARTH_ZOOM_LEVEL = 40075016.68557849;
     private final static double DEFAULT_ZOOM = 10;
+    private final static double MIN_ZOOM_TO_LAYER = 0.5;
 
     // singleton code =====================================================================
     
@@ -225,15 +226,24 @@ public class Navigator
         double envelopeHeight = zoomingEnvelope.getHeight();
         double screenWidth = mPxScreen.getWidth();
         double screenHeight = mPxScreen.getHeight();
+        
+        double newZoom;
         if(envelopeWidth/envelopeHeight >
            screenWidth/screenHeight)
         {
-            setZoom(envelopeWidth/screenWidth);
+            newZoom = envelopeWidth/screenWidth;
         }
         else
         {
-            setZoom(envelopeHeight/screenHeight);
+            newZoom = envelopeHeight/screenHeight;
         }
+        
+        if(newZoom < MIN_ZOOM_TO_LAYER)
+        {
+            newZoom = MIN_ZOOM_TO_LAYER;
+        }
+        
+        setZoom(newZoom);
         
         setPositionM(zoomingEnvelope.centre());
     }

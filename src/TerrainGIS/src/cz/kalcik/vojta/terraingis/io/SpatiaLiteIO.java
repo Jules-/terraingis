@@ -727,6 +727,26 @@ public class SpatiaLiteIO
     {
         db.close();
     }
+    
+    /**
+     * @param name
+     * @return count of objects in layer
+     * @throws Exception
+     */
+    public int countObjects(String name) throws Exception
+    {
+        int result = -1;
+        
+        Stmt stmt = db.prepare(String.format("SELECT COUNT(*) FROM \"%s\"", name));
+        
+        if(stmt.step())
+        {
+            result = stmt.column_int(0);
+        }
+        stmt.close();
+        
+        return result;
+    }
     // private methods =======================================================================
     /**
      * open spatialite database

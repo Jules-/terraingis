@@ -24,10 +24,10 @@ public class LonLatFormat
     {
         String latChar = getLatitudeHemisphere(coordinate);
         String lonChar = getLongitudeHemisphere(coordinate);
-        int latDegrees = (int) coordinate.y;
-        int lonDegrees = (int) coordinate.x;
-        double latMinutes = getSubvalue(coordinate.y);
-        double lonMinutes = getSubvalue(coordinate.x);
+        int latDegrees = (int) Math.abs(coordinate.y);
+        int lonDegrees = (int) Math.abs(coordinate.x);
+        double latMinutes = getSubvalue(Math.abs(coordinate.y));
+        double lonMinutes = getSubvalue(Math.abs(coordinate.x));
         
         return String.format(Locale.UK, DM_FORMAT, latChar, latDegrees, latMinutes,
                 lonChar, lonDegrees, lonMinutes);

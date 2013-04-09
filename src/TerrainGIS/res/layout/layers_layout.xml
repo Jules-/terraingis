@@ -2,85 +2,97 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="horizontal" >
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/background_layersfragment_toolbar">
-
-        <ImageButton
-            android:id="@+id/button_hide"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu_hide_left"
-            android:layout_gravity="center_vertical"
-            android:background="@android:color/transparent"
-            android:padding="14dp" />
-        
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"/>
-
-        <ImageButton
-            android:id="@+id/button_hide_layer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu_hide_layer"
-            android:layout_gravity="center_vertical"
-            android:background="@android:color/transparent"
-            android:layout_weight="0"
-            android:padding="14dp" />
-        
-        <ImageButton
-            android:id="@+id/button_zoom_to_layer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu_zoom_to_layer"
-            android:layout_gravity="center_vertical"
-            android:background="@android:color/transparent"
-            android:layout_weight="0"
-            android:padding="14dp" />
-        
-        <ImageButton
-            android:id="@+id/button_add"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu_add"
-            android:layout_gravity="center_vertical"
-            android:background="@android:color/transparent"
-            android:layout_weight="0"
-            android:padding="14dp" />
-
-        <ImageButton
-            android:id="@+id/button_remove"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu_remove"
-            android:layout_gravity="center_vertical"
-            android:background="@android:color/transparent"
-            android:layout_weight="0"
-            android:padding="14dp" />
-
-    </LinearLayout>
-    
-    <cz.kalcik.vojta.terraingis.view.LayersView
-        xmlns:dslv="http://schemas.android.com/apk/res/cz.kalcik.vojta.terraingis"
-        android:id="@+id/list_layers"
-        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:choiceMode="singleChoice" 
-        dslv:click_remove_id="@id/click_remove"
-        dslv:collapsed_height="1px"
-        dslv:drag_enabled="true"
-        dslv:drag_handle_id="@id/drag_handle"
-        dslv:drag_scroll_start="0.33"
-        dslv:drag_start_mode="onDown"
-        dslv:float_alpha="0.6"
-        dslv:remove_enabled="true"
-        dslv:remove_mode="clickRemove"
-        dslv:slide_shuffle_speed="0.3"
-        dslv:float_background_color="@android:color/background_light" />
-
+        android:orientation="vertical"
+        android:layout_weight="1">
+        
+	    <LinearLayout
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:background="@color/background_layersfragment_toolbar">
+	
+	        <ImageButton
+	            android:id="@+id/button_hide"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:src="@drawable/ic_menu_hide_left"
+	            android:layout_gravity="center_vertical"
+	            android:background="@android:color/transparent"
+	            android:padding="14dp" />
+	        
+	        <LinearLayout
+	            android:layout_width="match_parent"
+	            android:layout_weight="1"
+	            android:layout_height="wrap_content"/>
+	
+	        <ImageButton
+	            android:id="@+id/button_hide_layer"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:src="@drawable/ic_menu_hide_layer"
+	            android:layout_gravity="center_vertical"
+	            android:background="@android:color/transparent"
+	            android:layout_weight="0"
+	            android:padding="14dp" />
+	        
+	        <ImageButton
+	            android:id="@+id/button_zoom_to_layer"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:src="@drawable/ic_menu_zoom_to_layer"
+	            android:layout_gravity="center_vertical"
+	            android:background="@android:color/transparent"
+	            android:layout_weight="0"
+	            android:padding="14dp" />
+	        
+	        <ImageButton
+	            android:id="@+id/button_add"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:src="@drawable/ic_menu_add"
+	            android:layout_gravity="center_vertical"
+	            android:background="@android:color/transparent"
+	            android:layout_weight="0"
+	            android:padding="14dp" />
+	
+	        <ImageButton
+	            android:id="@+id/button_remove"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:src="@drawable/ic_menu_remove"
+	            android:layout_gravity="center_vertical"
+	            android:background="@android:color/transparent"
+	            android:layout_weight="0"
+	            android:padding="14dp" />
+	
+	    </LinearLayout>
+	    
+	    <cz.kalcik.vojta.terraingis.view.LayersView
+	        xmlns:dslv="http://schemas.android.com/apk/res/cz.kalcik.vojta.terraingis"
+	        android:id="@+id/list_layers"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:choiceMode="singleChoice" 
+	        dslv:click_remove_id="@id/click_remove"
+	        dslv:collapsed_height="1px"
+	        dslv:drag_enabled="true"
+	        dslv:drag_handle_id="@id/drag_handle"
+	        dslv:drag_scroll_start="0.33"
+	        dslv:drag_start_mode="onDown"
+	        dslv:float_alpha="0.6"
+	        dslv:remove_enabled="true"
+	        dslv:remove_mode="clickRemove"
+	        dslv:slide_shuffle_speed="0.3"
+	        dslv:float_background_color="@android:color/background_light" />
+	</LinearLayout>
+	
+    <View 
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:background="@color/layerfragment_border"
+        android:layout_weight="0" />
 </LinearLayout>

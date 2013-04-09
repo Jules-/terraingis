@@ -344,6 +344,16 @@ public class LayersFragment extends Fragment
             
             SpatiaLiteIO spatialite = mLayerManager.getSpatialiteIO();
             
+            // empty layer
+            if(selectedLayer instanceof VectorLayer &&
+                    ((VectorLayer)selectedLayer).getCountObjects() == 0)
+            {
+                String message = getString(R.string.empty_layer_error);
+                Toast.makeText(mMainActivity, String.format(message, selectedLayer.toString()),
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+            
             int from = selectedLayer.getSrid();
             int to = mLayerManager.getSrid();
             Envelope envelope = selectedLayer.getEnvelope();
@@ -366,15 +376,6 @@ public class LayersFragment extends Fragment
                             Toast.LENGTH_LONG).show();
                     return;
                 }
-            }
-            
-            // empty layer
-            if(envelope.getWidth() < Settings.MIN_M_DISTANCE)
-            {
-                String message = getString(R.string.empty_layer_error);
-                Toast.makeText(mMainActivity, String.format(message, selectedLayer.toString()),
-                        Toast.LENGTH_LONG).show();
-                return;
             }
             
             mMainActivity.getMapFragment().getMap().zoomToEnvelopeM(envelope);

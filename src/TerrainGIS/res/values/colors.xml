@@ -6,4 +6,5 @@
     <color name="background_list2">#ffe8e8e8</color>
     <color name="attribute_table_header_background">#ffcccccc</color>
     <color name="coordinates_add_point">#ffff0000</color>
+    <color name="layerfragment_border">#ff999999</color>
 </resources>

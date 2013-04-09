@@ -101,6 +101,7 @@ public abstract class VectorLayer extends AbstractLayer
             new ArrayList<Coordinate>(), -1);
     protected AttributeHeader mAttributeHeader;
     protected MapFragment mMapFragment;
+    protected int mCountObjects;
     
     // constructors ============================================================
     
@@ -123,7 +124,7 @@ public abstract class VectorLayer extends AbstractLayer
         mGeometryColumn = mSpatialite.getColumnGeom(name);
         mHasIndex = mSpatialite.indexEnabled(name);
         mAttributeHeader = mSpatialite.getAttributeTable(name);
-        updateEnvelope();
+        updateLayerAttributes();
     }
 
     // abstract methods =======================================================
@@ -219,7 +220,7 @@ public abstract class VectorLayer extends AbstractLayer
         }
         
         stmt.close();
-        updateEnvelope();
+        updateLayerAttributes();
     }
     
     /**
@@ -429,9 +430,17 @@ public abstract class VectorLayer extends AbstractLayer
     {
         return mAttributeHeader;
     }
-    
+
+    /**
+     * @return the mCountObjects
+     */
+    public int getCountObjects()
+    {
+        return mCountObjects;
+    }    
+        
     // public static ============================================================
-    
+
     /**
      * convert points to geometry
      * @param points
@@ -496,9 +505,10 @@ public abstract class VectorLayer extends AbstractLayer
      * update envelope of Layer
      * @throws Exception 
      */
-    protected void updateEnvelope() throws Exception
+    protected void updateLayerAttributes() throws Exception
     {
         mEnvelope = mSpatialite.getEnvelopeLayer(super.data.name, mGeometryColumn, mHasIndex);
+        mCountObjects = mSpatialite.countObjects(data.name);
     }
     
     /**
@@ -607,7 +617,7 @@ public abstract class VectorLayer extends AbstractLayer
                 mLayerManager.getSrid(), mSrid,
                 mAttributeHeader, attributes, false);
         
-        updateEnvelope();
+        updateLayerAttributes();
     }
     
     /**

@@ -21,7 +21,6 @@ public class Settings
     }
     
     // constants ==========================================================================
-    public static final double MIN_M_DISTANCE = 0.000001;
     public static final int LOCATION_MINDIST_DEFAULT = 0; 
     public static final int DP_RADIUS_CLICK = 20; 
     public static final int DP_SIZE_SIDE_CLICK = 50; 
