@@ -297,7 +297,7 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public void removeSelected() throws Exception
     {
-        if(vectorLayerData.selectedNodeIndex >= 0)
+        if(vectorLayerData.selectedNodeIndex >= 0 && mType != VectorLayerType.POINT)
         {
             vectorLayerData.selectedObjectPoints.remove(vectorLayerData.selectedNodeIndex);
             if(vectorLayerData.selectedNodeIndex >= vectorLayerData.selectedObjectPoints.size())

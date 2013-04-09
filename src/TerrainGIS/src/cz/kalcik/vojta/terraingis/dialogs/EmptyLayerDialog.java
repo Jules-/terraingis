@@ -3,6 +3,7 @@
  */
 package cz.kalcik.vojta.terraingis.dialogs;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -21,16 +22,15 @@ import android.app.Dialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 /**
@@ -40,15 +40,28 @@ import android.widget.Toast;
 public class EmptyLayerDialog extends CreateLayerDialog
 {
     // constants ======================================================================================
-    
+    private final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.EmptyLayerDialogSaveState";
     
     // attributes =====================================================================================
-    MainActivity mMainActivity;
-    LinearLayout mLayout;
-    LayoutInflater mInflater;
-    ArrayList<AttributeColumnLayout> mAttributes = new ArrayList<AttributeColumnLayout>();
-    int attributeId = 0;
+    public static class EmptyLayerDialogData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+
+        public String name;
+        public String layerType;
+        public ArrayList<SavedItem> items;
+
+        public EmptyLayerDialogData(){}
+    }
     
+    private MainActivity mMainActivity;
+    private LinearLayout mLayout;
+    private LayoutInflater mInflater;
+    private ArrayList<AttributeColumnLayout> mAttributes = new ArrayList<AttributeColumnLayout>();
+    private EmptyLayerDialogData data = new EmptyLayerDialogData();
+    private EditText mNameEditText;
+    private Spinner mSpinnerLayerType;
+
     // on methods =====================================================================================
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
@@ -62,8 +75,11 @@ public class EmptyLayerDialog extends CreateLayerDialog
          
          View view = mInflater.inflate(R.layout.dialog_empty_layer, null);
          mLayout = (LinearLayout)view.findViewById(R.id.empty_layer_dialog_layout);
-         addAttribute(AttributeHeader.DATETIME_COLUMN, AttributeHeader.DATETIME_TYPE, false);
-         setBackgroundColors();
+
+         //form items
+         mNameEditText = (EditText)view.findViewById(R.id.edit_text_name_empty);
+         mSpinnerLayerType = (Spinner)view.findViewById(R.id.spinner_layer_type);
+         
          ImageButton addButton = (ImageButton)view.findViewById(R.id.button_add);
          addButton.setOnClickListener(addAttributeHandler);
          dialogBuilder.setView(view);
@@ -76,7 +92,57 @@ public class EmptyLayerDialog extends CreateLayerDialog
          
          return dialog;
     }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        super.onActivityCreated(savedInstanceState);
+
+        if(savedInstanceState != null)
+        {
+            data = (EmptyLayerDialogData) savedInstanceState.getSerializable(TAG_SAVESTATE);
+            mNameEditText.setText(data.name);
+            
+            String[] types = getResources().getStringArray(R.array.layer_type);
+            int count = types.length;
+            for(int i=0; i < count; i++)
+            {
+                if(types[i].equals(data.layerType))
+                {
+                    mSpinnerLayerType.setSelection(i);
+                    break;
+                }
+            }
+            
+            for(SavedItem item: data.items)
+            {
+                addAttribute(item.name, item.type, item.canChange);
+            }
+            
+            setBackgroundColors();  
+        }
+        else
+        {
+            addAttribute(AttributeHeader.DATETIME_COLUMN, AttributeHeader.DATETIME_TYPE, false);
+            setBackgroundColors();            
+        }
+    }
     
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        data.name = mNameEditText.getText().toString();
+        data.layerType = (String)mSpinnerLayerType.getSelectedItem();
+        data.items = new ArrayList<EmptyLayerDialog.SavedItem>();
+        for(AttributeColumnLayout layout: mAttributes)
+        {
+            data.items.add(new SavedItem(layout.getName(), layout.getType(), layout.canChange()));
+        }
+        
+        outState.putSerializable(TAG_SAVESTATE, data);
+        
+        super.onSaveInstanceState(outState);
+    }  
     // private methods ================================================================================
     /**
      * add attribute to form
@@ -202,8 +268,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
         public void onClick(View v)
         {
             // name
-            EditText nameEditText = (EditText)getDialog().findViewById(R.id.edit_text_name_empty);
-            String name = nameEditText.getText().toString();
+            String name = mNameEditText.getText().toString();
             try
             {
                 checkName(name);
@@ -215,8 +280,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
                 return;
             }
             // type
-            Spinner spinnerLayerType = (Spinner)getDialog().findViewById(R.id.spinner_layer_type);
-            String layerType = (String)spinnerLayerType.getSelectedItem();
+            String layerType = (String)mSpinnerLayerType.getSelectedItem();
                        
             SpatiaLiteIO spatialite = LayerManager.getInstance().getSpatialiteIO();
             
@@ -268,4 +332,17 @@ public class EmptyLayerDialog extends CreateLayerDialog
     };
     
     // classes ======================================================================================
+    private class SavedItem
+    {
+        String name;
+        AttributeType type;
+        boolean canChange;
+        
+        public SavedItem(String name, AttributeType type, boolean canChange)
+        {
+            this.name = name;
+            this.type = type;
+            this.canChange = canChange;
+        }
+    }
 }

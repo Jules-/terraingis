@@ -39,4 +39,12 @@ public class AttributeColumnLayout extends LinearLayout
         Spinner spinner = (Spinner)findViewById(R.id.spinner_attribute_type);
         return (AttributeType) spinner.getSelectedItem();
     }
+    
+    /**
+     * @return true if user can change name
+     */
+    public boolean canChange()
+    {
+        return ((EditText)findViewById(R.id.edit_text_name_column)).isEnabled();
+    }
 }
