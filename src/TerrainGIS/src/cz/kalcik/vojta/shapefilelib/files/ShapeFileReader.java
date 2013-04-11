@@ -62,9 +62,6 @@ public abstract class ShapeFileReader {
   
   public abstract void printHeader();
   public abstract void printContent();
-
-  
-  
   
   public static ByteBuffer loadFile(File file) throws IOException{
     FileInputStream is = new FileInputStream(file);
