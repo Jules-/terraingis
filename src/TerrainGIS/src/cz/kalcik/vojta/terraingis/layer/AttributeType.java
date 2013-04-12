@@ -51,4 +51,21 @@ public enum AttributeType
             return null;
         }
     }
+    
+    public static FieldType fromSpatialiteToShapefile(AttributeType type)
+    {
+        if(type == AttributeType.TEXT)
+        {
+            return FieldType.C;
+        }
+        else if(type == AttributeType.INTEGER ||
+                type == AttributeType.REAL)
+        {
+            return FieldType.N;
+        }
+        else
+        {
+            return null;
+        }
+    }
 }

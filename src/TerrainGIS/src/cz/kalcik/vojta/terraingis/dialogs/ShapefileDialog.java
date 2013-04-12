@@ -1,9 +1,6 @@
 package cz.kalcik.vojta.terraingis.dialogs;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.TreeSet;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
@@ -20,18 +17,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class ShapefileDialog extends CreateLayerDialog
+public abstract class ShapefileDialog extends CreateLayerDialog
 {
-    // constants =====================================================================================
-    private final Set<String> SUFFIXS = new TreeSet<String>(Arrays.asList(".shp", ".shx", ".dbf")); 
-    
-    
     // attributes ====================================================================================
-    MainActivity mMainActivity;
-    private File mFile;
-    private String mNameNoSuffix;
-    EditText mNameEditText;
-    EditText mSridEditText;
+    protected MainActivity mMainActivity;
+    protected EditText mNameEditText;
+    protected EditText mSridEditText;
+    protected EditText mCharsetEditText;
     
     // public methods ================================================================================
     /**
@@ -43,56 +35,35 @@ public class ShapefileDialog extends CreateLayerDialog
         mSridEditText.setText(Integer.toString(srid));
     }
     
-    // getter setter =================================================================================
-    /**
-     * set filename for import
-     * @param file
-     * @return
-     */
-    public void setFile(File file)
-    {
-        mFile = file;
-        String name = file.getName();
-        int dotIndex = name.lastIndexOf('.');
-        
-        if(dotIndex == -1)
-        {
-            throw new RuntimeException();
-        }
-        
-        String suffix = name.substring(dotIndex);
-        if(!SUFFIXS.contains(suffix))
-        {
-            throw new RuntimeException();
-        }
-        
-        mNameNoSuffix = name.substring(0, dotIndex);
-    }
-    
     // on methods ====================================================================================
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
     {
         mMainActivity = (MainActivity)getActivity();
         Builder dialogBuilder = new AlertDialog.Builder(mMainActivity);
-         
-        dialogBuilder.setTitle(mFile.getName());
+        
          
         LayoutInflater inflater = mMainActivity.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_shapefile, null);
         dialogBuilder.setView(dialogView);
         mNameEditText = (EditText)dialogView.findViewById(R.id.edit_text_name_shapefile);
-        mNameEditText.setText(mNameNoSuffix);
         mSridEditText = (EditText)dialogView.findViewById(R.id.edit_text_srid_shapefile);
+        mCharsetEditText = (EditText)dialogView.findViewById(R.id.edit_text_charset_shapefile);
         Button findButton = (Button)dialogView.findViewById(R.id.button_run_find_dialog);
         findButton.setOnClickListener(findSridHandler);
+
+        initDialog(dialogBuilder);
          
         dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
         dialogBuilder.setNegativeButton(R.string.negative_button, null);
          
         return dialogBuilder.create();
     }
-    // private methods ================================================================================
+    // abstract protected methods ================================================================================
+    
+    protected abstract void initDialog(Builder dialogBuilder);
+    protected abstract void checkValues(String name);
+    protected abstract void exec(String name, String sridString, String charset);
     
     // handlers =======================================================================================
  
@@ -107,23 +78,23 @@ public class ShapefileDialog extends CreateLayerDialog
             String name = mNameEditText.getText().toString();
             try
             {
-                checkName(name);
+                checkValues(name);
+                
+                // srid
                 String sridString = mSridEditText.getText().toString();
                 if(sridString.isEmpty())
                 {
                     throw new RuntimeException(getString(R.string.srid_empty_error));
                 }
                 
-                try
+                // charset
+                String charset = mCharsetEditText.getText().toString();
+                if(charset.isEmpty())
                 {
-                    ShapeFileIO.getInstance().load(mFile.getParent(), mNameNoSuffix, name,
-                            Integer.parseInt(sridString), mMainActivity.getMapFragment());
+                    throw new RuntimeException(getString(R.string.charset_empty_error));
                 }
-                catch (Exception e)
-                {
-                    Log.e("TerrainGIS", e.getMessage());
-                    throw new RuntimeException(getString(R.string.load_shapefile_error));
-                }
+                
+                exec(name, sridString, charset);
                 
                 ((MainActivity)mMainActivity).getLayersFragment().invalidateListView();
             }

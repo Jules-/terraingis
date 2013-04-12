@@ -34,6 +34,7 @@ import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialog;
+import cz.kalcik.vojta.terraingis.io.ShapefileDialogImport;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
@@ -218,7 +219,7 @@ public class LayersFragment extends Fragment
             {
                 File shapefile = new File(data.getData().getPath());
 
-                ShapefileDialog dialog = new ShapefileDialog();
+                ShapefileDialogImport dialog = new ShapefileDialogImport();
                 
                 try
                 {

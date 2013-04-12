@@ -44,30 +44,6 @@ public abstract class VectorLayer extends AbstractLayer
     // constants ==============================================================
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     
-    // enum ===================================================================
-    public enum VectorLayerType
-    {
-        POINT, LINE, POLYGON;
-        
-        public String getSpatialiteType()
-        {
-            if(this == POINT)
-            {
-                return "POINT";
-            }
-            else if(this == LINE)
-            {
-                return "LINESTRING";
-            }
-            else if(this == POLYGON)
-            {
-                return "POLYGON";
-            }
-            
-            return null;
-        }
-    };
-    
     // attributes ==============================================================
     protected static class VectorLayerData implements Serializable
     {

@@ -11,11 +11,12 @@ import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field.FieldType;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO.Layer;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
-import cz.kalcik.vojta.terraingis.layer.VectorLayer.VectorLayerType;
+import cz.kalcik.vojta.terraingis.layer.VectorLayerType;
 
 /**
  * @author jules
@@ -36,17 +37,15 @@ public class ShapeFileIO
     
     // public methods =====================================================================
     /**
-     * load shapefile layer
+     * import shapefile layer
      * @param context
      * @param file
      * @throws Exception 
      */
-    public void load(String folder, String filename, String layerName, int srid,
-            MapFragment mapFragment) throws Exception
+    public void importShapefile(String folder, String filename, String layerName, int srid,
+            String charset, MapFragment mapFragment) throws Exception
     {
-        ShapeFile shapeFile = null;
-
-        shapeFile = new ShapeFile(folder, filename);
+        ShapeFile shapeFile = new ShapeFile(folder, filename, charset);
         shapeFile.READ();
         
         ShpShape.Type type = shapeFile.getSHP_shapeType();
@@ -62,6 +61,19 @@ public class ShapeFileIO
         layer.importObjects(new ShapeFileIterator(shapeFile));
     }
     
+    
+    public void exportShapefile(String folder, String filename, String charset,
+            String layerName) throws Exception
+    {
+        ShapeFile shapeFile = new ShapeFile(folder, filename, charset);
+        
+        LayerManager layerManager = LayerManager.getInstance();
+        SpatiaLiteIO spatialiteManager = layerManager.getSpatialiteIO();
+        
+        Layer layer = spatialiteManager.getLayer(layerName);
+        ShpShape.Type type = VectorLayerType.spatialiteToShapefile(
+                VectorLayerType.valueOf(layer.type));
+    }
     // public static methods ==============================================================
     
     /**
@@ -70,30 +82,9 @@ public class ShapeFileIO
      */
     public static String getTypeString(ShpShape.Type type)
     {        
-        return getType(type).getSpatialiteType();
+        return VectorLayerType.shapefileToSpatialite(type).getSpatialiteType();
     }
     
-    /**
-     * @param type
-     * @return type of layer
-     */
-    public static VectorLayerType getType(ShpShape.Type type)
-    {
-        if(type.isTypeOfPoint() || type.isTypeOfMultiPoint())
-        {
-            return VectorLayerType.POINT;
-        }
-        else if(type.isTypeOfPolyLine())
-        {
-            return VectorLayerType.LINE;
-        }
-        else if(type.isTypeOfPolygon())
-        {
-            return VectorLayerType.POLYGON;
-        }
-        
-        return null;
-    }
     // private methods =====================================================================    
     /**
      * create attribute table from shapeFile

@@ -11,6 +11,7 @@
     <string name="attributes_form">Attributes</string>
     <string name="null_value_form">NULL</string>
     <string name="find_button_form">Find</string>
+    <string name="charset_form">Charset</string>
     <!-- error messages -->
     <string name="location_fix_error">Location is not fix!</string>
     <string name="location_error">Can not run location service!</string>
@@ -26,6 +27,7 @@
     <string name="empty_layer_error">Layer %s is empty!</string>
     <string name="device_no_gps_error">Device does not have GPS!</string>
     <string name="srid_empty_error">SRS is empty!</string>
+    <string name="charset_empty_error">Charset is empty!</string>
     <string name="bad_shapefile_error">Bad shapefile name!</string>
     <string name="load_shapefile_error">Can not load shapefile!</string>
     <string name="layer_attribu_tetable_error">This layer does not have attributes!</string>
@@ -65,4 +67,5 @@
     <string name="confirm_remove_message">Really remove %s layer?</string>
     <string name="confirm_remove_object_message">Really remove selected object?</string>
     <string name="exit_message">Do you want to exit?</string>
+    <string name="default_charset">UTF-8</string>
 </resources>

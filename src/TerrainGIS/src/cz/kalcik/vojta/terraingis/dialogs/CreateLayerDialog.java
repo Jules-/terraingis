@@ -6,14 +6,10 @@ import android.app.DialogFragment;
 
 public abstract class CreateLayerDialog extends DialogFragment
 {
-    // public methods =====================================================
-    public void checkName(String name)
+    // protected methods =====================================================
+    protected void checkName(String name)
     {
-        // name
-        if(name.isEmpty())
-        {
-            throw new RuntimeException(getString(R.string.name_layer_error));
-        }
+        checkNameEmpty(name);
         //check exist name
         LayerManager layerManager = LayerManager.getInstance();
         if(layerManager.hasLayer(name))
@@ -21,5 +17,13 @@ public abstract class CreateLayerDialog extends DialogFragment
             String errorMessage = getString(R.string.name_exist_error);
             throw new RuntimeException(String.format(errorMessage, name));
         }     
+    }
+    
+    protected void checkNameEmpty(String name)
+    {
+        if(name.isEmpty())
+        {
+            throw new RuntimeException(getString(R.string.name_layer_error));
+        }        
     }
 }

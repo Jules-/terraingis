@@ -62,6 +62,9 @@ public class DBF_File extends ShapeFileReader
 
     // constatnts
     private static final byte DBF_FILE_TYPE = 0x03;
+    private static final byte DBF_TERMINATOR_BYTE = 0x0d;
+    private static final byte DBF_RECORD_DELETED_FLAG = 0x20;
+    
     private static final int DBF_BEGIN_HEADER_LENGTH = 32;
     private static final int DBF_FIELD_DESCRIPTOR_LENGTH = 32;
 
@@ -87,10 +90,15 @@ public class DBF_File extends ShapeFileReader
 
     // RECORD TABLE
     private String[][] DBF_records;
+    
+    //attributes
+    private String charset;
 
-    public DBF_File(ShapeFile parent_shapefile, File file) throws IOException
+    public DBF_File(ShapeFile parent_shapefile, File file, String charset) throws IOException
     {
         super(parent_shapefile, file);
+        
+        this.charset = charset;
     }
 
     @Override
@@ -116,15 +124,15 @@ public class DBF_File extends ShapeFileReader
         bb.position(POS);
 
         int num_fields = (DBF_size_header_bytes - POS - 1)
-                / DBF_Field.SIZE_BYTES; // cant this be easier???
+                / DBF_Field.FIELD_LENGTH; // cant this be easier???
         DBF_fields = new DBF_Field[num_fields];
 
         for (int i = 0; i < DBF_fields.length; i++)
         {
             DBF_fields[i] = new DBF_Field(this, i);
-            DBF_fields[i].readData(bb);
+            DBF_fields[i].readData(bb, charset);
             // DBF_fields[i].print();
-            POS += DBF_Field.SIZE_BYTES;
+            POS += DBF_Field.FIELD_LENGTH;
             bb.position(POS);
         }
 
@@ -184,13 +192,13 @@ public class DBF_File extends ShapeFileReader
         }
     }
 
-    public void write(String charset) throws Exception
+    public void write() throws Exception
     {
         int countOfFields = DBF_fields.length;
         // size
         short headerSize = (short) (DBF_BEGIN_HEADER_LENGTH
                 + DBF_FIELD_DESCRIPTOR_LENGTH * countOfFields + 1);
-        short recordSize = 0;
+        short recordSize = 1; // Record deleted flag
         for (DBF_Field field : DBF_fields)
         {
             recordSize += field.getLength();
@@ -221,18 +229,52 @@ public class DBF_File extends ShapeFileReader
         
         for (DBF_Field field : DBF_fields)
         {
-            bb.put(field.getBytes(charset));
+            bb.put(field.getFieldBytes(charset));
         }
+        
+        bb.put(DBF_TERMINATOR_BYTE);
         
         for (int i=0; i < countOfRecords; i++)
         {
+            bb.put(DBF_RECORD_DELETED_FLAG);
+            
             for (int j=0; j < countOfFields; j++)
             {
-                // TODO
+                bb.put(DBF_fields[j].getValueBytes(DBF_records[i][j], charset));
             } 
         }        
     }
 
+    /**
+     * return bytes of text long text is trimed
+     * 
+     * @param text
+     * @param maxsize
+     * @param charset
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public byte[] getBytes(String text, int maxsize, String charset)
+            throws UnsupportedEncodingException
+    {
+        if(text.length() > maxsize)
+        {
+            text = (String) text.subSequence(0, maxsize);
+        }
+        
+        // check count bytes (utf-8)
+        byte[] bytes = text.getBytes(charset);
+        
+        while(bytes.length > maxsize)
+        {
+            text = (String) text.subSequence(0, text.length()-1);
+            
+            bytes = text.getBytes(charset);
+        }
+        
+        return bytes;
+    }
+    
     /**
      * get a 2D-String-table from the dbf-file.<br>
      * data-storage: String[row][col]... String[number of records][number of
@@ -266,6 +308,15 @@ public class DBF_File extends ShapeFileReader
         return String.format("%d.%d.%d", DBF_date_yy, DBF_date_mm, DBF_date_dd);
     }
 
+    /**
+     * set array of records
+     * @param records
+     */
+    public void setRecords(String[][] records)
+    {
+        DBF_records = records;
+    }
+    
     @Override
     public void printHeader()
     {

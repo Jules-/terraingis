@@ -28,6 +28,7 @@ package cz.kalcik.vojta.shapefilelib.files.dbf;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 /**
  * class DBF_Field.<br>
@@ -42,7 +43,7 @@ import java.nio.ByteOrder;
 public class DBF_Field
 {
     /** field-length in bytes (used for reading from the bytebuffer). */
-    public static final int SIZE_BYTES = 32;
+    public static final int FIELD_LENGTH = 32;
     public static final int FIELD_NAME_LENGTH = 10;
     public static final int FIELD_TYPE_POSITION = 11;
     
@@ -77,13 +78,13 @@ public class DBF_Field
         this.index = index;
     }
 
-    public void readData(ByteBuffer bb, String encoding)
+    public void readData(ByteBuffer bb, String charset)
     {
         byte[] string_tmp = new byte[11]; // 0-11
         bb.get(string_tmp);
         try
         {
-            DBF_field_name = new String(string_tmp, encoding); // 0-terminated
+            DBF_field_name = new String(string_tmp, charset); // 0-terminated
                                                                    // String
             DBF_field_name = DBF_field_name.substring(0,
                     DBF_field_name.indexOf('\0')); // get proper name
@@ -105,12 +106,14 @@ public class DBF_Field
      * @return field like ByteBuffer
      * @throws UnsupportedEncodingException
      */
-    public ByteBuffer getBytes(String charset) throws UnsupportedEncodingException
+    public ByteBuffer getFieldBytes(String charset) throws UnsupportedEncodingException
     {
-        ByteBuffer result = ByteBuffer.allocate(SIZE_BYTES);
+        ByteBuffer result = ByteBuffer.allocate(FIELD_LENGTH);
         result.order(ByteOrder.LITTLE_ENDIAN);
         
-        result.put(DBF_field_name.getBytes(charset));
+        result.put(parent_dbasefile.getBytes(DBF_field_name,
+                FIELD_NAME_LENGTH, charset));
+        
         result.position(FIELD_TYPE_POSITION);
         result.putChar(DBF_field_type);
         result.position(result.position()+4);
@@ -119,6 +122,40 @@ public class DBF_Field
         return result;
     }
 
+    /**
+     * get DBF_field_length bytes for record
+     * @param value
+     * @param charset
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public byte[] getValueBytes(String value, String charset) throws UnsupportedEncodingException
+    {
+        byte[] result = new byte[DBF_field_length];
+        Arrays.fill(result, (byte) ' ');
+        
+        byte[] valueBytes = parent_dbasefile.getBytes(value, DBF_field_length, charset);
+        int firstIndex = 0;
+        int lengthSubArray = valueBytes.length;
+        // character
+        if(DBF_field_type == FieldType.C.ID())
+        {
+            firstIndex = 0;
+        }
+        // numeric
+        else if(DBF_field_type == FieldType.N.ID())
+        {
+            firstIndex = result.length - valueBytes.length;
+        }
+        
+        for(int i=0; i < lengthSubArray; i++)
+        {
+            result[firstIndex+i] = valueBytes[i];
+        }
+        
+        return result;
+    }    
+    
     /**
      * print the fields' data.
      */
@@ -145,24 +182,9 @@ public class DBF_Field
     }
 
     
-    public void setName(String name, String encoding) throws UnsupportedEncodingException
+    public void setName(String name)
     {
         DBF_field_name = new String(name);
-        
-        if(DBF_field_name.length() > FIELD_NAME_LENGTH)
-        {
-            DBF_field_name = (String) DBF_field_name.subSequence(0, FIELD_NAME_LENGTH);
-        }
-        
-        // check count bytes (utf-8)
-        byte[] bytes = DBF_field_name.getBytes(encoding);
-        
-        while(bytes.length > FIELD_NAME_LENGTH)
-        {
-            DBF_field_name = (String) DBF_field_name.subSequence(0, DBF_field_name.length()-1);
-            
-            bytes = DBF_field_name.getBytes(encoding);
-        }
     }
     
     /**

@@ -15,6 +15,7 @@ import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolygon;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
+import cz.kalcik.vojta.terraingis.layer.VectorLayerType;
 
 /**
  * @author jules
@@ -51,7 +52,8 @@ class ShapeFileIterator implements Iterator<ShapeFileRecord>
         ArrayList<Coordinate> resultPoints = getPoints();
         
         ShapeFileRecord result = new ShapeFileRecord();
-        result.setGeometry(VectorLayer.createGeometry(resultPoints, ShapeFileIO.getType(mType)));
+        result.setGeometry(VectorLayer.createGeometry(resultPoints,
+                VectorLayerType.shapefileToSpatialite(mType)));
         result.setAttributes(mFile.getDBF_record(mIndex));
         incrementIndex();
         

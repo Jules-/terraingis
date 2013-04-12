@@ -31,7 +31,7 @@ import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer.AbstractLayerData;
-import cz.kalcik.vojta.terraingis.layer.VectorLayer.VectorLayerType;
+import cz.kalcik.vojta.terraingis.layer.VectorLayerType;
 import cz.kalcik.vojta.terraingis.location.AutoRecordService;
 import cz.kalcik.vojta.terraingis.location.AutoRecordServiceConnection;
 import cz.kalcik.vojta.terraingis.view.MapView;
