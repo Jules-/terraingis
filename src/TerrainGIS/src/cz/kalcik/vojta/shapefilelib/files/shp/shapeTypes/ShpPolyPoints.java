@@ -35,24 +35,24 @@ public abstract class ShpPolyPoints extends ShpShape
     }
 
     @Override
-    protected void setBytesRecord(ByteBuffer bb)
+    protected void setBytesRecord(ByteBuffer buffer)
     {
-        bb.putDouble(SHP_bbox[0][0]); // x-min
-        bb.putDouble(SHP_bbox[1][0]); // y-min
-        bb.putDouble(SHP_bbox[0][1]); // x-max
-        bb.putDouble(SHP_bbox[1][1]); // y-max
-        bb.putInt(SHP_num_parts);
-        bb.putInt(SHP_num_points);
+        buffer.putDouble(SHP_bbox[0][0]); // x-min
+        buffer.putDouble(SHP_bbox[1][0]); // y-min
+        buffer.putDouble(SHP_bbox[0][1]); // x-max
+        buffer.putDouble(SHP_bbox[1][1]); // y-max
+        buffer.putInt(SHP_num_parts);
+        buffer.putInt(SHP_num_points);
         
         for(int i=0; i < SHP_num_parts; i++)
         {
-            bb.putInt(SHP_parts[i]);
+            buffer.putInt(SHP_parts[i]);
         }
         
         for(int i=0; i < SHP_num_points; i++)
         {
-            bb.putDouble(SHP_xyz_points[i][0]);
-            bb.putDouble(SHP_xyz_points[i][1]);
+            buffer.putDouble(SHP_xyz_points[i][0]);
+            buffer.putDouble(SHP_xyz_points[i][1]);
         }
         
         // if SHAPE-TYPE: 13

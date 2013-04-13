@@ -34,6 +34,7 @@ import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialog;
+import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialogExport;
 import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialogImport;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
@@ -263,9 +264,27 @@ public class LayersFragment extends Fragment
             }
             else
             {
-                Toast.makeText(mMainActivity, R.string.layer_attribu_tetable_error, Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainActivity, R.string.layer_attribute_table_error, Toast.LENGTH_LONG).show();
                 return false;
             }
+        }
+        else if(item.getItemId() == R.id.menuitem_export_shapefile)
+        {
+            if(mContextMenuSelectedlayer instanceof VectorLayer)
+            {
+                ShapefileDialogExport dialog = new ShapefileDialogExport();
+                dialog.setLayerName(mContextMenuSelectedlayer.getData().name);
+                dialog.setSrid(mContextMenuSelectedlayer.getSrid());
+                mMainActivity.showDialog(dialog);
+                
+                return true;
+            }
+            else
+            {
+                Toast.makeText(mMainActivity, R.string.layer_export_error, Toast.LENGTH_LONG).show();
+                return false;
+            }
+                
         }
         else
         {

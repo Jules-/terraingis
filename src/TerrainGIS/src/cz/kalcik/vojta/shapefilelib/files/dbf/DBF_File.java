@@ -66,7 +66,6 @@ public class DBF_File extends ShapeFileReader
     private static final byte DBF_RECORD_DELETED_FLAG = 0x20;
     
     private static final int DBF_BEGIN_HEADER_LENGTH = 32;
-    private static final int DBF_FIELD_DESCRIPTOR_LENGTH = 32;
 
     /** enable/disable general info-logging. */
     public static boolean LOG_INFO = false;
@@ -104,6 +103,7 @@ public class DBF_File extends ShapeFileReader
     @Override
     public void read() throws Exception
     {
+        ByteBuffer bb = getFileBytes();
         // --------------------------------------------------------------------------
         // READ HEADER
         bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -197,7 +197,7 @@ public class DBF_File extends ShapeFileReader
         int countOfFields = DBF_fields.length;
         // size
         short headerSize = (short) (DBF_BEGIN_HEADER_LENGTH
-                + DBF_FIELD_DESCRIPTOR_LENGTH * countOfFields + 1);
+                + DBF_Field.FIELD_LENGTH * countOfFields + 1);
         short recordSize = 1; // Record deleted flag
         for (DBF_Field field : DBF_fields)
         {
@@ -229,7 +229,7 @@ public class DBF_File extends ShapeFileReader
         
         for (DBF_Field field : DBF_fields)
         {
-            buffer.put(field.getFieldBytes(charset));
+            field.setFieldBytes(buffer, charset);
         }
         
         buffer.put(DBF_TERMINATOR_BYTE);
@@ -240,7 +240,7 @@ public class DBF_File extends ShapeFileReader
             
             for (int j=0; j < countOfFields; j++)
             {
-                buffer.put(DBF_fields[j].getValueBytes(DBF_records[i][j], charset));
+                buffer.put(DBF_fields[j].getBytesFromString(DBF_records[i][j], charset));
             } 
         }
         
@@ -261,7 +261,7 @@ public class DBF_File extends ShapeFileReader
     {
         if(text.length() > maxsize)
         {
-            text = (String) text.subSequence(0, maxsize);
+            text = text.substring(0, maxsize);
         }
         
         // check count bytes (utf-8)
@@ -269,7 +269,7 @@ public class DBF_File extends ShapeFileReader
         
         while(bytes.length > maxsize)
         {
-            text = (String) text.subSequence(0, text.length()-1);
+            text = text.substring(0, text.length()-1);
             
             bytes = text.getBytes(charset);
         }

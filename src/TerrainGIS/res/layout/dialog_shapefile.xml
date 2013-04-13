@@ -60,8 +60,7 @@
 	    android:id="@+id/edit_text_charset_shapefile"
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-	    android:hint="@string/charset_form"
-	    android:text="@string/default_charset" >
+	    android:hint="@string/charset_form" >
 	
 	    <requestFocus />
 	</EditText>	

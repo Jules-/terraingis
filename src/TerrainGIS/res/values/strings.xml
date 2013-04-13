@@ -21,7 +21,7 @@
     <string name="concrete_name_attribute_error">Attribute can not has name %s!</string>
     <string name="name_exist_error">The layer %s exist!</string>
     <string name="tileslayer_remove_error">Can not remove tiles layer!</string>
-    <string name="not_selected_layer">It is not any layer selected!</string>
+    <string name="not_selected_layer">There is not selected any layer!</string>
     <string name="not_selected_position">There is not selected any position!</string>
     <string name="end_object_error">Few points for object!</string>
     <string name="empty_layer_error">Layer %s is empty!</string>
@@ -29,8 +29,10 @@
     <string name="srid_empty_error">SRS is empty!</string>
     <string name="charset_empty_error">Charset is empty!</string>
     <string name="bad_shapefile_error">Bad shapefile name!</string>
-    <string name="load_shapefile_error">Can not load shapefile!</string>
-    <string name="layer_attribu_tetable_error">This layer does not have attributes!</string>
+    <string name="import_shapefile_error">Can not import shapefile!</string>
+    <string name="export_shapefile_error">Can not export shapefile!</string>
+    <string name="layer_attribute_table_error">This layer does not have attributes!</string>
+    <string name="layer_export_error">Can not export this layer!</string>
     <string name="database_error">Problem with using database!</string>
     <!-- map buttons -->
     <string name="button_record_point">Add point</string>
@@ -63,9 +65,9 @@
     <string name="find_srid_message">Find SRS</string>
     <!-- layers context menu -->
     <string name="menu_show_attribute_table">Show attribute table</string>
+    <string name="menu_export_shapefile">Export Shapefile</string>
     <!-- other -->
     <string name="confirm_remove_message">Really remove %s layer?</string>
     <string name="confirm_remove_object_message">Really remove selected object?</string>
     <string name="exit_message">Do you want to exit?</string>
-    <string name="default_charset">UTF-8</string>
 </resources>

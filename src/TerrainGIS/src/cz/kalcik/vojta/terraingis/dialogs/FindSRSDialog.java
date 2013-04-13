@@ -24,6 +24,10 @@ import android.widget.Toast;
 
 public class FindSRSDialog extends DialogFragment
 {
+    // constants =====================================================================
+    private static final String DEFAULT_SEARCH = "WGS 84";
+    
+    // attributes ====================================================================
     MainActivity mMainActivity;
     EditText mNameSRS;
     SpatiaLiteIO mSpatiaLite;
@@ -57,12 +61,45 @@ public class FindSRSDialog extends DialogFragment
          
         mNameSRS = (EditText)dialogView.findViewById(R.id.editText_srs_name);
         mSRSListView = (ListView)dialogView.findViewById(R.id.listView_srs);
+        
+        findSRS(DEFAULT_SEARCH);
          
         dialogBuilder.setView(dialogView);
          
         return dialogBuilder.create();
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        super.onActivityCreated(savedInstanceState);
+
+        if(savedInstanceState != null)
+        {
+            dismiss();
+        }
+    }
+    // private methods ================================================================================
+    
+    private void findSRS(String text)
+    {
+        ArrayList<SpatialiteSRS> foundSRS;
+        try
+        {
+            foundSRS = mSpatiaLite.findSRSByName(text);
+            ArrayAdapter<SpatialiteSRS> adapter = new ArrayAdapter<SpatialiteSRS>(mMainActivity,
+                    android.R.layout.simple_list_item_1, android.R.id.text1,
+                    foundSRS.toArray(new SpatialiteSRS[foundSRS.size()]));
+            mSRSListView.setAdapter(adapter);
+            mSRSListView.setOnItemClickListener(clickSRSHandler);
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }        
+    }
+    
     // handlers =======================================================================================
     
     /**
@@ -73,21 +110,7 @@ public class FindSRSDialog extends DialogFragment
         @Override
         public void onClick(View v)
         {
-            ArrayList<SpatialiteSRS> foundSRS;
-            try
-            {
-                foundSRS = mSpatiaLite.findSRSByName(mNameSRS.getText().toString());
-                ArrayAdapter<SpatialiteSRS> adapter = new ArrayAdapter<SpatialiteSRS>(mMainActivity,
-                        android.R.layout.simple_list_item_1, android.R.id.text1,
-                        foundSRS.toArray(new SpatialiteSRS[foundSRS.size()]));
-                mSRSListView.setAdapter(adapter);
-                mSRSListView.setOnItemClickListener(clickSRSHandler);
-            }
-            catch (Exception e)
-            {
-                Toast.makeText(mMainActivity, R.string.database_error,
-                        Toast.LENGTH_LONG).show();
-            }
+            findSRS(mNameSRS.getText().toString());
         }        
     };
     
@@ -100,7 +123,7 @@ public class FindSRSDialog extends DialogFragment
         public void onItemClick(AdapterView<?> parent, View view, int position, long id)
         {
             int srid = ((SpatialiteSRS)parent.getItemAtPosition(position)).srid;
-            mParentDialog.setSrid(srid);
+            mParentDialog.setSridFromFind(srid);
             getDialog().dismiss();
         }
     };

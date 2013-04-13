@@ -25,7 +25,10 @@
 
 package cz.kalcik.vojta.shapefilelib.shapeFile;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field;
@@ -81,6 +84,8 @@ public class ShapeFile
     private DBF_File dbf_file; // dBASE-file: attribute format; columnar
                                // attributes for each shape, in dBase IV format.
     private SHP_File shp_file; // shape-File: contains geometry.
+    
+    private File qpj_file;
 
     /**
      * <pre>
@@ -105,6 +110,7 @@ public class ShapeFile
         shx_file = new SHX_File(this, new File(dir, filename + ".shx"));
         dbf_file = new DBF_File(this, new File(dir, filename + ".dbf"), charset);
         shp_file = new SHP_File(this, new File(dir, filename + ".shp"));
+        qpj_file = new File(dir, filename + ".qpj");
     }
 
     /**
@@ -119,6 +125,21 @@ public class ShapeFile
         dbf_file.read();
         shp_file.read();
         return this;
+    }
+    
+    /**
+     * write projection to QPJ file
+     * @param srsWKT
+     * @throws IOException
+     */
+    public void writeQPJFile(String srsWKT) throws IOException
+    {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(qpj_file));
+
+        writer.write(srsWKT);
+        writer.newLine();
+        
+        writer.close();
     }
 
     // ----------------------------------------------------------------------------

@@ -105,22 +105,18 @@ public abstract class ShpShape
         return this;
     }
     
-    public ByteBuffer getBytes()
+    public void setBytes(ByteBuffer buffer)
     {      
-        ByteBuffer result = ByteBuffer.allocate(SHP_content_length);
+        buffer.order(ByteOrder.BIG_ENDIAN);
         
-        result.order(ByteOrder.BIG_ENDIAN);
+        buffer.putInt(SHP_record_number);
+        buffer.putInt(SHP_content_length);
         
-        result.putInt(SHP_record_number);
-        result.putInt(SHP_content_length);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
         
-        result.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(shape_type.ID());
         
-        result.putInt(shape_type.ID());
-        
-        setBytesRecord(result);
-        
-        return result;
+        setBytesRecord(buffer);
     }
 
     // getter, setter ==========================================================================
@@ -134,6 +130,15 @@ public abstract class ShpShape
         return SHP_record_number;
     }
 
+    /**
+     * set record number
+     * @param recordNumber
+     */
+    public void setRecordNumber(int recordNumber)
+    {
+        SHP_record_number = recordNumber;
+    }
+    
     /**
      * get the Type of the Shape.
      * 

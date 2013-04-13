@@ -135,29 +135,26 @@ public class SHP_Header
      * create byte buffer of header
      * @return
      */
-    public ByteBuffer getBytes()
+    public void setBytes(ByteBuffer buffer)
     {
-        ByteBuffer bb = ByteBuffer.allocate(HEADER_LENGTH_BYTES);
-        bb.order(ByteOrder.BIG_ENDIAN);
+        buffer.order(ByteOrder.BIG_ENDIAN);
         
-        bb.putInt(SHP_MAGIC);
-        bb.position(FILE_LENGTH_POSITION);
-        bb.putInt(SHP_file_length);
+        buffer.putInt(SHP_MAGIC);
+        buffer.position(FILE_LENGTH_POSITION);
+        buffer.putInt(SHP_file_length);
         
-        bb.order(ByteOrder.LITTLE_ENDIAN);
-        bb.putInt(SHP_VERSION);
-        bb.putInt(shape_type.ID());
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(SHP_VERSION);
+        buffer.putInt(shape_type.ID());
         
-        bb.putDouble(SHP_bbox[0][0]); // x-min
-        bb.putDouble(SHP_bbox[1][0]); // y-min
-        bb.putDouble(SHP_bbox[0][1]); // x-max
-        bb.putDouble(SHP_bbox[1][1]); // y-max
-        bb.putDouble(SHP_bbox[2][0]); // z-min
-        bb.putDouble(SHP_bbox[2][1]); // z-max
-        bb.putDouble(SHP_range_m[0]); // m-min
-        bb.putDouble(SHP_range_m[1]); // m-max
-        
-        return bb;
+        buffer.putDouble(SHP_bbox[0][0]); // x-min
+        buffer.putDouble(SHP_bbox[1][0]); // y-min
+        buffer.putDouble(SHP_bbox[0][1]); // x-max
+        buffer.putDouble(SHP_bbox[1][1]); // y-max
+        buffer.putDouble(SHP_bbox[2][0]); // z-min
+        buffer.putDouble(SHP_bbox[2][1]); // z-max
+        buffer.putDouble(SHP_range_m[0]); // m-min
+        buffer.putDouble(SHP_range_m[1]); // m-max
     }
     
     // public static ===================================================================

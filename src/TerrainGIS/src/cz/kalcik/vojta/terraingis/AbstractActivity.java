@@ -17,6 +17,7 @@ public abstract class AbstractActivity extends Activity
 {
     public static final File APP_DIRECTORY = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/TerrainGIS");
     public static final File DB_FILE = new File(APP_DIRECTORY.getAbsoluteFile()+"/db.sqlite");
+    public static final File OUTPUT_DIRECTORY = new File(APP_DIRECTORY.getAbsoluteFile()+"/output/");
     protected static final String DIALOG_TAG = "DialogTag";
     
     /**

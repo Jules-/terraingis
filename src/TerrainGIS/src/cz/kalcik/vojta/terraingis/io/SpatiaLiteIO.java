@@ -570,6 +570,55 @@ public class SpatiaLiteIO
     }
     
     /**
+     * search srid by srs_wkt column
+     * @param wkt
+     * @return
+     * @throws Exception
+     */
+    public int getSridByWKT(String wkt) throws Exception
+    {
+        int result = -1;
+        
+        Stmt stmt = db.prepare("SELECT srid FROM spatial_ref_sys " +
+                "WHERE srs_wkt LIKE ?");
+        
+        stmt.bind(1, wkt);
+        
+        if(stmt.step())
+        {
+            result = stmt.column_int(0);
+        }
+        
+        stmt.close();
+        
+        return result;        
+    }
+    
+    /**
+     * @param srid
+     * @return srs_wkt string by srid
+     * @throws Exception
+     */
+    public String getWKTbySrid(int srid) throws Exception
+    {
+        String result = null;
+        
+        Stmt stmt = db.prepare("SELECT srs_wkt FROM spatial_ref_sys " +
+                "WHERE srid = ?");
+        
+        stmt.bind(1, srid);
+        
+        if(stmt.step())
+        {
+            result = stmt.column_string(0);
+        }
+        
+        stmt.close();
+        
+        return result;        
+    }
+    
+    /**
      * get all attributes of table
      * @param name
      * @param header
@@ -777,6 +826,7 @@ public class SpatiaLiteIO
         int result = -1;
         
         Stmt stmt = db.prepare(String.format("SELECT max(length(?)) FROM \"%s\"", name));
+        stmt.bind(1, column);
         
         if(stmt.step())
         {

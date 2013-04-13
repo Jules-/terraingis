@@ -46,16 +46,18 @@ public abstract class ShapeFileReader
 
     protected ShapeFile parent_shapefile;
     protected File file;
-    protected ByteBuffer bb;
 
     public ShapeFileReader(ShapeFile parent_shapefile, File file)
-            throws IOException
     {
         this.parent_shapefile = parent_shapefile;
         this.file = file;
-        this.bb = ShapeFileReader.loadFile(file);
     }
 
+    public ByteBuffer getFileBytes() throws IOException
+    {
+        return ShapeFileReader.loadFile(file);
+    }
+    
     public abstract void read() throws Exception;
 
     public abstract void printHeader();
@@ -91,6 +93,8 @@ public abstract class ShapeFileReader
     protected void writeBytesToFile(ByteBuffer buffer) throws IOException
     {
         FileChannel output = new FileOutputStream(file.getAbsolutePath()).getChannel();
+        
+        buffer.position(0);        
         output.write(buffer);
         output.close();
     }

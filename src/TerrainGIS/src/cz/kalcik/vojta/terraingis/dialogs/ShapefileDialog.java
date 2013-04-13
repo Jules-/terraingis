@@ -1,16 +1,14 @@
 package cz.kalcik.vojta.terraingis.dialogs;
 
-import java.io.File;
+import java.io.Serializable;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.io.ShapeFileIO;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -19,18 +17,34 @@ import android.widget.Toast;
 
 public abstract class ShapefileDialog extends CreateLayerDialog
 {
+    // constants =====================================================================================
+    protected static final String SUFFIX = ".shp";
+    protected static final String PROJECTION_SUFFIX = ".qpj";
+    
+    private static final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.ShapefileDialogSaveState";
+    private static final String DEFAULT_CHARSET = "UTF-8";
+    
     // attributes ====================================================================================
+    protected class ShapefileDialogData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        public int srid = -1;
+        public String charset = DEFAULT_CHARSET;
+        public String name = "";
+    }
+    
     protected MainActivity mMainActivity;
     protected EditText mNameEditText;
     protected EditText mSridEditText;
     protected EditText mCharsetEditText;
+    protected ShapefileDialogData data = new ShapefileDialogData();
     
     // public methods ================================================================================
     /**
      * set EPSG srid
      * @param srid
      */
-    public void setSrid(int srid)
+    public void setSridFromFind(int srid)
     {
         mSridEditText.setText(Integer.toString(srid));
     }
@@ -51,17 +65,45 @@ public abstract class ShapefileDialog extends CreateLayerDialog
         mCharsetEditText = (EditText)dialogView.findViewById(R.id.edit_text_charset_shapefile);
         Button findButton = (Button)dialogView.findViewById(R.id.button_run_find_dialog);
         findButton.setOnClickListener(findSridHandler);
-
-        initDialog(dialogBuilder);
-         
+        
         dialogBuilder.setPositiveButton(R.string.positive_button, positiveHandler);
         dialogBuilder.setNegativeButton(R.string.negative_button, null);
          
         return dialogBuilder.create();
     }
+    
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        super.onActivityCreated(savedInstanceState);
+
+        if(savedInstanceState != null)
+        {
+            data = (ShapefileDialogData)savedInstanceState.getSerializable(TAG_SAVESTATE);
+        }
+
+        if(data.srid != -1)
+        {
+            mSridEditText.setText(Integer.toString(data.srid));
+        }
+        
+        mCharsetEditText.setText(data.charset);
+        mNameEditText.setText(data.name);
+    }
+    
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        data.name = mNameEditText.getText().toString();
+        data.srid = Integer.parseInt(mSridEditText.getText().toString());
+        data.charset = mCharsetEditText.getText().toString();
+        outState.putSerializable(TAG_SAVESTATE, data);
+        
+        super.onSaveInstanceState(outState);
+    }  
     // abstract protected methods ================================================================================
     
-    protected abstract void initDialog(Builder dialogBuilder);
+    protected abstract void initDialog();
     protected abstract void checkValues(String name);
     protected abstract void exec(String name, String sridString, String charset);
     

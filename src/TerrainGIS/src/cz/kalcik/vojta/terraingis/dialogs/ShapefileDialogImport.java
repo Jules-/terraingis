@@ -3,13 +3,19 @@
  */
 package cz.kalcik.vojta.terraingis.dialogs;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Serializable;
 
-import android.app.AlertDialog.Builder;
+import android.os.Bundle;
 import android.util.Log;
 
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.io.ShapeFileIO;
+import cz.kalcik.vojta.terraingis.layer.LayerManager;
 
 /**
  * @author jules
@@ -18,11 +24,39 @@ import cz.kalcik.vojta.terraingis.io.ShapeFileIO;
 public class ShapefileDialogImport extends ShapefileDialog
 {
     // constants =====================================================================================
-    private final String SUFFIX = ".shp";
-    
+    private static final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.ShapefileDialogImportSaveState";
+
     // attributes ====================================================================================
-    private File mFile;
-    private String mNameNoSuffix;
+    public static class ShapefileDialogImportData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        public File mFile;
+        public String mNameNoSuffix;
+    }
+    
+    private ShapefileDialogImportData mImportData = new ShapefileDialogImportData();
+
+    // public methods ================================================================================
+    
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        if(savedInstanceState != null)
+        {
+            mImportData = (ShapefileDialogImportData) savedInstanceState.getSerializable(TAG_SAVESTATE);
+        }
+        
+        initDialog();
+        super.onActivityCreated(savedInstanceState);
+    }
+    
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        outState.putSerializable(TAG_SAVESTATE, mImportData);
+        
+        super.onSaveInstanceState(outState);
+    } 
     
     // getter setter =================================================================================
     /**
@@ -32,7 +66,7 @@ public class ShapefileDialogImport extends ShapefileDialog
      */
     public void setFile(File file)
     {
-        mFile = file;
+        mImportData.mFile = file;
         String name = file.getName();
         int dotIndex = name.lastIndexOf('.');
         
@@ -47,15 +81,16 @@ public class ShapefileDialogImport extends ShapefileDialog
             throw new RuntimeException();
         }
         
-        mNameNoSuffix = name.substring(0, dotIndex);
+        mImportData.mNameNoSuffix = name.substring(0, dotIndex);
+        data.name = mImportData.mNameNoSuffix;
+        checkFilesWithProjection();
     }
-
+    
     // protected methods ============================================================================
     @Override
-    protected void initDialog(Builder dialogBuilder)
+    protected void initDialog()
     {
-        dialogBuilder.setTitle("Import " + mFile.getName());
-        mNameEditText.setText(mNameNoSuffix);
+        getDialog().setTitle("Import " + mImportData.mFile.getName());
     }
 
     @Override
@@ -69,13 +104,58 @@ public class ShapefileDialogImport extends ShapefileDialog
     {
         try
         {
-            ShapeFileIO.getInstance().importShapefile(mFile.getParent(), mNameNoSuffix, name,
+            ShapeFileIO.getInstance().importShapefile(mImportData.mFile.getParent(), mImportData.mNameNoSuffix, name,
                     charset, Integer.parseInt(sridString), mMainActivity.getMapFragment());
         }
         catch (Exception e)
         {
             Log.e("TerrainGIS", e.getMessage());
-            throw new RuntimeException(getString(R.string.load_shapefile_error));
+            throw new RuntimeException(getString(R.string.import_shapefile_error));
+        }
+    }
+    // private methods ================================================================================
+    /**
+     * check if exist qpj file with projection
+     */
+    private void checkFilesWithProjection()
+    {
+        File file = new File(mImportData.mFile.getParent(), mImportData.mNameNoSuffix + PROJECTION_SUFFIX);
+        if(file.exists())
+        {
+            String text = "";
+            try
+            {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                
+                StringBuilder builder = new StringBuilder();
+                String line;
+                
+                while ((line = reader.readLine()) != null)
+                {
+                    builder.append(line);
+                }
+                
+                reader.close();
+                
+                text = builder.toString().trim();
+            }
+            catch (FileNotFoundException e)
+            {
+                return;
+            } 
+            catch (IOException e)
+            {
+                return;
+            }
+            
+            try
+            {
+                data.srid = LayerManager.getInstance().getSpatialiteIO().getSridByWKT(text);
+            }
+            catch (jsqlite.Exception e)
+            {
+                // nothing
+            }
         }
     }
 }

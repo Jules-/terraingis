@@ -108,20 +108,20 @@ public class DBF_Field
      * @return field like ByteBuffer
      * @throws UnsupportedEncodingException
      */
-    public ByteBuffer getFieldBytes(String charset) throws UnsupportedEncodingException
+    public void setFieldBytes(ByteBuffer buffer, String charset) throws UnsupportedEncodingException
     {
-        ByteBuffer result = ByteBuffer.allocate(FIELD_LENGTH);
-        result.order(ByteOrder.LITTLE_ENDIAN);
+        int begin = buffer.position(); 
+                
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
         
-        result.put(parent_dbasefile.getBytesOfString(DBF_field_name,
+        buffer.put(parent_dbasefile.getBytesOfString(DBF_field_name,
                 FIELD_NAME_LENGTH, charset));
         
-        result.position(FIELD_TYPE_POSITION);
-        result.putChar(DBF_field_type);
-        result.position(result.position()+4);
-        result.put((byte)DBF_field_length);
-        
-        return result;
+        buffer.position(begin + FIELD_TYPE_POSITION);
+        buffer.put((byte) DBF_field_type);
+        buffer.position(buffer.position()+4);
+        buffer.put((byte)DBF_field_length);
+        buffer.position(begin + FIELD_LENGTH);
     }
 
     /**
@@ -131,7 +131,7 @@ public class DBF_Field
      * @return
      * @throws UnsupportedEncodingException
      */
-    public byte[] getValueBytes(String value, String charset) throws UnsupportedEncodingException
+    public byte[] getBytesFromString(String value, String charset) throws UnsupportedEncodingException
     {
         byte[] result = new byte[DBF_field_length];
         Arrays.fill(result, (byte) ' ');

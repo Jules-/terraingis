@@ -87,6 +87,8 @@ public class ShapeFileIO
         
         exportShpAndShx(shapeFile, spatialiteManager, vectorLayer, srid);
         exportDbf(shapeFile, spatialiteManager, vectorLayer);
+        String srsWKT = spatialiteManager.getWKTbySrid(srid);
+        shapeFile.writeQPJFile(srsWKT);
     }
     // public static methods ==============================================================
     
@@ -157,11 +159,15 @@ public class ShapeFileIO
 
         ArrayList<ShpShape> shapes = new ArrayList<ShpShape>();
         
+        int recordNumber = 1;
         while (iterator.hasNext())
         {
             ShpShape shape = createShape(type);
             shape.loadFromJTS(iterator.next());
+            shape.setRecordNumber(recordNumber);
             shapes.add(shape);
+            
+            recordNumber++;
         }
         
         SHP_File shpFile = shapeFile.getFile_SHP();
@@ -225,11 +231,11 @@ public class ShapeFileIO
         // records
         SpatialiteAttributesIterator iterator = spatialiteManager.getAttributes(
                 layer.getData().name, layer.getAttributeHeader());
-        String[][] records = new String[countColumns][];
+        String[][] records = new String[layer.getCountObjects()][];
         int index = 0;
         while (iterator.hasNext())
         {
-            records[index] = iterator.next();
+            records[index] = iterator.next().clone();
             
             index++;
         }

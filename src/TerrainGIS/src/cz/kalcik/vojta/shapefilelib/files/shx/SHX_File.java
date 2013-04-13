@@ -70,6 +70,7 @@ public class SHX_File extends ShapeFileReader
     @Override
     public void read() throws Exception
     {
+        ByteBuffer bb = getFileBytes();
         // READ HEADER
         header = new SHP_Header(parent_shapefile, file);
         header.read(bb);
@@ -119,7 +120,9 @@ public class SHX_File extends ShapeFileReader
         int currentOffset = SHP_Header.HEADER_LENGTH_BYTES / 2;
         ByteBuffer buffer = ByteBuffer.allocate(lengthOfFile * 2);
 
-        buffer.put(header.getBytes());
+        header.setBytes(buffer);
+        
+        buffer.order(ByteOrder.BIG_ENDIAN);
         for(int i=0; i < countShapes; i++)
         {
             buffer.putInt(currentOffset);

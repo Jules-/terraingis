@@ -79,6 +79,8 @@ public class SHP_File extends ShapeFileReader
     @Override
     public void read() throws Exception
     {
+        ByteBuffer bb = getFileBytes();
+        
         // READ HEADER
         header = new SHP_Header(parent_shapefile, file);
         header.read(bb);
@@ -142,10 +144,10 @@ public class SHP_File extends ShapeFileReader
         
         ByteBuffer byteBuffer = ByteBuffer.allocate(lengthOfFIle * 2);
         
-        byteBuffer.put(header.getBytes());
+        header.setBytes(byteBuffer);
         for(ShpShape shape: shapes)
         {
-            byteBuffer.put(shape.getBytes());
+            shape.setBytes(byteBuffer);
         }
         
         writeBytesToFile(byteBuffer);
