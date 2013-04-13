@@ -69,7 +69,7 @@ public abstract class ShpPolyPoints extends ShpShape
     }
 
     @Override
-    protected int sizeOfRecord()
+    protected int sizeOfObject()
     {
         int size = ShapeFile.SIZE_OF_MBR + 2 * ShapeFile.SIZE_OF_INT +
                 SHP_num_parts * ShapeFile.SIZE_OF_INT +
@@ -130,6 +130,8 @@ public abstract class ShpPolyPoints extends ShpShape
             {
                 SHP_xyz_points[i][2] = points[i].z;
             }
-        }        
+        }
+        
+        computeLengthOfContent();
     }
 }

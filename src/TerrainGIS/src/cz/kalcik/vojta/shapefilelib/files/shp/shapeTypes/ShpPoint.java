@@ -77,7 +77,7 @@ public class ShpPoint extends ShpShape
     }
 
     @Override
-    protected int sizeOfRecord()
+    protected int sizeOfObject()
     {
         int count = 2;
 
@@ -136,29 +136,16 @@ public class ShpPoint extends ShpShape
         // "    __________________</SHAPE >__________________\n");
 
         System.out.printf(Locale.ENGLISH, "   _ _ _ _ _ \n");
-        System.out.printf(Locale.ENGLISH,
-                "  / SHAPE   \\_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n");
-        System.out.printf(Locale.ENGLISH,
-                "  |                                                    \\\n");
+        System.out.printf(Locale.ENGLISH, "  / SHAPE   \\_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n");
+        System.out.printf(Locale.ENGLISH, "  |                                                    \\\n");
         System.out.printf(Locale.ENGLISH, "  |  <RECORD HEADER>\n");
-        System.out.printf(Locale.ENGLISH,
-                "  |    SHP_record_number       = %d\n", SHP_record_number);
-        System.out
-                .printf(Locale.ENGLISH,
-                        "  |    SHP_content_length      = %d bytes  (check: start/end/size = %d/%d/%d)\n",
-                        SHP_content_length * 2, position_start, position_end,
-                        content_length);
+        System.out.printf(Locale.ENGLISH, "  |    SHP_record_number       = %d\n", SHP_record_number);
+        System.out.printf(Locale.ENGLISH, "  |    SHP_content_length      = %d bytes  (check: start/end/size = %d/%d/%d)\n", SHP_content_length * 2, position_start, position_end, content_length);
         System.out.printf(Locale.ENGLISH, "  |\n");
         System.out.printf(Locale.ENGLISH, "  |  <RECORD CONTENT>\n");
-        System.out.printf(Locale.ENGLISH,
-                "  |    shape_type              = %s (%d)\n", shape_type,
-                shape_type.ID());
-        System.out
-                .printf(Locale.ENGLISH,
-                        "  |    x,y,z,m                 = %5.2f, %5.2f, %5.2f, %5.2f\n",
-                        SHP_xyz[0], SHP_xyz[1], SHP_xyz[2], SHP_m_value);
-        System.out.printf(Locale.ENGLISH,
-                "  \\_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ /\n");
+        System.out.printf(Locale.ENGLISH, "  |    shape_type              = %s (%d)\n", shape_type, shape_type.ID());
+        System.out.printf(Locale.ENGLISH, "  |    x,y,z,m                 = %5.2f, %5.2f, %5.2f, %5.2f\n", SHP_xyz[0], SHP_xyz[1], SHP_xyz[2], SHP_m_value);
+        System.out.printf(Locale.ENGLISH, "  \\_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ /\n");
     }
 
     public double[] getPoint()
@@ -185,6 +172,8 @@ public class ShpPoint extends ShpShape
         {
             SHP_xyz[2] = point.z;
         }
+        
+        computeLengthOfContent();
     }
 
     // /**

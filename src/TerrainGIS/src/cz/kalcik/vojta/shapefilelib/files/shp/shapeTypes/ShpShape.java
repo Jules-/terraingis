@@ -105,18 +105,8 @@ public abstract class ShpShape
         return this;
     }
     
-    protected void readRecordHeader(ByteBuffer bb)
-    {
-        bb.order(ByteOrder.BIG_ENDIAN);
-        SHP_record_number = bb.getInt();
-        SHP_content_length = bb.getInt();
-    }
-
-    
     public ByteBuffer getBytes()
-    {
-        SHP_content_length = (sizeOfRecord() + ShapeFile.SIZE_OF_INT) / 2;
-        
+    {      
         ByteBuffer result = ByteBuffer.allocate(SHP_content_length);
         
         result.order(ByteOrder.BIG_ENDIAN);
@@ -132,28 +122,8 @@ public abstract class ShpShape
         
         return result;
     }
-    
-    protected abstract void readRecordContent(ByteBuffer bb);
 
-    /**
-     * set bytes of record to bytebuffer
-     * @param bb
-     */
-    protected abstract void setBytesRecord(ByteBuffer bb);
-    
-    /**
-     * @return size of record
-     */
-    protected abstract int sizeOfRecord();
-
-    /**
-     * load shape from geometry
-     * @param geom
-     */
-    public abstract void loadFromJTS(Geometry geom);
-
-    public abstract void print();
-
+    // getter, setter ==========================================================================
     /**
      * get the record number of the shape.
      * 
@@ -173,6 +143,61 @@ public abstract class ShpShape
     {
         return shape_type;
     }
+    
+    /**
+     * @return size of record with header in 16 bit words
+     */
+    public int getSizeOfRecord()
+    {
+        return SHP_content_length + (2 * ShapeFile.SIZE_OF_INT) / 2;
+    }    
+    
+    /**
+     * @return content length in 16 bit words
+     */
+    public int getContentLength()
+    {
+        return SHP_content_length;
+    } 
+    // protected methods =======================================================================    
+    
+    protected void readRecordHeader(ByteBuffer bb)
+    {
+        bb.order(ByteOrder.BIG_ENDIAN);
+        SHP_record_number = bb.getInt();
+        SHP_content_length = bb.getInt();
+    }
+    
+    /**
+     * compute content length in 16 bit words
+     */
+    protected void computeLengthOfContent()
+    {
+        SHP_content_length = (sizeOfObject() + ShapeFile.SIZE_OF_INT) / 2;
+    }
+    
+    // abstract protected methods =============================================================
+    
+    protected abstract void readRecordContent(ByteBuffer bb);
+
+    /**
+     * set bytes of record to bytebuffer
+     * @param bb
+     */
+    protected abstract void setBytesRecord(ByteBuffer bb);
+    
+    /**
+     * @return size of record in bytes
+     */
+    protected abstract int sizeOfObject();
+
+    /**
+     * load shape from geometry
+     * @param geom
+     */
+    public abstract void loadFromJTS(Geometry geom);
+
+    public abstract void print();
 
     // ----------------------------------------------------------------------------
     // Shape Type

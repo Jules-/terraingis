@@ -287,24 +287,42 @@ public class SpatiaLiteIO
     }
     
     /**
-     * return objects from envelope
      * @param envelope
      * @param name
      * @param column
      * @param layerSrid
      * @param outputSrid
      * @param useRTree
-     * @return
+     * @return objects from envelope
      * @throws Exception 
      * @throws ParseException 
      */
-    public SpatialiteGeomIterator getObjects(Envelope envelope, String name, String column,
+    public SpatialiteGeomIterator getObjectsInEnvelope(Envelope envelope, String name, String column,
                                           int layerSrid, int outputSrid, boolean useRTree)
                                                   throws Exception, ParseException
     {
         String cmd = String.format("SELECT ROWID, AsBinary(Transform(\"%s\", ?)) " +
         		"FROM \"%s\" WHERE %s", column, name, getObjectCondition(
         		        envelope, name, column, layerSrid, outputSrid, useRTree));
+        Stmt stmt = db.prepare(cmd);;
+        stmt.bind(1, outputSrid);
+        
+        return new SpatialiteGeomIterator(stmt);
+    }
+
+    /**
+     * @param name
+     * @param column
+     * @param outputSrid
+     * @return all objects
+     * @throws Exception
+     * @throws ParseException
+     */
+    public SpatialiteGeomIterator getAllObjects(String name, String column,
+            int outputSrid) throws Exception, ParseException
+    {
+        String cmd = String.format("SELECT ROWID, AsBinary(Transform(\"%s\", ?)) " +
+                "FROM \"%s\"", column, name);
         Stmt stmt = db.prepare(cmd);;
         stmt.bind(1, outputSrid);
         
@@ -558,7 +576,7 @@ public class SpatiaLiteIO
      * @return
      * @throws Exception 
      */
-    public Iterator<String[]> getAttributes(String name, AttributeHeader header)
+    public SpatialiteAttributesIterator getAttributes(String name, AttributeHeader header)
             throws Exception
     {
         String query = String.format("SELECT ROWID, %s FROM \"%s\"",
@@ -738,6 +756,27 @@ public class SpatiaLiteIO
         int result = -1;
         
         Stmt stmt = db.prepare(String.format("SELECT COUNT(*) FROM \"%s\"", name));
+        
+        if(stmt.step())
+        {
+            result = stmt.column_int(0);
+        }
+        stmt.close();
+        
+        return result;
+    }
+    
+    /**
+     * @param name
+     * @param column
+     * @return max length of items in table and column
+     * @throws Exception
+     */
+    public int maxLengthOfAttribute(String name, String column) throws Exception
+    {
+        int result = -1;
+        
+        Stmt stmt = db.prepare(String.format("SELECT max(length(?)) FROM \"%s\"", name));
         
         if(stmt.step())
         {

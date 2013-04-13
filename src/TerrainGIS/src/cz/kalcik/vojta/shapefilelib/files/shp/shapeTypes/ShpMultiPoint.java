@@ -104,7 +104,7 @@ public class ShpMultiPoint extends ShpShape
     }
 
     @Override
-    protected int sizeOfRecord()
+    protected int sizeOfObject()
     {
         throw new RuntimeException("Unimplemented");
     }

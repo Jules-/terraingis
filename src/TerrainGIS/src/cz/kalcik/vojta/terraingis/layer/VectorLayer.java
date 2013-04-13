@@ -473,7 +473,7 @@ public abstract class VectorLayer extends AbstractLayer
     protected SpatialiteGeomIterator getObjects(Envelope envelope)
             throws Exception, ParseException
     {
-        return mSpatialite.getObjects(envelope, super.data.name, mGeometryColumn, mSrid,
+        return mSpatialite.getObjectsInEnvelope(envelope, super.data.name, mGeometryColumn, mSrid,
                                       mLayerManager.getSrid(), mHasIndex);
     }
     

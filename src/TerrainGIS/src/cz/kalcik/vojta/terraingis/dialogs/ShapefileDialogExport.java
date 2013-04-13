@@ -1,10 +1,9 @@
 /**
  * 
  */
-package cz.kalcik.vojta.terraingis.io;
+package cz.kalcik.vojta.terraingis.dialogs;
 
 import android.app.AlertDialog.Builder;
-import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialog;
 
 /**
  * @author jules

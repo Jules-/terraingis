@@ -26,9 +26,15 @@
 package cz.kalcik.vojta.shapefilelib.files.shp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.shapefilelib.files.ShapeFileReader;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpMultiPoint;
@@ -36,6 +42,7 @@ import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPoint;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolyLine;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolygon;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
+import cz.kalcik.vojta.shapefilelib.files.shx.SHX_File;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
 
 //http://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?TopicName=Shapefile_file_extensions
@@ -122,11 +129,29 @@ public class SHP_File extends ShapeFileReader
                             file.getName(), shapes.size(), shape_type);
     }
 
-    public void write()
+    /**
+     * @param envelope
+     * @param type
+     * @return bytes for save SHP file
+     * @throws IOException 
+     */
+    public void write(Envelope envelope, ShpShape.Type type) throws IOException
     {
-
+        int lengthOfFIle = getLengthOfFile();
+        header = SHP_Header.getHeader(parent_shapefile, file, envelope, type, lengthOfFIle);
+        
+        ByteBuffer byteBuffer = ByteBuffer.allocate(lengthOfFIle * 2);
+        
+        byteBuffer.put(header.getBytes());
+        for(ShpShape shape: shapes)
+        {
+            byteBuffer.put(shape.getBytes());
+        }
+        
+        writeBytesToFile(byteBuffer);
     }
     
+    // getter, setter ================================================================
     public SHP_Header getHeader()
     {
         return header;
@@ -178,5 +203,22 @@ public class SHP_File extends ShapeFileReader
         }
         System.out.printf(Locale.ENGLISH, "\n");
         System.out.printf(Locale.ENGLISH, "________________________< /CONTENT >________________________\n");
+    }
+    
+    // private methods ================================================================================
+    
+    /**
+     * @return length of file in 16 bit words
+     */
+    private int getLengthOfFile()
+    {
+        int size = SHP_Header.HEADER_LENGTH_BYTES / 2;
+        
+        for(ShpShape shape: shapes)
+        {
+            size += shape.getSizeOfRecord();
+        }
+        
+        return size;
     }
 }

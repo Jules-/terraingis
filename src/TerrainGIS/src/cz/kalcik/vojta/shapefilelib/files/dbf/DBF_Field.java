@@ -46,6 +46,8 @@ public class DBF_Field
     public static final int FIELD_LENGTH = 32;
     public static final int FIELD_NAME_LENGTH = 10;
     public static final int FIELD_TYPE_POSITION = 11;
+    public static final int NUMERIC_RECORD_LENGTH = 10;
+    public static final int TEXT_RECORD_LENGTH = 50;
     
     @SuppressWarnings("unused")
     private DBF_File parent_dbasefile;
@@ -111,7 +113,7 @@ public class DBF_Field
         ByteBuffer result = ByteBuffer.allocate(FIELD_LENGTH);
         result.order(ByteOrder.LITTLE_ENDIAN);
         
-        result.put(parent_dbasefile.getBytes(DBF_field_name,
+        result.put(parent_dbasefile.getBytesOfString(DBF_field_name,
                 FIELD_NAME_LENGTH, charset));
         
         result.position(FIELD_TYPE_POSITION);
@@ -134,7 +136,7 @@ public class DBF_Field
         byte[] result = new byte[DBF_field_length];
         Arrays.fill(result, (byte) ' ');
         
-        byte[] valueBytes = parent_dbasefile.getBytes(value, DBF_field_length, charset);
+        byte[] valueBytes = parent_dbasefile.getBytesOfString(value, DBF_field_length, charset);
         int firstIndex = 0;
         int lengthSubArray = valueBytes.length;
         // character
@@ -220,7 +222,7 @@ public class DBF_Field
         return DBF_field_length;
     }
 
-    public void getLength(int length)
+    public void setLength(int length)
     {
         DBF_field_length = length;
     }

@@ -26,11 +26,17 @@
 package cz.kalcik.vojta.shapefilelib.files.shx;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Locale;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.shapefilelib.files.ShapeFileReader;
 import cz.kalcik.vojta.shapefilelib.files.shp.SHP_Header;
+import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
 
 /**
@@ -93,11 +99,48 @@ public class SHX_File extends ShapeFileReader
                     file.getName(), SHX_shape_offsets.length);
     }
 
+    /**
+     * @param envelope
+     * @param type
+     * @param shapes
+     * @return bytes for save SHX file
+     * @throws IOException 
+     */
+    public void write(Envelope envelope, ShpShape.Type type, ArrayList<ShpShape> shapes)
+            throws IOException
+    {
+        int countShapes = shapes.size();
+        SHX_File shx = parent_shapefile.getFile_SHX();
+        int lengthOfFile = (SHP_Header.HEADER_LENGTH_BYTES +
+                countShapes * 2 * ShapeFile.SIZE_OF_INT) / 2;
+        header = SHP_Header.getHeader(parent_shapefile, shx.getFile(),
+                envelope, type, lengthOfFile); 
+
+        int currentOffset = SHP_Header.HEADER_LENGTH_BYTES / 2;
+        ByteBuffer buffer = ByteBuffer.allocate(lengthOfFile * 2);
+
+        buffer.put(header.getBytes());
+        for(int i=0; i < countShapes; i++)
+        {
+            buffer.putInt(currentOffset);
+            ShpShape shape = shapes.get(i);
+            buffer.putInt(shape.getContentLength());
+            currentOffset += shape.getSizeOfRecord(); 
+        }
+        
+        writeBytesToFile(buffer);       
+    }
+    
     public SHP_Header getHeader()
     {
         return header;
     }
 
+    public void setHeader(SHP_Header header)
+    {
+        this.header = header; 
+    }
+    
     /**
      * get an array of offset-values (in bytes) that can be used for direct
      * access of *.shp-file record-.items.<br>

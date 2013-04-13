@@ -23,61 +23,75 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-
-
 package cz.kalcik.vojta.shapefilelib.files;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
-
-
 
 /**
  * base class for Shape-File-Readers. (*.shx, *.shp, *.dbf, ...).
  * 
  * @author thomas diewald (2012).
- *
+ * 
  */
-public abstract class ShapeFileReader {
-  
-  
-  protected ShapeFile parent_shapefile;
-  protected File file;
-  protected ByteBuffer bb;
-  
- 
-  public ShapeFileReader(ShapeFile parent_shapefile, File file) throws IOException{
-    this.parent_shapefile = parent_shapefile;
-    this.file = file;
-    this.bb = ShapeFileReader.loadFile(file);
-  }
-  
-  
-  public abstract void read() throws Exception;
-  
-  public abstract void printHeader();
-  public abstract void printContent();
-  
-  public static ByteBuffer loadFile(File file) throws IOException{
-    FileInputStream is = new FileInputStream(file);
-    BufferedInputStream bis = new BufferedInputStream(is);
-    byte data[] = new byte[bis.available()];
-    bis.read(data);
-    bis.close();
-    is.close();
-    return ByteBuffer.wrap(data);
-  }
-  
-  public ShapeFile getShapeFile(){
-    return parent_shapefile;
-  }
-  public File getFile(){
-    return file;
-  }
-  
+public abstract class ShapeFileReader
+{
+
+    protected ShapeFile parent_shapefile;
+    protected File file;
+    protected ByteBuffer bb;
+
+    public ShapeFileReader(ShapeFile parent_shapefile, File file)
+            throws IOException
+    {
+        this.parent_shapefile = parent_shapefile;
+        this.file = file;
+        this.bb = ShapeFileReader.loadFile(file);
+    }
+
+    public abstract void read() throws Exception;
+
+    public abstract void printHeader();
+
+    public abstract void printContent();
+
+    public static ByteBuffer loadFile(File file) throws IOException
+    {
+        FileInputStream is = new FileInputStream(file);
+        BufferedInputStream bis = new BufferedInputStream(is);
+        byte data[] = new byte[bis.available()];
+        bis.read(data);
+        bis.close();
+        is.close();
+        return ByteBuffer.wrap(data);
+    }
+
+    public ShapeFile getShapeFile()
+    {
+        return parent_shapefile;
+    }
+
+    public File getFile()
+    {
+        return file;
+    }
+    
+    /**
+     * write bytes to buffer
+     * @param buffer
+     * @throws IOException
+     */
+    protected void writeBytesToFile(ByteBuffer buffer) throws IOException
+    {
+        FileChannel output = new FileOutputStream(file.getAbsolutePath()).getChannel();
+        output.write(buffer);
+        output.close();
+    }
 }

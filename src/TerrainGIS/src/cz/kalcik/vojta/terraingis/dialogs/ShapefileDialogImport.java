@@ -1,7 +1,7 @@
 /**
  * 
  */
-package cz.kalcik.vojta.terraingis.io;
+package cz.kalcik.vojta.terraingis.dialogs;
 
 import java.io.File;
 
@@ -9,7 +9,7 @@ import android.app.AlertDialog.Builder;
 import android.util.Log;
 
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialog;
+import cz.kalcik.vojta.terraingis.io.ShapeFileIO;
 
 /**
  * @author jules
@@ -70,7 +70,7 @@ public class ShapefileDialogImport extends ShapefileDialog
         try
         {
             ShapeFileIO.getInstance().importShapefile(mFile.getParent(), mNameNoSuffix, name,
-                    Integer.parseInt(sridString), charset, mMainActivity.getMapFragment());
+                    charset, Integer.parseInt(sridString), mMainActivity.getMapFragment());
         }
         catch (Exception e)
         {

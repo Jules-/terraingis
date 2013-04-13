@@ -89,7 +89,7 @@ public class DBF_File extends ShapeFileReader
     private DBF_Field[] DBF_fields;
 
     // RECORD TABLE
-    private String[][] DBF_records;
+    private String[][] DBF_records; // [num of records][num of fields]
     
     //attributes
     private String charset;
@@ -208,41 +208,43 @@ public class DBF_File extends ShapeFileReader
         int fileSize = headerSize + recordSize * countOfRecords;
 
         // write header
-        bb = ByteBuffer.allocate(fileSize);
-        bb.order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(fileSize);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
 
-        bb.put(DBF_FILE_TYPE);
+        buffer.put(DBF_FILE_TYPE);
 
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        bb.put((byte) (year - 1900));
-        bb.put((byte) month);
-        bb.put((byte) day);
-        bb.putInt(countOfRecords);
-        bb.putShort(headerSize);
-        bb.putShort(recordSize);
+        buffer.put((byte) (year - 1900));
+        buffer.put((byte) month);
+        buffer.put((byte) day);
+        buffer.putInt(countOfRecords);
+        buffer.putShort(headerSize);
+        buffer.putShort(recordSize);
 
-        bb.position(DBF_BEGIN_HEADER_LENGTH);
+        buffer.position(DBF_BEGIN_HEADER_LENGTH);
         
         for (DBF_Field field : DBF_fields)
         {
-            bb.put(field.getFieldBytes(charset));
+            buffer.put(field.getFieldBytes(charset));
         }
         
-        bb.put(DBF_TERMINATOR_BYTE);
+        buffer.put(DBF_TERMINATOR_BYTE);
         
         for (int i=0; i < countOfRecords; i++)
         {
-            bb.put(DBF_RECORD_DELETED_FLAG);
+            buffer.put(DBF_RECORD_DELETED_FLAG);
             
             for (int j=0; j < countOfFields; j++)
             {
-                bb.put(DBF_fields[j].getValueBytes(DBF_records[i][j], charset));
+                buffer.put(DBF_fields[j].getValueBytes(DBF_records[i][j], charset));
             } 
-        }        
+        }
+        
+        writeBytesToFile(buffer);
     }
 
     /**
@@ -254,7 +256,7 @@ public class DBF_File extends ShapeFileReader
      * @return
      * @throws UnsupportedEncodingException
      */
-    public byte[] getBytes(String text, int maxsize, String charset)
+    public byte[] getBytesOfString(String text, int maxsize, String charset)
             throws UnsupportedEncodingException
     {
         if(text.length() > maxsize)
@@ -297,6 +299,15 @@ public class DBF_File extends ShapeFileReader
     {
         return DBF_fields;
     }
+    
+    /**
+     * set fields
+     * @param fields
+     */
+    public void setFields(DBF_Field[] fields)
+    {
+        DBF_fields = fields;
+    }
 
     /**
      * get Date of the file (HEADER-information).
@@ -315,6 +326,14 @@ public class DBF_File extends ShapeFileReader
     public void setRecords(String[][] records)
     {
         DBF_records = records;
+    }
+    
+    /**
+     * @return charset of file
+     */
+    public String getCharset()
+    {
+        return charset;
     }
     
     @Override

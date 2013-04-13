@@ -4,15 +4,27 @@
 package cz.kalcik.vojta.terraingis.io;
 
 
-import com.vividsolutions.jts.geom.Geometry;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Locale;
+
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field;
 import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_Field.FieldType;
+import cz.kalcik.vojta.shapefilelib.files.dbf.DBF_File;
+import cz.kalcik.vojta.shapefilelib.files.shp.SHP_File;
+import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPoint;
+import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolyLine;
+import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolygon;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
+import cz.kalcik.vojta.shapefilelib.files.shx.SHX_File;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO.Layer;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
+import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
 import cz.kalcik.vojta.terraingis.layer.AttributeType;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
@@ -42,8 +54,8 @@ public class ShapeFileIO
      * @param file
      * @throws Exception 
      */
-    public void importShapefile(String folder, String filename, String layerName, int srid,
-            String charset, MapFragment mapFragment) throws Exception
+    public void importShapefile(String folder, String filename, String layerName, String charset, 
+            int srid, MapFragment mapFragment) throws Exception
     {
         ShapeFile shapeFile = new ShapeFile(folder, filename, charset);
         shapeFile.READ();
@@ -63,16 +75,18 @@ public class ShapeFileIO
     
     
     public void exportShapefile(String folder, String filename, String charset,
-            String layerName) throws Exception
+            String layerName, int srid, MapFragment mapFragment) throws java.lang.Exception
     {
         ShapeFile shapeFile = new ShapeFile(folder, filename, charset);
         
         LayerManager layerManager = LayerManager.getInstance();
         SpatiaLiteIO spatialiteManager = layerManager.getSpatialiteIO();
-        
         Layer layer = spatialiteManager.getLayer(layerName);
-        ShpShape.Type type = VectorLayerType.spatialiteToShapefile(
-                VectorLayerType.valueOf(layer.type));
+        VectorLayer vectorLayer = LayerManager.createVectorLayer(layer,
+                spatialiteManager, mapFragment);
+        
+        exportShpAndShx(shapeFile, spatialiteManager, vectorLayer, srid);
+        exportDbf(shapeFile, spatialiteManager, vectorLayer);
     }
     // public static methods ==============================================================
     
@@ -110,5 +124,118 @@ public class ShapeFileIO
         return result;
     }
     
+    /**
+     * @param type
+     * @return shape by type
+     */
+    private ShpShape createShape(ShpShape.Type type)
+    {
+        ShpShape shape = null;
+        if(type.isTypeOfPoint())
+        {
+            shape = new ShpPoint(type);
+        }
+        if(type.isTypeOfPolyLine())
+        {
+            shape = new ShpPolygon(type);
+        }
+        if(type.isTypeOfPolygon())
+        {
+            shape = new ShpPolyLine(type);
+        }
+        
+        return shape;
+    }
+    
+    private void exportShpAndShx(ShapeFile shapeFile, SpatiaLiteIO spatialiteManager,
+            VectorLayer layer, int srid) throws jsqlite.Exception, ParseException, IOException
+    {
+        ShpShape.Type type = VectorLayerType.spatialiteToShapefile(layer.getType()); 
+        String layerName = layer.getData().name;
+        String column = spatialiteManager.getColumnGeom(layerName);
+        SpatialiteGeomIterator iterator = spatialiteManager.getAllObjects(layerName, column, srid);
+
+        ArrayList<ShpShape> shapes = new ArrayList<ShpShape>();
+        
+        while (iterator.hasNext())
+        {
+            ShpShape shape = createShape(type);
+            shape.loadFromJTS(iterator.next());
+            shapes.add(shape);
+        }
+        
+        SHP_File shpFile = shapeFile.getFile_SHP();
+        shpFile.setShpShapes(shapes);
+        
+        Envelope envelope = layer.getEnvelope();
+        shpFile.write(envelope, type);
+        
+        SHX_File shxFile = shapeFile.getFile_SHX();
+        shxFile.write(envelope, type, shapes);
+    }
+    
+    private void exportDbf(ShapeFile shapeFile, SpatiaLiteIO spatialiteManager,
+            VectorLayer layer) throws Exception
+    {
+        AttributeHeader attributeHeader = layer.getAttributeHeader();
+        String layerName = layer.getData().name;
+        
+        ArrayList<Column> columns = attributeHeader.getColumns();
+
+        // fields
+        int countColumns = columns.size();
+        DBF_Field[] fields = new DBF_Field[countColumns];
+        
+        DBF_File dbfFile = shapeFile.getFile_DBF();
+        String charset = dbfFile.getCharset().toLowerCase(Locale.getDefault());
+        boolean multibyte = charset.startsWith("utf");
+        
+        for(int i=0; i < countColumns; i++)
+        {
+            Column column = columns.get(i);
+            DBF_Field field = new DBF_Field(dbfFile, i);
+            field.setName(column.name);
+            field.setType(AttributeType.fromSpatialiteToShapefile(column.type).ID());
+            
+            int maxLength = spatialiteManager.maxLengthOfAttribute(layerName, column.name);
+            if(column.type == AttributeType.INTEGER ||
+                    column.type == AttributeType.REAL)
+            {
+                maxLength = maxLength > DBF_Field.NUMERIC_RECORD_LENGTH ? maxLength : 
+                    DBF_Field.NUMERIC_RECORD_LENGTH;
+                field.setLength(maxLength);
+            }
+            else if(column.type == AttributeType.TEXT)
+            {
+                if(multibyte)
+                {
+                    maxLength *= 2;
+                }
+                
+                maxLength = maxLength > DBF_Field.TEXT_RECORD_LENGTH ? maxLength : 
+                    DBF_Field.TEXT_RECORD_LENGTH;
+                field.setLength(maxLength);               
+            }
+            
+            fields[i] = field;
+        }        
+        
+        dbfFile.setFields(fields);
+        
+        // records
+        SpatialiteAttributesIterator iterator = spatialiteManager.getAttributes(
+                layer.getData().name, layer.getAttributeHeader());
+        String[][] records = new String[countColumns][];
+        int index = 0;
+        while (iterator.hasNext())
+        {
+            records[index] = iterator.next();
+            
+            index++;
+        }
+        
+        dbfFile.setRecords(records);
+        dbfFile.write();
+    }
     // classes ==========================================================================
 }

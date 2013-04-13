@@ -31,6 +31,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Locale;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
 
@@ -50,9 +52,10 @@ import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
 public class SHP_Header
 {
     // constants
+    public final static int HEADER_LENGTH_BYTES = 100;
+
     private final static int SHP_MAGIC = 9994;
     private final static int SHP_VERSION = 1000;
-    private final static int HEADER_LENGTH = 100;
     private final static int FILE_LENGTH_POSITION = 24;
     
     @SuppressWarnings("unused")
@@ -132,9 +135,9 @@ public class SHP_Header
      * create byte buffer of header
      * @return
      */
-    public ByteBuffer bytesOfHeader()
+    public ByteBuffer getBytes()
     {
-        ByteBuffer bb = ByteBuffer.allocate(HEADER_LENGTH);
+        ByteBuffer bb = ByteBuffer.allocate(HEADER_LENGTH_BYTES);
         bb.order(ByteOrder.BIG_ENDIAN);
         
         bb.putInt(SHP_MAGIC);
@@ -157,6 +160,35 @@ public class SHP_Header
         return bb;
     }
     
+    // public static ===================================================================
+    /**
+     * create header
+     * @param parent_shapefile
+     * @param file
+     * @param envelope
+     * @param type
+     * @param lengthOfFile
+     * @return
+     */
+    public static SHP_Header getHeader(ShapeFile parent_shapefile, File file,
+            Envelope envelope, ShpShape.Type type, int lengthOfFile)
+    {
+        SHP_Header result = new SHP_Header(parent_shapefile, file);
+        result.setFileLengthWords(lengthOfFile);
+        double[][] bbox = new double[3][2];
+        
+        bbox[0][0] = envelope.getMinX();
+        bbox[1][0] = envelope.getMinY();
+        bbox[0][1] = envelope.getMaxX();
+        bbox[1][1] = envelope.getMaxY();
+        
+        result.setBoundingBox(bbox);
+        result.setShapeType(type);
+        
+        return result;
+    }
+    
+    // getter, setter ================================================================
     /**
      * get the type ShapeType the shapeFile contains.<br>
      * a shapeFile contains only one type of shape.<br>
@@ -166,6 +198,15 @@ public class SHP_Header
     public ShpShape.Type getShapeType()
     {
         return shape_type;
+    }
+    
+    /**
+     * set type of shapes
+     * @param type
+     */
+    public void setShapeType(ShpShape.Type type)
+    {
+        shape_type = type;
     }
 
     /**
@@ -212,7 +253,7 @@ public class SHP_Header
      * 
      * @return length in bytes.
      */
-    public int getFileLengthBytes()
+    public int getFileLengthWords()
     {
         return SHP_file_length;
     }
@@ -221,7 +262,7 @@ public class SHP_Header
      * set length of file
      * @param fileLength
      */
-    public void setFileLengthBytes(int fileLength)
+    public void setFileLengthWords(int fileLength)
     {
         SHP_file_length = fileLength;
     }
