@@ -204,12 +204,19 @@ public class ShapeFileIO
             field.setType(AttributeType.fromSpatialiteToShapefile(column.type).ID());
             
             int maxLength = spatialiteManager.maxLengthOfAttribute(layerName, column.name);
+            
             if(column.type == AttributeType.INTEGER ||
                     column.type == AttributeType.REAL)
             {
-                maxLength = maxLength > DBF_Field.NUMERIC_RECORD_LENGTH ? maxLength : 
-                    DBF_Field.NUMERIC_RECORD_LENGTH;
-                field.setLength(maxLength);
+                if(maxLength < DBF_Field.NUMERIC_RECORD_LENGTH)
+                {
+                    maxLength = DBF_Field.NUMERIC_RECORD_LENGTH;
+                }
+                
+                if(maxLength > DBF_Field.MAX_NUMERIC_LENGTH)
+                {
+                    maxLength = DBF_Field.MAX_NUMERIC_LENGTH;
+                }
             }
             else if(column.type == AttributeType.TEXT)
             {
@@ -218,10 +225,18 @@ public class ShapeFileIO
                     maxLength *= 2;
                 }
                 
-                maxLength = maxLength > DBF_Field.TEXT_RECORD_LENGTH ? maxLength : 
-                    DBF_Field.TEXT_RECORD_LENGTH;
-                field.setLength(maxLength);               
+                if(maxLength < DBF_Field.TEXT_RECORD_LENGTH)
+                {
+                    maxLength = DBF_Field.TEXT_RECORD_LENGTH;
+                }
+                
+                if(maxLength > DBF_Field.MAX_TEXT_LENGTH)
+                {
+                    maxLength = DBF_Field.MAX_TEXT_LENGTH;
+                }
             }
+            
+            field.setLength(maxLength);
             
             fields[i] = field;
         }        

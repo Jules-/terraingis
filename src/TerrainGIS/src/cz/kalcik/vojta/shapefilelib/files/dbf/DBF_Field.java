@@ -48,6 +48,8 @@ public class DBF_Field
     public static final int FIELD_TYPE_POSITION = 11;
     public static final int NUMERIC_RECORD_LENGTH = 10;
     public static final int TEXT_RECORD_LENGTH = 50;
+    public static final int MAX_TEXT_LENGTH = 254;
+    public static final int MAX_NUMERIC_LENGTH = 18;
     
     @SuppressWarnings("unused")
     private DBF_File parent_dbasefile;
@@ -136,9 +138,20 @@ public class DBF_Field
         byte[] result = new byte[DBF_field_length];
         Arrays.fill(result, (byte) ' ');
         
-        byte[] valueBytes = parent_dbasefile.getBytesOfString(value, DBF_field_length, charset);
+        byte[] valueBytes;
+        int lengthSubArray;
+        if(value == null)
+        {
+            valueBytes = null;
+            lengthSubArray = 0;
+        }
+        else
+        {
+            valueBytes = parent_dbasefile.getBytesOfString(value, DBF_field_length, charset);
+            lengthSubArray = valueBytes.length;
+        }
+
         int firstIndex = 0;
-        int lengthSubArray = valueBytes.length;
         // character
         if(DBF_field_type == FieldType.C.ID())
         {
