@@ -5,7 +5,6 @@ import java.io.File;
 import jsqlite.Exception;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -26,14 +25,10 @@ import com.mobeta.android.dslv.DragSortListView;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.io.ParseException;
 
-import cz.kalcik.vojta.terraingis.AttributeTableActivity;
 import cz.kalcik.vojta.terraingis.MainActivity;
-import cz.kalcik.vojta.terraingis.MainActivity.ActivityMode;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
-import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
-import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialog;
 import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialogExport;
 import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialogImport;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
@@ -42,7 +37,6 @@ import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.TilesLayer;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.LayersView;
-import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.R;
 
 /**
@@ -50,7 +44,7 @@ import cz.kalcik.vojta.terraingis.R;
  * @author jules
  *
  */
-public class LayersFragment extends Fragment
+public class LayersFragment extends PanelFragment
 {
     // constants =========================================================
     public static String LAYER_ATTRIBUTE_TABLE = "cz.kalcik.vojta.LayerAttributeTable";
@@ -59,11 +53,9 @@ public class LayersFragment extends Fragment
     private static String SELECTED_POSITION = "SelectedPosition";
     // properties =========================================================
     private LayersView mListView;
-    private MainActivity mMainActivity;
     private ArrayAdapter<AbstractLayer> mArrayAdapter;
     private LayerManager mLayerManager = LayerManager.getInstance();
     private AbstractLayer mContextMenuSelectedlayer;
-    private ListBackgroundColors mBackgroundColors;
         
     // public methods =====================================================
     
@@ -170,11 +162,13 @@ public class LayersFragment extends Fragment
         setArrayAdapter();
         mListView.setAdapter(mArrayAdapter);
         
+        setCommon(myView);
+        
         // buttons
-        ImageButton buttonHide = (ImageButton)myView.findViewById(R.id.button_hide);
-        buttonHide.setOnClickListener(hidePanelHandler);
         ImageButton buttonHideLayer = (ImageButton)myView.findViewById(R.id.button_hide_layer);
         buttonHideLayer.setOnClickListener(hideLayerHandler);
+        ImageButton buttonSwitchPanel = (ImageButton)myView.findViewById(R.id.button_switch_panel);
+        buttonSwitchPanel.setOnClickListener(switchPanelHandler);
         ImageButton buttonZoomLayer = (ImageButton)myView.findViewById(R.id.button_zoom_to_layer);
         buttonZoomLayer.setOnClickListener(zoomLayerHandler);
         ImageButton buttonAdd = (ImageButton)myView.findViewById(R.id.button_add);
@@ -251,24 +245,7 @@ public class LayersFragment extends Fragment
     @Override
     public boolean onContextItemSelected(MenuItem item)
     {
-        if(item.getItemId() == R.id.menuitem_show_attribute_table)
-        {
-            if(mContextMenuSelectedlayer instanceof VectorLayer)
-            {
-                Intent intent = new Intent(mMainActivity, AttributeTableActivity.class);
-                intent.putExtra(LAYER_ATTRIBUTE_TABLE, mContextMenuSelectedlayer.getData().name);
-                
-                this.startActivity(intent);
-                
-                return true;
-            }
-            else
-            {
-                Toast.makeText(mMainActivity, R.string.layer_attribute_table_error, Toast.LENGTH_LONG).show();
-                return false;
-            }
-        }
-        else if(item.getItemId() == R.id.menuitem_export_shapefile)
+        if(item.getItemId() == R.id.menuitem_export_shapefile)
         {
             if(mContextMenuSelectedlayer instanceof VectorLayer)
             {
@@ -400,18 +377,6 @@ public class LayersFragment extends Fragment
             
             mMainActivity.getMapFragment().getMap().zoomToEnvelopeM(envelope);
         }
-    };
-
-    /**
-     * hide panel
-     */
-    View.OnClickListener hidePanelHandler = new View.OnClickListener()
-    {
-        @Override
-        public void onClick(View v)
-        {
-            mMainActivity.hideLayersFragment();
-        }        
     };
     
     /**

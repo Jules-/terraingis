@@ -17,7 +17,10 @@ SIZES = {"buttons": {TERRAINGIS_DIR+"res/drawable-ldpi/{}.png": "36",
             TERRAINGIS_DIR+"res/drawable-mdpi/{}.png": "48",
             TERRAINGIS_DIR+"res/drawable-hdpi/{}.png": "72",
             TERRAINGIS_DIR+"res/drawable-xhdpi/{}.png": "96",
-            TERRAINGIS_DIR+"{}-web.png": "512"}}
+            TERRAINGIS_DIR+"{}-web.png": "512"},
+         "drag_handler": {TERRAINGIS_DIR+"res/drawable/{}.png": "68",
+            TERRAINGIS_DIR+"res/drawable-mdpi/{}.png": "68",
+            TERRAINGIS_DIR+"res/drawable-hdpi/{}.png": "100"}}
 
 if __name__ == '__main__':
     for dir in SIZES:

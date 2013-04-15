@@ -1,15 +1,11 @@
 package cz.kalcik.vojta.terraingis;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.Activity;
-import android.app.DialogFragment;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -21,6 +17,7 @@ import android.widget.Toast;
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.dialogs.ExitDialog;
+import cz.kalcik.vojta.terraingis.fragments.AttributesFragment;
 import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.location.LocationWorker;
@@ -60,8 +57,9 @@ public class MainActivity extends AbstractActivity
     private Settings mSettings = Settings.getInstance();
     private MapFragment mMapFragment;
     private LayersFragment mLayersFragment;
+    private AttributesFragment mAttributesFragment;
     private LinearLayout mMapLayout;
-    private LinearLayout mLayersLayout;
+    private LinearLayout mPanelLayout;
     private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE, false);
     
     // public methods =====================================================
@@ -83,9 +81,9 @@ public class MainActivity extends AbstractActivity
      */
     public void hideLayersFragment()
     {
-        if(mLayersLayout.isShown())
+        if(mPanelLayout.isShown())
         {
-            mLayersLayout.setVisibility(View.GONE);
+            mPanelLayout.setVisibility(View.GONE);
             if(!mMapLayout.isShown())
             {
                 mMapLayout.setVisibility(View.VISIBLE);
@@ -98,7 +96,7 @@ public class MainActivity extends AbstractActivity
      */
     public void showLayersFragment()
     {
-        if(!mLayersLayout.isShown())
+        if(!mPanelLayout.isShown())
         {
             Display display = getWindowManager().getDefaultDisplay();
             
@@ -118,7 +116,7 @@ public class MainActivity extends AbstractActivity
                 }
                 else if(dp_width/(i+1) > MIN_WIDTH_PANEL_DP)
                 {
-                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)mLayersLayout.getLayoutParams();
+                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)mPanelLayout.getLayoutParams();
                     params.weight = i;
                     run = false;
                 }
@@ -127,7 +125,7 @@ public class MainActivity extends AbstractActivity
             }
             
             hideActionBarNow();
-            mLayersLayout.setVisibility(View.VISIBLE);
+            mPanelLayout.setVisibility(View.VISIBLE);
         }
     }
     
@@ -139,7 +137,7 @@ public class MainActivity extends AbstractActivity
      */
     public boolean isHiddenLayersFragment()
     {
-        return !mLayersLayout.isShown();
+        return !mPanelLayout.isShown();
     }
     
     /**
@@ -156,6 +154,14 @@ public class MainActivity extends AbstractActivity
     public LayersFragment getLayersFragment()
     {
         return mLayersFragment;
+    }
+
+    /**
+     * @return AttributesFragment
+     */
+    public AttributesFragment getAttributesFragment()
+    {
+        return mAttributesFragment;
     }
     
     /**
@@ -194,14 +200,15 @@ public class MainActivity extends AbstractActivity
         getActionBar().setHomeButtonEnabled(true);
         
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
-        mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
+        mPanelLayout = (LinearLayout)findViewById(R.id.layers_layout);
         
-        mMapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map_fragment);
-        mLayersFragment = (LayersFragment)getFragmentManager().findFragmentById(R.id.layers_fragment);
-        
-        mLocationWorker = new LocationWorker(this);
-        MapView map = mMapFragment.getMap();
-        map.setMainActivity(this);
+//        mMapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map_fragment);
+//        mLayersFragment = (LayersFragment)getFragmentManager().findFragmentById(R.id.layers_fragment);
+//        mAttributesFragment = (AttributesFragment)getFragmentManager().findFragmentById(R.id.attributes_fragment);
+//        
+//        mLocationWorker = new LocationWorker(this);
+//        MapView map = mMapFragment.getMap();
+//        map.setMainActivity(this);
         
         if(mSettings.isHideActionBar())
         {
@@ -321,7 +328,7 @@ public class MainActivity extends AbstractActivity
     public void onSaveInstanceState (Bundle outState)
     {
         // Shown layers
-        outState.putBoolean(SHOWN_LAYERS, mLayersLayout.isShown());
+        outState.putBoolean(SHOWN_LAYERS, mPanelLayout.isShown());
         
         // gps state
         outState.putSerializable(LOCATION_WORKER_DATA, mLocationWorker.getData());
@@ -357,7 +364,7 @@ public class MainActivity extends AbstractActivity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if(mLayersLayout.isShown())
+            if(mPanelLayout.isShown())
             {
                 hideLayersFragment();
             }

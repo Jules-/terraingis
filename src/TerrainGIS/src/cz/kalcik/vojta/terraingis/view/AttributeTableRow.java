@@ -3,8 +3,9 @@
  */
 package cz.kalcik.vojta.terraingis.view;
 
-import cz.kalcik.vojta.terraingis.AttributeTableActivity;
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.fragments.AttributesFragment;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -18,7 +19,7 @@ import android.widget.TextView;
 public class AttributeTableRow extends TableRow
 {
     // attributes ====================================================================
-    private AttributeTableActivity mActivity;
+    private AttributesFragment mAttributesFragment;
     
     private String mRowid;
     
@@ -27,7 +28,7 @@ public class AttributeTableRow extends TableRow
     {
         super(context);
         
-        mActivity = (AttributeTableActivity)getContext();
+        mAttributesFragment = ((MainActivity)getContext()).getAttributesFragment();
     }
     
     /**
@@ -98,7 +99,7 @@ public class AttributeTableRow extends TableRow
     {
         if(event.getAction() == MotionEvent.ACTION_DOWN)
         {
-            mActivity.setTouchedRow(this);
+            mAttributesFragment.setTouchedRow(this);
         }
         
         return false;

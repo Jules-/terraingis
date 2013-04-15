@@ -4,13 +4,15 @@
 package cz.kalcik.vojta.terraingis.dialogs;
 
 import jsqlite.Exception;
+import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TableLayout;
 import android.widget.Toast;
-import cz.kalcik.vojta.terraingis.AttributeTableActivity;
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
+import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
 import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
 import cz.kalcik.vojta.terraingis.view.AttributeTableRow;
@@ -46,7 +48,7 @@ public class UpdateAttributesDialog extends SetAttributesDialog
         if(savedInstanceState != null)
         {
             int index = savedInstanceState.getInt(TAG_SAVESTATE);
-            AttributeTableRow row = ((AttributeTableActivity)getActivity()).getRowAtIndex(index);
+            AttributeTableRow row = ((MainActivity)getActivity()).getAttributesFragment().getRowAtIndex(index);
             setRow(row);
         }
         
@@ -71,8 +73,8 @@ public class UpdateAttributesDialog extends SetAttributesDialog
     @Override
     protected void execute()
     {
-        AttributeTableActivity activity = (AttributeTableActivity)getActivity();
-        SpatiaLiteIO spatialite = activity.getSpatialite();
+        Activity activity = getActivity();
+        SpatiaLiteIO spatialite = LayerManager.getInstance().getSpatialiteIO();
         AttributeHeader attributeHeader = mLayer.getAttributeHeader();
         AttributeRecord record = new AttributeRecord(attributeHeader, getValues());
         

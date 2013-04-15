@@ -8,7 +8,6 @@ import jsqlite.Exception;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -27,7 +26,6 @@ import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog;
 import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog.InsertObjectType;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
-import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer.AbstractLayerData;

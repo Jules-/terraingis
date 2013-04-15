@@ -5,9 +5,11 @@ import java.io.Serializable;
 import android.os.Bundle;
 import android.widget.Toast;
 import jsqlite.Exception;
-import cz.kalcik.vojta.terraingis.AttributeTableActivity;
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.fragments.AttributesFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
+import cz.kalcik.vojta.terraingis.layer.LayerManager;
 
 public class RemoveObjectDialog extends SimpleDialog
 {
@@ -70,13 +72,14 @@ public class RemoveObjectDialog extends SimpleDialog
     @Override
     protected void execute()
     {
-        AttributeTableActivity activity = (AttributeTableActivity)getActivity();
-        SpatiaLiteIO spatialite = activity.getSpatialite();
+        MainActivity activity = (MainActivity)getActivity();
+        AttributesFragment fragment = activity.getAttributesFragment();
+        SpatiaLiteIO spatialite = LayerManager.getInstance().getSpatialiteIO();
         
         try
         {
             spatialite.removeObject(data.mLayerName, Integer.parseInt(data.mRowid));
-            activity.removeSelectedRow();
+            fragment.removeSelectedRow();
         }
         catch (Exception e)
         {
