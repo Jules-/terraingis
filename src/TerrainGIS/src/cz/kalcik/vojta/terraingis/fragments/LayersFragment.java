@@ -149,7 +149,7 @@ public class LayersFragment extends PanelFragment
     }
     
     @Override
-    protected void switchToMe()
+    protected void switchToMeChild()
     {
         mMainActivity.getAttributesLayout().setVisibility(View.GONE);
         mMainActivity.getLayersLayout().setVisibility(View.VISIBLE);
@@ -309,6 +309,17 @@ public class LayersFragment extends PanelFragment
                 }
                 
                 AbstractLayer item = getItem(position);
+                View colorArea = itemView.findViewById(R.id.layer_color);
+                // color
+                if(item instanceof VectorLayer)
+                {
+                    colorArea.setBackgroundColor(((VectorLayer) item).getColor());
+                }
+                else
+                {
+                    colorArea.setBackgroundColor(Color.TRANSPARENT);
+                }
+                
                 ImageView image = (ImageView) itemView.findViewById(R.id.drag_handle);
                 // image handler
                 if(item instanceof TilesLayer)

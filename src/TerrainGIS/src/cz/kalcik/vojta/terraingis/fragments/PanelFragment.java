@@ -4,17 +4,53 @@ import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 public abstract class PanelFragment extends Fragment
 {
+    // constants ==============================================================
+    private static final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.PanelFragmentSaveState";
+    
     // attributes =============================================================
     protected MainActivity mMainActivity;
     protected ListBackgroundColors mBackgroundColors;
+    protected boolean mAmIVisible = false;
     
     // public methods =========================================================
+    
+    public void switchToMe()
+    {
+        mAmIVisible = true;
+        
+        switchToMeChild();
+    }
+    
+    // on methods =============================================================
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        super.onActivityCreated(savedInstanceState);
+
+        if(savedInstanceState != null)
+        {
+            if(savedInstanceState.getBoolean(TAG_SAVESTATE))
+            {
+                switchToMe();
+            }
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState (Bundle outState)
+    {        
+        // save state
+        outState.putBoolean(TAG_SAVESTATE, mAmIVisible);
+        
+        super.onSaveInstanceState(outState);
+    }
     
     // protected methods ======================================================
     protected void setCommon(View myView)
@@ -30,7 +66,9 @@ public abstract class PanelFragment extends Fragment
     
     // protected abstract method ==============================================
     
-    protected abstract void switchToMe();
+    protected abstract void switchToMeChild();
+    
+    // private methods ========================================================
     
     // handlers ===============================================================
 

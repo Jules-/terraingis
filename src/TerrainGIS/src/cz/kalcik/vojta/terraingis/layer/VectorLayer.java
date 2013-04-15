@@ -435,7 +435,14 @@ public abstract class VectorLayer extends AbstractLayer
     {
         return mCountObjects;
     }    
-        
+    
+    /**
+     * @return color of layer
+     */
+    public int getColor()
+    {
+        return mPaint.getColor();
+    }
     // public static ============================================================
 
     /**

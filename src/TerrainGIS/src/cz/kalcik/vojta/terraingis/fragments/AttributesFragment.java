@@ -41,6 +41,9 @@ import cz.kalcik.vojta.terraingis.view.VScroll;
  */
 public class AttributesFragment extends PanelFragment
 {
+    // constants =====================================================================================
+    
+    
     // attributes =========================================================
     private VectorLayer mLayer = null;
     private TableLayout mTable;
@@ -92,13 +95,14 @@ public class AttributesFragment extends PanelFragment
     }
     
     @Override
-    protected void switchToMe()
+    protected void switchToMeChild()
     {
         mMainActivity.getLayersLayout().setVisibility(View.GONE);
         mMainActivity.getAttributesLayout().setVisibility(View.VISIBLE);
         
         VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
-        if(!layer.equals(mLayer))
+        
+        if(layer == null || !layer.equals(mLayer))
         {
             clear();
             mLayer = layer;
@@ -156,9 +160,11 @@ public class AttributesFragment extends PanelFragment
         mVScroll = (VScroll)myView.findViewById(R.id.vScroll);
         mVScroll.initView(this);
         mTable = (TableLayout)myView.findViewById(R.id.attributeTable);
+        clear();
         
         return myView;
     }
+
     
     // private methods =========================================================
     /**
