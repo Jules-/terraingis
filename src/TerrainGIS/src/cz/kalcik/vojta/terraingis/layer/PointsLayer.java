@@ -45,7 +45,7 @@ public class PointsLayer extends VectorLayer
             if(isSelectedObject(iter))
             {
                 radius = VectorLayerPaints.getPointRadius(PaintType.SELECTED);
-                coordinate = vectorLayerData.selectedObjectPoints.get(0);
+                coordinate = mVectorLayerData.selectedObjectPoints.get(0);
             }
             else
             {

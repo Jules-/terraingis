@@ -2,6 +2,8 @@ package cz.kalcik.vojta.terraingis.dialogs;
 
 import java.io.Serializable;
 
+import com.vividsolutions.jts.io.ParseException;
+
 import android.os.Bundle;
 import android.widget.Toast;
 import jsqlite.Exception;
@@ -10,6 +12,7 @@ import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.fragments.AttributesFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 
 public class RemoveObjectDialog extends SimpleDialog
 {
@@ -78,11 +81,22 @@ public class RemoveObjectDialog extends SimpleDialog
         
         try
         {
+            VectorLayer layer = activity.getLayersFragment().getSelectedLayerIfVector();
+            if(layer != null)
+            {
+                layer.removeSelectionOfObject();
+            }
+            
             spatialite.removeObject(data.mLayerName, Integer.parseInt(data.mRowid));
             fragment.removeSelectedRow();
+            
             activity.getMapFragment().getMap().invalidate();
         }
         catch (Exception e)
+        {
+            Toast.makeText(activity, R.string.database_error, Toast.LENGTH_LONG).show();
+        }
+        catch (ParseException e)
         {
             Toast.makeText(activity, R.string.database_error, Toast.LENGTH_LONG).show();
         }

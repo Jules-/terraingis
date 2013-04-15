@@ -217,13 +217,14 @@ public class MapFragment extends Fragment
     /**
      * end recorded object
      */
-    public void endObject(VectorLayer layer, InsertObjectType insertObjectType)
+    public void endNewObject(VectorLayer layer, InsertObjectType insertObjectType)
     {
         InsertAttributesDialog dialog = new InsertAttributesDialog();
         dialog.setInsertObjectType(insertObjectType);
         dialog.setLayer(layer);
         mMainActivity.showDialog(dialog);
     }
+    
     // getter, setter =====================================================
     
     /**
@@ -385,7 +386,7 @@ public class MapFragment extends Fragment
         }
         if(layer.getType() == VectorLayerType.POINT)
         {
-            endObject(layer, InsertObjectType.RECORDING);
+            endNewObject(layer, InsertObjectType.RECORDING);
         }
     }
 
@@ -410,7 +411,7 @@ public class MapFragment extends Fragment
         
         if(layer.getType() == VectorLayerType.POINT)
         {
-            endObject(layer, InsertObjectType.EDITING);
+            endNewObject(layer, InsertObjectType.EDITING);
         }
     }
     
@@ -605,10 +606,17 @@ public class MapFragment extends Fragment
                 if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
                 {
                     showAutoButton = true;
-                    if (selectedLayer.hasOpenedRecordObject() &&
-                            selectedLayer.hasRecordedObjectEnoughPoints())
+                    if (selectedLayer.hasOpenedRecordObject())
                     {
-                        showEndObjectButton = true;
+                        if(selectedLayer.hasRecordedObjectEnoughPoints())
+                        {
+                            showEndObjectButton = true;
+                        }
+                        
+                        if(!selectedLayer.isRecordedObjectNew())
+                        {
+                            showBackButton = true;
+                        }
                     }
                 }
                 
@@ -735,6 +743,29 @@ public class MapFragment extends Fragment
             mCoordinatesAddPointText.setVisibility(View.GONE);            
         }        
     }
+    
+    /**
+     * update existed object
+     * @param layer
+     */
+    private void endSavedObject(VectorLayer layer)
+    {
+        try
+        {
+            layer.updateRecordedObject();
+            mMap.invalidate();
+        }
+        catch (NumberFormatException e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
     // handlers ===============================================================
     
     /**
@@ -794,7 +825,14 @@ public class MapFragment extends Fragment
                         stopAutoRecord();
                     }
                     
-                    endObject(selectedLayer, InsertObjectType.RECORDING);
+                    if(selectedLayer.isRecordedObjectNew())
+                    {
+                        endNewObject(selectedLayer, InsertObjectType.RECORDING);
+                    }
+                    else
+                    {
+                        endSavedObject(selectedLayer);
+                    }
                 }
                 catch (CreateObjectException e)
                 {
@@ -838,7 +876,14 @@ public class MapFragment extends Fragment
             {
                 try
                 {
-                    selectedLayer.cancelNotSavedChanges();
+                    if(mMainActivity.getActivityMode() == ActivityMode.EDIT)
+                    {
+                        selectedLayer.cancelNotSavedEditedChanges();
+                    }
+                    else if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
+                    {
+                        selectedLayer.cancelNotSavedRecordedChanges();
+                    }
                     mMap.invalidate();
                 }
                 catch (Exception e)
@@ -867,6 +912,7 @@ public class MapFragment extends Fragment
                 try
                 {
                     selectedLayer.removeSelected();
+                    mMainActivity.getAttributesFragment().reload();
                     mMap.invalidate();
                 }
                 catch (Exception e)

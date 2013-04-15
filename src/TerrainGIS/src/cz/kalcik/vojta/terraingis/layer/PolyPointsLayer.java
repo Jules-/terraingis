@@ -53,7 +53,7 @@ public abstract class PolyPointsLayer extends VectorLayer
         {
             Geometry geometry = iter.next();
 
-            if(!isSelectedObject(iter))
+            if(!isSelectedObject(iter) && !isRecordedObject(iter))
             {
                 PointF[] points = mNavigator.mToSurfacePx(geometry.getCoordinates());
                 mDrawer.drawCanvasPathSurfacePx(canvas,
@@ -63,10 +63,10 @@ public abstract class PolyPointsLayer extends VectorLayer
         }
         
         // recording of object
-        if(vectorLayerData.recordedPoints.size() > 0)
+        if(mVectorLayerData.recordedPoints.size() > 0)
         {
-            Coordinate[] metersCoordinates = vectorLayerData.recordedPoints.toArray(
-                    new Coordinate[vectorLayerData.recordedPoints.size()]);
+            Coordinate[] metersCoordinates = mVectorLayerData.recordedPoints.toArray(
+                    new Coordinate[mVectorLayerData.recordedPoints.size()]);
             PointF[] points = mNavigator.mToSurfacePx(metersCoordinates);
             
             mDrawer.drawCanvasPathSurfacePx(canvas,
@@ -77,11 +77,11 @@ public abstract class PolyPointsLayer extends VectorLayer
         }
         
         // selected object
-        if(!vectorLayerData.selectedObjectPoints.isEmpty())
+        if(!mVectorLayerData.selectedObjectPoints.isEmpty())
         {
             PointF[] points = mNavigator.mToSurfacePx(
-                    vectorLayerData.selectedObjectPoints.toArray(
-                            new Coordinate[vectorLayerData.selectedObjectPoints.size()]));
+                    mVectorLayerData.selectedObjectPoints.toArray(
+                            new Coordinate[mVectorLayerData.selectedObjectPoints.size()]));
             
             mDrawer.drawCanvasPathSurfacePx(canvas,
                     points, 
@@ -97,7 +97,7 @@ public abstract class PolyPointsLayer extends VectorLayer
             
             mDrawer.drawPathNodesSurfacePx(canvas, points, mNodesSelectedObjectPaint,
                     mSelectedNodeSelectedObjectPaint,
-                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT), vectorLayerData.selectedNodeIndex);
+                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT), mVectorLayerData.selectedVertexIndex);
         }
     }
 }

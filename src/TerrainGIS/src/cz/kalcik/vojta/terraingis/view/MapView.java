@@ -20,6 +20,7 @@ import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
+import cz.kalcik.vojta.terraingis.layer.VectorLayerType;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -443,8 +444,7 @@ public class MapView extends SurfaceView
             }
             else if(mode == ActivityMode.EDIT && mMainActivity.isAddPointMode())
             {
-
-                    mMapFragment.setCoordinatesAddPointM(mNavigator.surfacePxToM(mTouchPoint, null));
+                mMapFragment.setCoordinatesAddPointM(mNavigator.surfacePxToM(mTouchPoint, null));
             }
             else if(mMainActivity.canSelectObject())
             {
@@ -456,8 +456,9 @@ public class MapView extends SurfaceView
                     boolean selectVertex = (mode == ActivityMode.EDIT);
                     try
                     {
-                        layer.clickedObject(mNavigator.getMRectangle(null), clickedPoint, selectVertex);
+                        layer.clickSelectionObject(mNavigator.getMRectangle(null), clickedPoint, selectVertex);
                         mMainActivity.getAttributesFragment().selectItemWithRowid(layer.getSelectedRowid());
+                        invalidate();
                     }
                     catch (Exception e)
                     {
@@ -471,6 +472,35 @@ public class MapView extends SurfaceView
                     }
                     
                     invalidate();
+                }
+            }
+            else if(mode == ActivityMode.RECORD)
+            {
+                VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+                if(layer != null)
+                {
+                    Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
+
+                    // open old object
+                    if(!layer.hasOpenedRecordObject())
+                    {
+                        try
+                        {
+                            layer.clickRecordingObject(mNavigator.getMRectangle(null), clickedPoint);
+                            mMapFragment.setMapTools();
+                            invalidate();
+                        }
+                        catch (Exception e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        catch (ParseException e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
                 }
             }
 

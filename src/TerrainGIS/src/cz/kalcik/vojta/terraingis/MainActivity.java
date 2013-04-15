@@ -508,9 +508,10 @@ public class MainActivity extends AbstractActivity
     private void changeMode(ActivityMode mode)
     {
         // old mode
+        getLayersFragment().removeSelectedObject();
+        
         if(data.activityMode == ActivityMode.EDIT)
         {
-            getLayersFragment().removeSelectedObject();
             setAddPointMode(false);
         }
         

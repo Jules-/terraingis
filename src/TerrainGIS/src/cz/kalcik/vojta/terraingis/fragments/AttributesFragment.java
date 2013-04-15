@@ -121,6 +121,27 @@ public class AttributesFragment extends PanelFragment
     {
         mData.selectedRowId = null;
     }
+    
+    /**
+     * reload attributes table
+     */
+    public void reload()
+    {
+        clear();
+        
+        if(mLayer != null)
+        {
+            try
+            {
+                loadAttributes();
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+    }
     // getter setter ======================================================
     
     /**
@@ -220,21 +241,9 @@ public class AttributesFragment extends PanelFragment
         
         if(layer == null || !layer.equals(mLayer))
         {
-            clear();
             mLayer = layer;
         
-            if(mLayer != null)
-            {
-                try
-                {
-                    loadAttributes();
-                }
-                catch (Exception e)
-                {
-                    Toast.makeText(mMainActivity, R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                }
-            }
+            reload();
         }
     }
     

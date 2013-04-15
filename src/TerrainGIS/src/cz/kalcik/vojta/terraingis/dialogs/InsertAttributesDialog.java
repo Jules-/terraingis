@@ -77,18 +77,22 @@ public class InsertAttributesDialog extends SetAttributesDialog
     protected void execute()
     {
         AttributeRecord attributes = new AttributeRecord(mLayer.getAttributeHeader(), getValues());
+        MainActivity mainActivity = (MainActivity)getActivity();
         try
         {
             if(mInsertObjectType == InsertObjectType.RECORDING)
             {
                 mLayer.insertRecordedObject(attributes);
                 
-                ((MainActivity)getActivity()).getMapFragment().setMapTools();
+                mainActivity.getMapFragment().setMapTools();
             }
             else if(mInsertObjectType == InsertObjectType.EDITING)
             {
                 mLayer.insertEditedObject(attributes);
             }
+            
+            mainActivity.getAttributesFragment().reload();
+            mainActivity.getMapFragment().getMap().invalidate();
         }
         catch (Exception e)
         {
