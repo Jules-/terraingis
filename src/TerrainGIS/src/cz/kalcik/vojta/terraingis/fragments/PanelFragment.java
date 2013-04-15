@@ -28,6 +28,10 @@ public abstract class PanelFragment extends Fragment
         mBackgroundColors = new ListBackgroundColors(mMainActivity);
     }
     
+    // protected abstract method ==============================================
+    
+    protected abstract void switchToMe();
+    
     // handlers ===============================================================
 
     /**
@@ -52,13 +56,11 @@ public abstract class PanelFragment extends Fragment
         {
             if(PanelFragment.this instanceof LayersFragment)
             {
-                mMainActivity.getLayersLayout().setVisibility(View.GONE);
-                mMainActivity.getAttributesLayout().setVisibility(View.VISIBLE);
+                mMainActivity.getAttributesFragment().switchToMe();
             }
             else
             {
-                mMainActivity.getAttributesLayout().setVisibility(View.GONE);
-                mMainActivity.getLayersLayout().setVisibility(View.VISIBLE);
+                mMainActivity.getLayersFragment().switchToMe();
             }
         }        
     };

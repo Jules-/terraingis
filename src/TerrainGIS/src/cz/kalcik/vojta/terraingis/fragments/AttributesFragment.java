@@ -4,6 +4,10 @@
 package cz.kalcik.vojta.terraingis.fragments;
 
 import java.util.ArrayList;
+import java.util.NavigableMap;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 import jsqlite.Exception;
 
@@ -20,6 +24,7 @@ import android.widget.Toast;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
+import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveObjectDialog;
 import cz.kalcik.vojta.terraingis.dialogs.UpdateAttributesDialog;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
@@ -37,7 +42,6 @@ import cz.kalcik.vojta.terraingis.view.VScroll;
 public class AttributesFragment extends PanelFragment
 {
     // attributes =========================================================
-    private SpatiaLiteIO mSpatialite;
     private VectorLayer mLayer = null;
     private TableLayout mTable;
     private ArrayList<AttributeTableRow> mRows = new ArrayList<AttributeTableRow>();
@@ -85,6 +89,33 @@ public class AttributesFragment extends PanelFragment
     public AttributeTableRow getRowAtIndex(int index)
     {
         return (AttributeTableRow) mTable.getChildAt(index);
+    }
+    
+    @Override
+    protected void switchToMe()
+    {
+        mMainActivity.getLayersLayout().setVisibility(View.GONE);
+        mMainActivity.getAttributesLayout().setVisibility(View.VISIBLE);
+        
+        VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+        if(!layer.equals(mLayer))
+        {
+            clear();
+            mLayer = layer;
+        
+            if(mLayer != null)
+            {
+                try
+                {
+                    loadAttributes();
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        }
     }
     // getter setter ======================================================
     
@@ -149,8 +180,7 @@ public class AttributesFragment extends PanelFragment
         mTable.addView(row);
         // table body
         AttributeHeader header = mLayer.getAttributeHeader();
-        SpatialiteAttributesIterator iterValues =
-                (SpatialiteAttributesIterator)mSpatialite.getAttributes(mLayer.getData().name, header);
+        SpatialiteAttributesIterator iterValues = mLayer.getAttributes();
         int count = header.getCountColumns();
         
         AttributeTableRow bodyRow;
@@ -169,6 +199,13 @@ public class AttributesFragment extends PanelFragment
         setBackgroundColors();
     }
     
+    /**
+     * clear table
+     */
+    private void clear()
+    {
+        mTable.removeAllViews();
+    }
     // handlers ===============================================================
     
     /**
@@ -179,7 +216,26 @@ public class AttributesFragment extends PanelFragment
         @Override
         public void onClick(View v)
         {
-
+            if(mSelectedRow != null)
+            {
+                try
+                {
+                    Geometry object = mLayer.getObject(mSelectedRow.getRowid());
+                    Navigator.getInstance().zoomToEnvelopeM(object.getEnvelopeInternal());
+                    
+                    mMainActivity.getMapFragment().getMap().invalidate();
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
+                catch (ParseException e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
         }
     };
     

@@ -18,7 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +26,6 @@ import com.mobeta.android.dslv.DragSortListView;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.io.ParseException;
 
-import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
 import cz.kalcik.vojta.terraingis.dialogs.NewLayerDialog;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveLayerDialog;
@@ -35,6 +34,9 @@ import cz.kalcik.vojta.terraingis.dialogs.ShapefileDialogImport;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
+import cz.kalcik.vojta.terraingis.layer.LinesLayer;
+import cz.kalcik.vojta.terraingis.layer.PointsLayer;
+import cz.kalcik.vojta.terraingis.layer.PolygonsLayer;
 import cz.kalcik.vojta.terraingis.layer.TilesLayer;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 import cz.kalcik.vojta.terraingis.view.LayersView;
@@ -87,8 +89,6 @@ public class LayersFragment extends PanelFragment
         intent.setType("file/*");
         startActivityForResult(intent, LOAD_REQUESTCODE);        
     }
-    
-    // getter, setter =====================================================
     
     // public method ======================================================
     /**
@@ -148,6 +148,14 @@ public class LayersFragment extends PanelFragment
         }        
     }
     
+    @Override
+    protected void switchToMe()
+    {
+        mMainActivity.getAttributesLayout().setVisibility(View.GONE);
+        mMainActivity.getLayersLayout().setVisibility(View.VISIBLE);
+    }
+    // getter, setter =====================================================
+    
     // on methods =========================================================
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -166,6 +174,8 @@ public class LayersFragment extends PanelFragment
         setCommon(myView);
         
         // buttons
+        ImageButton buttonHideLayer = (ImageButton)myView.findViewById(R.id.button_hide_layer);
+        buttonHideLayer.setOnClickListener(hideLayerHandler);
         ImageButton buttonZoomLayer = (ImageButton)myView.findViewById(R.id.button_zoom_to_layer);
         buttonZoomLayer.setOnClickListener(zoomLayerHandler);
         ImageButton buttonAdd = (ImageButton)myView.findViewById(R.id.button_add);
@@ -298,9 +308,30 @@ public class LayersFragment extends PanelFragment
                     itemView.setBackgroundColor(backgroundColor);
                 }
                 
+                AbstractLayer item = getItem(position);
+                ImageView image = (ImageView) itemView.findViewById(R.id.drag_handle);
+                // image handler
+                if(item instanceof TilesLayer)
+                {
+                    image.setImageDrawable(getResources().getDrawable(R.drawable.drag_handle_raster));
+                }
+                else if(item instanceof PointsLayer)
+                {
+                    image.setImageDrawable(getResources().getDrawable(R.drawable.drag_handle_points));
+                }
+                else if(item instanceof LinesLayer)
+                {
+                    image.setImageDrawable(getResources().getDrawable(R.drawable.drag_handle_lines));
+                }
+                else if(item instanceof PolygonsLayer)
+                {
+                    image.setImageDrawable(getResources().getDrawable(R.drawable.drag_handle_polygon));
+                }
+                
+                
                 // visible layer
                 TextView textView = (TextView)itemView.findViewById(R.id.text_item);
-                if(getItem(position).isVisible())
+                if(item.isVisible())
                 {
                     textView.setTextColor(Color.BLACK);
                     textView.setTypeface(null, Typeface.NORMAL);
@@ -465,6 +496,6 @@ public class LayersFragment extends PanelFragment
                     }
                 }
             };
-    
+
     // classes =============================================================================
 }

@@ -27,6 +27,7 @@ import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.ShapeFileRecord;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
+import cz.kalcik.vojta.terraingis.io.SpatialiteAttributesIterator;
 import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
 import cz.kalcik.vojta.terraingis.layer.VectorLayerPaints.PaintType;
 
@@ -360,6 +361,26 @@ public abstract class VectorLayer extends AbstractLayer
         return vectorLayerData.selectedObjectPoints.size() >= getMinCountPoints();
     }
     
+    /**
+     * @return iterator of attributes
+     * @throws Exception
+     */
+    public SpatialiteAttributesIterator getAttributes() throws Exception
+    {
+        return mSpatialite.getAttributes(data.name, mAttributeHeader);
+    }
+    
+    /**
+     * @param rowid
+     * @return return object in SRS of main map
+     * @throws Exception
+     * @throws ParseException
+     */
+    public Geometry getObject(String rowid) throws Exception, ParseException
+    {
+        return mSpatialite.getObject(data.name, mGeometryColumn,
+                mLayerManager.getSrid(), Integer.parseInt(rowid));        
+    }
     // getter, setter =========================================================
     /**
      * @return typ of vyctor layer
@@ -652,8 +673,7 @@ public abstract class VectorLayer extends AbstractLayer
             throws Exception, ParseException
     {
         double bufferDistance = mNavigator.getBufferDistance();
-        Geometry object = mSpatialite.getObject(data.name, mGeometryColumn,
-                mLayerManager.getSrid(), Integer.parseInt(vectorLayerData.selectedRowid));
+        Geometry object = getObject(vectorLayerData.selectedRowid);
         vectorLayerData.selectedObjectPoints = new ArrayList<Coordinate>(Arrays.asList(object.getCoordinates()));
         
         if(mType == VectorLayerType.POLYGON)

@@ -80,6 +80,7 @@ public class RemoveObjectDialog extends SimpleDialog
         {
             spatialite.removeObject(data.mLayerName, Integer.parseInt(data.mRowid));
             fragment.removeSelectedRow();
+            activity.getMapFragment().getMap().invalidate();
         }
         catch (Exception e)
         {
