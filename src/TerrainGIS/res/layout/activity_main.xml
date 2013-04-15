@@ -5,34 +5,48 @@
     android:layout_height="match_parent" >
 
     <LinearLayout
-        android:id="@+id/layers_layout"
+        android:id="@+id/panel_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="2"
         android:visibility="gone"
         android:orientation="horizontal">
 
-        <fragment
-            android:id="@+id/layers_fragment"
-            android:name="cz.kalcik.vojta.terraingis.fragments.LayersFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <LinearLayout
+	        android:id="@+id/layers_layout"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent" >
+	        
+	        <fragment
+	            android:id="@+id/layers_fragment"
+	            android:name="cz.kalcik.vojta.terraingis.fragments.LayersFragment"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent" />
+	        
+	    </LinearLayout>
         
-        <fragment
-            android:id="@+id/attributes_fragment"
-            android:name="cz.kalcik.vojta.terraingis.fragments.AttributesFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
+        <LinearLayout
+	        android:id="@+id/attributes_layout"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+            android:visibility="gone" >
         
-        <View 
-            android:layout_width="2dp"
-            android:layout_height="match_parent"
-            android:background="@color/layerfragment_border"
-            android:layout_weight="0" />
-        
+	        <fragment
+	            android:id="@+id/attributes_fragment"
+	            android:name="cz.kalcik.vojta.terraingis.fragments.AttributesFragment"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent" />
+	        
+	    </LinearLayout>
+               
     </LinearLayout>
 
+    <View 
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:background="@color/layerfragment_border"
+        android:layout_weight="0" />
+    
     <LinearLayout
         android:id="@+id/map_layout"
         android:layout_width="match_parent"

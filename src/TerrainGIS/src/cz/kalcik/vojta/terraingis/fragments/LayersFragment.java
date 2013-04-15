@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -165,19 +166,12 @@ public class LayersFragment extends PanelFragment
         setCommon(myView);
         
         // buttons
-        ImageButton buttonHideLayer = (ImageButton)myView.findViewById(R.id.button_hide_layer);
-        buttonHideLayer.setOnClickListener(hideLayerHandler);
-        ImageButton buttonSwitchPanel = (ImageButton)myView.findViewById(R.id.button_switch_panel);
-        buttonSwitchPanel.setOnClickListener(switchPanelHandler);
         ImageButton buttonZoomLayer = (ImageButton)myView.findViewById(R.id.button_zoom_to_layer);
         buttonZoomLayer.setOnClickListener(zoomLayerHandler);
         ImageButton buttonAdd = (ImageButton)myView.findViewById(R.id.button_add);
         buttonAdd.setOnClickListener(addLayerHandler);
         ImageButton buttonRemove = (ImageButton)myView.findViewById(R.id.button_remove);
         buttonRemove.setOnClickListener(removeLayerHandler);
-        
-        // main activity
-        mMainActivity = (MainActivity)getActivity();
         
         // background colors
         mBackgroundColors = new ListBackgroundColors(mMainActivity);

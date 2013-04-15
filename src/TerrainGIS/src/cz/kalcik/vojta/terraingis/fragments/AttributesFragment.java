@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -37,7 +38,7 @@ public class AttributesFragment extends PanelFragment
 {
     // attributes =========================================================
     private SpatiaLiteIO mSpatialite;
-    private VectorLayer mLayer;
+    private VectorLayer mLayer = null;
     private TableLayout mTable;
     private ArrayList<AttributeTableRow> mRows = new ArrayList<AttributeTableRow>();
     private AttributeTableRow mSelectedRow = null;
@@ -113,10 +114,6 @@ public class AttributesFragment extends PanelFragment
         setCommon(myView);
         
         // buttons
-        ImageButton buttonHidePanel = (ImageButton)myView.findViewById(R.id.button_hide_layer);
-        buttonHidePanel.setOnClickListener(hidePanelHandler);
-        ImageButton buttonSwitchPanel = (ImageButton)myView.findViewById(R.id.button_switch_panel);
-        buttonSwitchPanel.setOnClickListener(switchPanelHandler);
         ImageButton buttonZoomObject = (ImageButton)myView.findViewById(R.id.button_zoom_to_object);
         buttonZoomObject.setOnClickListener(zoomObjectHandler);
         ImageButton buttonEditObject = (ImageButton)myView.findViewById(R.id.button_edit);
@@ -128,23 +125,6 @@ public class AttributesFragment extends PanelFragment
         mVScroll = (VScroll)myView.findViewById(R.id.vScroll);
         mVScroll.initView(this);
         mTable = (TableLayout)myView.findViewById(R.id.attributeTable);
-        
-        // main activity
-        mMainActivity = (MainActivity)getActivity();
-        
-        mLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
-        if(mLayer != null)
-        {
-            try
-            {
-                loadAttributes();
-            }
-            catch (Exception e)
-            {
-                Toast.makeText(mMainActivity, R.string.database_error,
-                        Toast.LENGTH_LONG).show();
-            }
-        }
         
         return myView;
     }

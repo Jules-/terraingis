@@ -60,6 +60,8 @@ public class MainActivity extends AbstractActivity
     private AttributesFragment mAttributesFragment;
     private LinearLayout mMapLayout;
     private LinearLayout mPanelLayout;
+    private LinearLayout mLayersLayout;
+    private LinearLayout mAttributesLayout;
     private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE, false);
     
     // public methods =====================================================
@@ -173,6 +175,22 @@ public class MainActivity extends AbstractActivity
     }
     
     /**
+     * @return layers layout
+     */
+    public LinearLayout getLayersLayout()
+    {
+        return mLayersLayout;
+    }
+
+    /**
+     * @return attributes layout
+     */
+    public LinearLayout getAttributesLayout()
+    {
+        return mAttributesLayout;
+    }
+    
+    /**
      * @return the mLocationWorker
      */
     public LocationWorker getLocationWorker()
@@ -200,15 +218,17 @@ public class MainActivity extends AbstractActivity
         getActionBar().setHomeButtonEnabled(true);
         
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
-        mPanelLayout = (LinearLayout)findViewById(R.id.layers_layout);
+        mPanelLayout = (LinearLayout)findViewById(R.id.panel_layout);
+        mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
+        mAttributesLayout = (LinearLayout)findViewById(R.id.attributes_layout);
         
-//        mMapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map_fragment);
-//        mLayersFragment = (LayersFragment)getFragmentManager().findFragmentById(R.id.layers_fragment);
-//        mAttributesFragment = (AttributesFragment)getFragmentManager().findFragmentById(R.id.attributes_fragment);
-//        
-//        mLocationWorker = new LocationWorker(this);
-//        MapView map = mMapFragment.getMap();
-//        map.setMainActivity(this);
+        mMapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map_fragment);
+        mLayersFragment = (LayersFragment)getFragmentManager().findFragmentById(R.id.layers_fragment);
+        mAttributesFragment = (AttributesFragment)getFragmentManager().findFragmentById(R.id.attributes_fragment);
+        
+        mLocationWorker = new LocationWorker(this);
+        MapView map = mMapFragment.getMap();
+        map.setMainActivity(this);
         
         if(mSettings.isHideActionBar())
         {
