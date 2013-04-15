@@ -303,12 +303,11 @@ public class MainActivity extends AbstractActivity
         {
             if(data.addPointMode)
             {
-                data.addPointMode = false;
-                mMapFragment.setCoordinatesAddPointM(null);
+                setAddPointMode(false);
             }
             else
             {
-                data.addPointMode = true;
+                setAddPointMode(true);
             }
         }
         // edit
@@ -512,7 +511,7 @@ public class MainActivity extends AbstractActivity
         if(data.activityMode == ActivityMode.EDIT)
         {
             getLayersFragment().removeSelectedObject();
-            data.addPointMode = false;
+            setAddPointMode(false);
         }
         
         data.activityMode = mode;
@@ -553,6 +552,20 @@ public class MainActivity extends AbstractActivity
     {
         cancelTimer();
         hideActionBar();        
+    }
+    
+    /**
+     * change add point mode
+     * @param state
+     */
+    private void setAddPointMode(boolean state)
+    {
+        data.addPointMode = state;
+        
+        if(!state)
+        {
+            mMapFragment.setCoordinatesAddPointM(null);
+        }
     }
     // classes =================================================================
     /**

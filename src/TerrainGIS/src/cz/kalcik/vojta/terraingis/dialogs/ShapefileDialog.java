@@ -25,19 +25,26 @@ public abstract class ShapefileDialog extends CreateLayerDialog
     private static final String DEFAULT_CHARSET = "UTF-8";
     
     // attributes ====================================================================================
-    protected class ShapefileDialogData implements Serializable
+    protected static class ShapefileDialogData implements Serializable
     {
         private static final long serialVersionUID = 1L;
-        public int srid = -1;
-        public String charset = DEFAULT_CHARSET;
-        public String name = "";
+        public int srid;
+        public String charset;
+        public String name;
+        
+        public ShapefileDialogData(int srid, String charset, String name)
+        {
+            this.srid = srid;
+            this.charset = charset;
+            this.name = name;
+        }
     }
     
     protected MainActivity mMainActivity;
     protected EditText mNameEditText;
     protected EditText mSridEditText;
     protected EditText mCharsetEditText;
-    protected ShapefileDialogData data = new ShapefileDialogData();
+    protected ShapefileDialogData data = new ShapefileDialogData(-1, DEFAULT_CHARSET, "");
     
     // public methods ================================================================================
     /**

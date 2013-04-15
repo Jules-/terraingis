@@ -36,7 +36,7 @@ public abstract class SetAttributesDialog extends DialogFragment
     
     private final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.SetAttributesDialogSaveState";
     // attributes ====================================================================================
-    private class SetAttributesDialogSaveData implements Serializable
+    private static class SetAttributesDialogSaveData implements Serializable
     {
         private static final long serialVersionUID = 1L;
         

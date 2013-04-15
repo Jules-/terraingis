@@ -17,7 +17,7 @@ public class RemoveObjectDialog extends SimpleDialog
     private final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.RemoveObjectDialogSaveState";
     
     // attributes =============================================================
-    private class RemoveObjectDialogData implements Serializable
+    private static class RemoveObjectDialogData implements Serializable
     {
         private static final long serialVersionUID = 1L;
         public String mRowid;

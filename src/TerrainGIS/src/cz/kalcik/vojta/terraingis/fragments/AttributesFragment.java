@@ -46,11 +46,11 @@ public class AttributesFragment extends PanelFragment
     private static final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.AttributesFragmentSaveState";
     
     // attributes =========================================================
-    private class AttributesFragmentData implements Serializable
+    private static class AttributesFragmentData implements Serializable
     {
         private static final long serialVersionUID = 1L;
         
-        public String selectedRowId = null;
+        public String selectedRowId;
     }
     
     private VectorLayer mLayer = null;
@@ -136,6 +136,11 @@ public class AttributesFragment extends PanelFragment
      */
     public void selectedRowIsTouched()
     {
+        if(mTouchedRow == null)
+        {
+            return;
+        }
+        
         mData.selectedRowId = mTouchedRow.getRowid();
 
         if(mMainActivity.canSelectObject())
@@ -199,10 +204,10 @@ public class AttributesFragment extends PanelFragment
     @Override
     public void onSaveInstanceState (Bundle outState)
     {        
+        super.onSaveInstanceState(outState);
+
         // Map view state
         outState.putSerializable(TAG_SAVESTATE, mData);
-        
-        super.onSaveInstanceState(outState);
     }
     // protected methods =======================================================
     @Override
