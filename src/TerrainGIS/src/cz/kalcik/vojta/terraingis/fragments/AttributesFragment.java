@@ -3,6 +3,7 @@
  */
 package cz.kalcik.vojta.terraingis.fragments;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.NavigableMap;
 
@@ -42,16 +43,24 @@ import cz.kalcik.vojta.terraingis.view.VScroll;
 public class AttributesFragment extends PanelFragment
 {
     // constants =====================================================================================
-    
+    private static final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.AttributesFragmentSaveState";
     
     // attributes =========================================================
+    private class AttributesFragmentData implements Serializable
+    {
+        private static final long serialVersionUID = 1L;
+        
+        public String selectedRowId = null;
+    }
+    
     private VectorLayer mLayer = null;
     private TableLayout mTable;
     private ArrayList<AttributeTableRow> mRows = new ArrayList<AttributeTableRow>();
-    private AttributeTableRow mSelectedRow = null;
     private AttributeTableRow mTouchedRow = null;
     
     private VScroll mVScroll;
+    
+    private AttributesFragmentData mData = new AttributesFragmentData();
     
     // public methods =====================================================
     
@@ -66,7 +75,7 @@ public class AttributesFragment extends PanelFragment
         {
             int rowColor = colors.getNextColor();
             
-            if(row.equals(mSelectedRow))
+            if(row.getRowid().equals(mData.selectedRowId))
             {
                 row.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
             }
@@ -82,7 +91,7 @@ public class AttributesFragment extends PanelFragment
      */
     public void removeSelectedRow()
     {
-        mTable.removeView(mSelectedRow);
+        mTable.removeView(findRowByRowId(mData.selectedRowId));
     }
     
     /**
@@ -94,32 +103,23 @@ public class AttributesFragment extends PanelFragment
         return (AttributeTableRow) mTable.getChildAt(index);
     }
     
-    @Override
-    protected void switchToMeChild()
+    /**
+     * select row whitch has rowid
+     * @param rowid
+     */
+    public void selectItemWithRowid(String rowid)
     {
-        mMainActivity.getLayersLayout().setVisibility(View.GONE);
-        mMainActivity.getAttributesLayout().setVisibility(View.VISIBLE);
+        mData.selectedRowId = rowid;
         
-        VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
-        
-        if(layer == null || !layer.equals(mLayer))
-        {
-            clear();
-            mLayer = layer;
-        
-            if(mLayer != null)
-            {
-                try
-                {
-                    loadAttributes();
-                }
-                catch (Exception e)
-                {
-                    Toast.makeText(mMainActivity, R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        }
+        setBackgroundColors();
+    }
+    
+    /**
+     * clear selection of row
+     */
+    public void clearSelection()
+    {
+        mData.selectedRowId = null;
     }
     // getter setter ======================================================
     
@@ -136,7 +136,26 @@ public class AttributesFragment extends PanelFragment
      */
     public void selectedRowIsTouched()
     {
-        mSelectedRow = mTouchedRow;
+        mData.selectedRowId = mTouchedRow.getRowid();
+
+        if(mMainActivity.canSelectObject())
+        {
+            try
+            {
+                mLayer.selectObject(mData.selectedRowId);
+                mMainActivity.getMapFragment().getMap().invalidate();
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
+            catch (ParseException e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
     
     // on methods =========================================================
@@ -165,6 +184,54 @@ public class AttributesFragment extends PanelFragment
         return myView;
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {       
+        super.onActivityCreated(savedInstanceState);
+
+        if(savedInstanceState != null)
+        {
+            mData = (AttributesFragmentData) savedInstanceState.getSerializable(TAG_SAVESTATE);
+            setBackgroundColors();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState (Bundle outState)
+    {        
+        // Map view state
+        outState.putSerializable(TAG_SAVESTATE, mData);
+        
+        super.onSaveInstanceState(outState);
+    }
+    // protected methods =======================================================
+    @Override
+    protected void switchToMeChild()
+    {
+        mMainActivity.getLayersLayout().setVisibility(View.GONE);
+        mMainActivity.getAttributesLayout().setVisibility(View.VISIBLE);
+        
+        VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+        
+        if(layer == null || !layer.equals(mLayer))
+        {
+            clear();
+            mLayer = layer;
+        
+            if(mLayer != null)
+            {
+                try
+                {
+                    loadAttributes();
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(mMainActivity, R.string.database_error,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
     
     // private methods =========================================================
     /**
@@ -211,6 +278,25 @@ public class AttributesFragment extends PanelFragment
     private void clear()
     {
         mTable.removeAllViews();
+        mRows.clear();
+    }
+    
+    /**
+     * find row with rowid
+     * @param rowid
+     * @return
+     */
+    private AttributeTableRow findRowByRowId(String rowid)
+    {
+        for(AttributeTableRow row: mRows)
+        {
+            if(row.getRowid().equals(mData.selectedRowId))
+            {
+                return row;
+            }
+        }
+        
+        return null;
     }
     // handlers ===============================================================
     
@@ -222,11 +308,11 @@ public class AttributesFragment extends PanelFragment
         @Override
         public void onClick(View v)
         {
-            if(mSelectedRow != null)
+            if(mData.selectedRowId != null)
             {
                 try
                 {
-                    Geometry object = mLayer.getObject(mSelectedRow.getRowid());
+                    Geometry object = mLayer.getObject(mData.selectedRowId);
                     Navigator.getInstance().zoomToEnvelopeM(object.getEnvelopeInternal());
                     
                     mMainActivity.getMapFragment().getMap().invalidate();
@@ -255,7 +341,7 @@ public class AttributesFragment extends PanelFragment
         {
             UpdateAttributesDialog dialog = new UpdateAttributesDialog();
             dialog.setLayer(mLayer);
-            dialog.setRow(mSelectedRow);
+            dialog.setRow(findRowByRowId(mData.selectedRowId));
             mMainActivity.showDialog(dialog);
         }
     };
@@ -270,7 +356,7 @@ public class AttributesFragment extends PanelFragment
         {
             RemoveObjectDialog dialog = new RemoveObjectDialog();
             dialog.setMessage(getResources().getString(R.string.confirm_remove_object_message));
-            dialog.setRowid(mSelectedRow.getRowid());
+            dialog.setRowid(mData.selectedRowId);
             dialog.setLayerName(mLayer.getData().name);
             mMainActivity.showDialog(dialog);
         }

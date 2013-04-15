@@ -401,6 +401,12 @@ public class MapFragment extends Fragment
                     Toast.LENGTH_LONG).show();
             return;
         }
+        catch (ParseException e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
         
         if(layer.getType() == VectorLayerType.POINT)
         {

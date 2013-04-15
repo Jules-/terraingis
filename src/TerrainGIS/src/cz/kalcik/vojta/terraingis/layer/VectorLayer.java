@@ -55,6 +55,7 @@ public abstract class VectorLayer extends AbstractLayer
         public ArrayList<Coordinate> selectedObjectPoints; // in srid of map
         public int selectedNodeIndex;
         public Coordinate clickedPoint;
+        public boolean selectVertex = false;
 
         public VectorLayerData(ArrayList<Coordinate> recordedPoints,
                 ArrayList<Coordinate> selectedObjectPoints, int selectedNodeIndex)
@@ -216,26 +217,33 @@ public abstract class VectorLayer extends AbstractLayer
      * @throws ParseException 
      * @throws Exception 
      */
-    public void clickedObject(Envelope envelope, Coordinate point)
+    public void clickedObject(Envelope envelope, Coordinate point, boolean selectVertex)
             throws Exception, ParseException
     {
         vectorLayerData.clickedPoint = point;
+        vectorLayerData.selectVertex = selectVertex;
+        
         double bufferDistance = mNavigator.getBufferDistance();
 
         String rowid = mSpatialite.getRowidNearCoordinate(envelope, data.name,
                 mGeometryColumn, mSrid, mLayerManager.getSrid(), mHasIndex, point, bufferDistance);
         changeSelectionOfObject(rowid);
-        if(vectorLayerData.selectedRowid != null)
-        {
-            loadSelectedPoints();
-        }
+    }
+    
+    public void selectObject(String rowid) throws Exception, ParseException
+    {
+        vectorLayerData.clickedPoint = null;
+        vectorLayerData.selectVertex = false;
+        
+        changeSelectionOfObject(rowid);
     }
     
     /**
      * remove selected rowid
      * @throws Exception 
+     * @throws ParseException 
      */
-    public void removeSelectionOfObject() throws Exception
+    public void removeSelectionOfObject() throws Exception, ParseException
     {
         changeSelectionOfObject(null);
     }
@@ -244,9 +252,10 @@ public abstract class VectorLayer extends AbstractLayer
      * insert point to selected layer by edit
      * @param point
      * @throws Exception 
+     * @throws ParseException 
      */
     public void addPointEdit(Coordinate point)
-            throws Exception
+            throws Exception, ParseException
     {
         if(mType == VectorLayerType.POINT)
         {
@@ -394,7 +403,7 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * @return the mColumnGeom
      */
-    public String getGeometrColumn()
+    public String getGeometryColumn()
     {
         return mGeometryColumn;
     }
@@ -442,6 +451,14 @@ public abstract class VectorLayer extends AbstractLayer
     public int getColor()
     {
         return mPaint.getColor();
+    }
+    
+    /**
+     * @return rowid of selected object
+     */
+    public String getSelectedRowid()
+    {
+        return vectorLayerData.selectedRowid;
     }
     // public static ============================================================
 
@@ -591,6 +608,12 @@ public abstract class VectorLayer extends AbstractLayer
             return;
         }
         
+        if(point == null)
+        {
+            vectorLayerData.selectedNodeIndex = -1;
+            return;
+        }
+        
         int size = vectorLayerData.selectedObjectPoints.size();
         double minDistance = bufferDistance;
         int minIndex = -1;
@@ -628,10 +651,11 @@ public abstract class VectorLayer extends AbstractLayer
      * set selection to new rowid
      * @param rowid
      * @throws Exception 
+     * @throws ParseException 
      * @throws NumberFormatException 
      */
     private void changeSelectionOfObject(String rowid)
-            throws Exception
+            throws Exception, ParseException
     {
         if(!vectorLayerData.selectedObjectPoints.isEmpty())
         {
@@ -647,7 +671,7 @@ public abstract class VectorLayer extends AbstractLayer
                     vectorLayerData.selectedObjectPoints.clear();
                 }
             }
-            else if(vectorLayerData.selectedRowid != null)
+            else
             {                
                 if(hasSelectedObjectEnoughPoints())
                 {
@@ -667,6 +691,11 @@ public abstract class VectorLayer extends AbstractLayer
         
         vectorLayerData.selectedNodeIndex = -1;
         vectorLayerData.selectedRowid = rowid;
+        
+        if(vectorLayerData.selectedRowid != null)
+        {
+            loadSelectedPoints();
+        }
     }
     
 
@@ -689,6 +718,14 @@ public abstract class VectorLayer extends AbstractLayer
                     vectorLayerData.selectedObjectPoints.size()-1);
         }
         
-        checkSelectedNode(vectorLayerData.clickedPoint, bufferDistance);
+        // selection of vertex
+        if(vectorLayerData.selectVertex)
+        {
+            checkSelectedNode(vectorLayerData.clickedPoint, bufferDistance);
+        }
+        else
+        {
+            vectorLayerData.selectedNodeIndex = -1;
+        }
     }
 }

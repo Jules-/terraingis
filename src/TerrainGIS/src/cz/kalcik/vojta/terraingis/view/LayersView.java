@@ -70,6 +70,8 @@ public class LayersView extends DragSortListView
     public void setMySelectedPosition(int position)
     {
         mMainActivity.getLayersFragment().removeSelectedObject();
+        mMainActivity.getAttributesFragment().clearSelection();
+        
         mMySelectedPosition = position;
     }
     // on methods ==========================================================================

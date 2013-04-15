@@ -131,6 +131,13 @@ public class MainActivity extends AbstractActivity
         }
     }
     
+    /**
+     * @return if can be selected object
+     */
+    public boolean canSelectObject()
+    {
+        return data.activityMode != ActivityMode.RECORD;
+    }
     // getter, setter =====================================================
     
     /**

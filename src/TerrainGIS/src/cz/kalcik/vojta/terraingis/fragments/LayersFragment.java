@@ -144,7 +144,12 @@ public class LayersFragment extends PanelFragment
                 Toast.makeText(mMainActivity, R.string.database_error,
                         Toast.LENGTH_LONG).show();
             }
-            
+            catch (ParseException e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
         }        
     }
     

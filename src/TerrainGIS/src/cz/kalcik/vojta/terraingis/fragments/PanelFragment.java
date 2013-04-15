@@ -28,6 +28,9 @@ public abstract class PanelFragment extends Fragment
         switchToMeChild();
     }
     
+    // getter, setter =========================================================
+
+    
     // on methods =============================================================
     @Override
     public void onActivityCreated(Bundle savedInstanceState)

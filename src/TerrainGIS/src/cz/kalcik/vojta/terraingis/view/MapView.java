@@ -15,10 +15,12 @@ import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.Settings;
+import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -307,6 +309,10 @@ public class MapView extends SurfaceView
         }
     }
     
+    /**
+     * draw crosses at positions
+     * @param canvas
+     */
     private synchronized void drawLocations(Canvas canvas)
     {
         Coordinate location = mMapFragment.getCoordinatesLocation();
@@ -322,97 +328,6 @@ public class MapView extends SurfaceView
         }
     }
     
-    // classes =============================================================================
-    /**
-     * class compute distance for zoom
-     * @author jules
-     *
-     */
-    private class PinchDistance
-    {
-        private float distance;
-        private float startDistance;
-        private PointF middle = new PointF();
-
-        public PointF getMiddle()
-        {
-            return middle;
-        }
-        
-        public void set(float distanceX, float distanceY)
-        {            
-            distance = FloatMath.sqrt(distanceX * distanceX + distanceY * distanceY);
-        }
-        
-        public void setStart(float x0, float y0, float x1, float y1)
-        {
-            middle.set(getScrollX() + (x0+x1)/2, getScrollY() + (y0+y1)/2);
-            set(x1 - x0, y1 - y0);
-            startDistance = distance;
-        }
-        
-        public float getRateDistance()
-        {
-            return distance/startDistance;
-        }
-    }
-    
-    /**
-     * detector for gestures
-     * @author jules
-     *
-     */
-    private class MySimpleOnGestureListener extends GestureDetector.SimpleOnGestureListener
-    {
-        @Override
-        public boolean onSingleTapUp(MotionEvent arg0) 
-        {
-            int size = ConvertUnits.dp2px(Settings.DP_SIZE_SIDE_CLICK);
-            
-            if(mTouchPoint.y <= size)
-            {
-                mMainActivity.showActionBar();
-            }
-            else if(mTouchPoint.x <= size && mMainActivity.isHiddenLayersFragment())
-            {
-                mMainActivity.showLayersFragment();
-            }
-            else if(mMainActivity.getActivityMode() == ActivityMode.EDIT)
-            {
-                if(mMainActivity.isAddPointMode())
-                {
-                    mMapFragment.setCoordinatesAddPointM(mNavigator.surfacePxToM(mTouchPoint, null));
-                }
-                else
-                {
-                    AbstractLayer layer = mMainActivity.getLayersFragment().getSelectedLayer();
-                    if(layer instanceof VectorLayer)
-                    {
-                        VectorLayer vectorLayer = (VectorLayer) layer;
-                        Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
-                        try
-                        {
-                            vectorLayer.clickedObject(mNavigator.getMRectangle(null), clickedPoint);
-                        }
-                        catch (Exception e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        catch (ParseException e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        
-                        invalidate();
-                    }
-                }
-            }
-            
-            return true;
-        }        
-    }
     
     /**
      * @param diffX
@@ -468,5 +383,99 @@ public class MapView extends SurfaceView
                 }
             }
         }
+    }
+    
+    // classes =============================================================================
+    /**
+     * class compute distance for zoom
+     * @author jules
+     *
+     */
+    private class PinchDistance
+    {
+        private float distance;
+        private float startDistance;
+        private PointF middle = new PointF();
+
+        public PointF getMiddle()
+        {
+            return middle;
+        }
+        
+        public void set(float distanceX, float distanceY)
+        {            
+            distance = FloatMath.sqrt(distanceX * distanceX + distanceY * distanceY);
+        }
+        
+        public void setStart(float x0, float y0, float x1, float y1)
+        {
+            middle.set(getScrollX() + (x0+x1)/2, getScrollY() + (y0+y1)/2);
+            set(x1 - x0, y1 - y0);
+            startDistance = distance;
+        }
+        
+        public float getRateDistance()
+        {
+            return distance/startDistance;
+        }
+    }
+    
+    /**
+     * detector for gestures
+     * @author jules
+     *
+     */
+    private class MySimpleOnGestureListener extends GestureDetector.SimpleOnGestureListener
+    {
+        @Override
+        public boolean onSingleTapUp(MotionEvent arg0) 
+        {
+            int size = ConvertUnits.dp2px(Settings.DP_SIZE_SIDE_CLICK);
+            ActivityMode mode = mMainActivity.getActivityMode();
+            
+            if(mTouchPoint.y <= size)
+            {
+                mMainActivity.showActionBar();
+            }
+            else if(mTouchPoint.x <= size && mMainActivity.isHiddenLayersFragment())
+            {
+                mMainActivity.showLayersFragment();
+            }
+            else if(mode == ActivityMode.EDIT && mMainActivity.isAddPointMode())
+            {
+
+                    mMapFragment.setCoordinatesAddPointM(mNavigator.surfacePxToM(mTouchPoint, null));
+            }
+            else if(mMainActivity.canSelectObject())
+            {
+                LayersFragment layersFragment = mMainActivity.getLayersFragment();
+                VectorLayer layer = layersFragment.getSelectedLayerIfVector();
+                if(layer != null)
+                {
+                    Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
+                    boolean selectVertex = (mode == ActivityMode.EDIT);
+                    try
+                    {
+                        layer.clickedObject(mNavigator.getMRectangle(null), clickedPoint, selectVertex);
+                        mMainActivity.getAttributesFragment().selectItemWithRowid(layer.getSelectedRowid());
+                    }
+                    catch (Exception e)
+                    {
+                        Toast.makeText(mMainActivity, R.string.database_error,
+                                Toast.LENGTH_LONG).show();
+                    }
+                    catch (ParseException e)
+                    {
+                        Toast.makeText(mMainActivity, R.string.database_error,
+                                Toast.LENGTH_LONG).show();
+                    }
+                    
+                    invalidate();
+                }
+            }
+
+            
+            return true;
+        }        
     }
 }
