@@ -913,8 +913,9 @@ public class MapFragment extends Fragment
                     else if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
                     {
                         selectedLayer.cancelNotSavedRecordedChanges();
-                        setMapTools();
                     }
+
+                    setMapTools();
                     mMap.invalidate();
                 }
                 catch (Exception e)
@@ -944,6 +945,8 @@ public class MapFragment extends Fragment
                 {
                     selectedLayer.removeSelected();
                     mMainActivity.getAttributesFragment().reload();
+                    
+                    setMapTools();
                     mMap.invalidate();
                 }
                 catch (Exception e)
