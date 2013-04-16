@@ -6,12 +6,6 @@ import java.util.TreeMap;
 
 import jsqlite.Exception;
 
-import org.osmdroid.tileprovider.MapTileProviderBase;
-import org.osmdroid.tileprovider.MapTileProviderBasic;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
-
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.io.ParseException;
@@ -50,6 +44,11 @@ public class LayerManager
     
     // constants ==========================================================================
     public static final double SPHERICAL_MERCATOR_DIST = 20037508.342789;
+    public static final Envelope MAX_ENVELOPE = new Envelope(
+            -SPHERICAL_MERCATOR_DIST,
+            SPHERICAL_MERCATOR_DIST,
+            -SPHERICAL_MERCATOR_DIST,
+            SPHERICAL_MERCATOR_DIST);
     
     // attributes =========================================================================
     private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
@@ -148,7 +147,7 @@ public class LayerManager
      * @param context
      * @param map
      */
-    public void loadLayers(Context context, MapFragment mapFragment,MapView map)
+    public void loadLayers(MainActivity mainActivity, MapFragment mapFragment,MapView map)
     {
         try
         {
@@ -156,11 +155,11 @@ public class LayerManager
         }
         catch (Exception e)
         {
-            Toast.makeText(context, R.string.database_error,
+            Toast.makeText(mainActivity, R.string.database_error,
                     Toast.LENGTH_LONG).show();
             Log.d("TerrainGIS", e.getMessage());
         }
-        addTilesLayer(context, map);
+        addTilesLayer(mainActivity, map);
     }
 
     /**
@@ -352,11 +351,11 @@ public class LayerManager
      * @param aContext
      * @param map
      */
-    private void addTilesLayer(Context context, MapView map)
+    private void addTilesLayer(MainActivity mainActivity, MapView map)
     {
         removeTilesLayers();
         
-        layers.add(new TilesLayer());
+        layers.add(new TilesLayer(mainActivity));
     }
     
     /**

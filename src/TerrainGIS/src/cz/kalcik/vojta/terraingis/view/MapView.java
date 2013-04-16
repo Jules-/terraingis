@@ -1,6 +1,8 @@
 package cz.kalcik.vojta.terraingis.view;
 
 import java.io.Serializable;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import jsqlite.Exception;
 
@@ -43,7 +45,7 @@ import android.widget.Toast;
 public class MapView extends SurfaceView
 {
     // constants ==========================================================================
-    private int WHITE = Color.rgb(255, 255, 255);
+    private int INVALIDATE_TIME = 500;
 
     // data =========================================================================
     public static class MapViewData implements Serializable
@@ -68,6 +70,7 @@ public class MapView extends SurfaceView
     private MapViewData data = new MapViewData();
     private Drawable locationIcon;
     private Drawable locationAddPointIcon;
+    private Timer mInvalidateTimer;
 
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -171,7 +174,20 @@ public class MapView extends SurfaceView
         this.mMainActivity = mainActivity;
         mMapFragment = this.mMainActivity.getMapFragment();
     }
-     
+    
+    /**
+     * rin invalidate timer
+     */
+    public void runInvalidateTimer()
+    {
+        if(mInvalidateTimer != null)
+        {
+            return;
+        }
+ 
+        mInvalidateTimer = new Timer();
+        mInvalidateTimer.schedule(new InvalidateTask(), INVALIDATE_TIME);
+    }
     // on methods ==========================================================================
     
     @Override
@@ -179,7 +195,7 @@ public class MapView extends SurfaceView
     {
         super.onDraw(canvas);
         
-        canvas.drawColor(WHITE);
+        canvas.drawColor(Color.WHITE);
         
         if(mTouchStatus == TouchStatus.PINCH)
         {            
@@ -529,4 +545,35 @@ public class MapView extends SurfaceView
             return true;
         }        
     }
+    
+    /**
+     * class for invalidate map from timer
+     * @author jules
+     *
+     */
+    class InvalidateTask extends TimerTask
+    {
+        private InvalidateRunnable invalidateRunnable = new InvalidateRunnable();
+ 
+        public void run()
+        {
+            mInvalidateTimer.cancel();
+            mInvalidateTimer.purge();
+            mInvalidateTimer = null;
+            mMainActivity.runOnUiThread(invalidateRunnable);
+        }
+     }
+ 
+    /**
+     * class for invalidate map from timer
+     * @author jules
+     *
+     */
+    class InvalidateRunnable implements Runnable
+    {
+        public void run()
+        {
+            invalidate();
+        }
+    };
 }

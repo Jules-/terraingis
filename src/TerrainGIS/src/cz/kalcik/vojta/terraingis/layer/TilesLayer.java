@@ -8,19 +8,16 @@ import microsoft.mappoint.TileSystem;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.io.ParseException;
 
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.TileCache;
 import cz.kalcik.vojta.terraingis.components.TileDownloader;
 import cz.kalcik.vojta.terraingis.components.TileCache.Tile;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 
-import android.content.res.Resources;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 public class TilesLayer extends AbstractLayer
@@ -39,16 +36,15 @@ public class TilesLayer extends AbstractLayer
     private TileCache mTileCache = TileCache.getInstance();
     private Rect mTileRect = new Rect();
     private TileDownloader mDownloader;
+    private MainActivity mMainActivity;
     
     // public methods ==========================================================================
-    public TilesLayer()
+    public TilesLayer(MainActivity mainActivity)
     {
         super.data.name = "OSM Mapnik";
-        mEnvelope = new Envelope(-LayerManager.SPHERICAL_MERCATOR_DIST,
-                LayerManager.SPHERICAL_MERCATOR_DIST,
-                -LayerManager.SPHERICAL_MERCATOR_DIST,
-                LayerManager.SPHERICAL_MERCATOR_DIST);
+        mEnvelope = LayerManager.MAX_ENVELOPE;
         mSrid = SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR;
+        mMainActivity = mainActivity;
     }    
     
     @Override
@@ -109,9 +105,17 @@ public class TilesLayer extends AbstractLayer
     
     private void drawTiles(Canvas canvas, int zoom)
     {
-        ArrayList<Tile> tiles = mTileCache.getTiles(mUpperLeft.x, mLowerRight.x,
-                mUpperLeft.y, mLowerRight.y, zoom);
-        if(mTileCache.hasIncompletedRequest() &&
+        int tileSize = TileSystem.getTileSize();
+        int countTiles = (mWorldSize_2 * 2) / tileSize;
+        
+        int minX = Math.max(Math.min(mUpperLeft.x, countTiles-1), 0);
+        int maxX = Math.max(Math.min(mLowerRight.x, countTiles-1), 0);
+        int minY = Math.max(Math.min(mUpperLeft.y, countTiles-1), 0);
+        int maxY = Math.max(Math.min(mLowerRight.y, countTiles-1), 0);
+        
+        ArrayList<Tile> tiles = mTileCache.getTiles(minX, maxX,
+                minY, maxY, zoom);
+        if(mMainActivity.isNetworkAvailable() && mTileCache.hasIncompletedRequest() &&
                 (mDownloader == null || !mDownloader.isAlive()))
         {
             Log.d("TerrainGIS", "start downloader");
@@ -119,7 +123,6 @@ public class TilesLayer extends AbstractLayer
             mDownloader.start();
         }        
         
-        int tileSize = TileSystem.getTileSize();
         for(Tile tile: tiles)
         {
             mTileRect.set(tile.x * tileSize, tile.y * tileSize,

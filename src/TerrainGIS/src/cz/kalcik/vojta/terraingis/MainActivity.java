@@ -5,6 +5,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -64,6 +66,7 @@ public class MainActivity extends AbstractActivity
     private LinearLayout mLayersLayout;
     private LinearLayout mAttributesLayout;
     private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE, false);
+    private ConnectivityManager mConnectivityManager; 
     
     // public methods =====================================================
     
@@ -138,6 +141,15 @@ public class MainActivity extends AbstractActivity
     public boolean canSelectObject()
     {
         return data.activityMode != ActivityMode.RECORD;
+    }
+    
+    /**
+     * @return true if network is available
+     */
+    public boolean isNetworkAvailable()
+    {
+        NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
     // getter, setter =====================================================
     
@@ -238,8 +250,10 @@ public class MainActivity extends AbstractActivity
         MapView map = mMapFragment.getMap();
         map.setMainActivity(this);
         
+        mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        
         // tile cache
-        TileCache.getInstance().open(TILE_CACHE_FILE, getResources());
+        TileCache.getInstance().open(TILE_CACHE_FILE, getResources(), map);
         
         if(mSettings.isHideActionBar())
         {

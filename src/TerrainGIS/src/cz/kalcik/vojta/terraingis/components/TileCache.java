@@ -58,6 +58,7 @@ public class TileCache
     private Resources mResources;
     private Rect mLastRect = new Rect();
     private boolean mDatabaseChanged = true;
+    private MapView mMap;
     
     // public methods ======================================================================
     
@@ -65,9 +66,11 @@ public class TileCache
      * open cache file
      * @param file
      */
-    public void open(File file, Resources resources)
+    public void open(File file, Resources resources, MapView map)
     {
         mResources = resources;
+        mMap = map;
+        
         boolean exists = file.exists();
         
         mDB = SQLiteDatabase.openOrCreateDatabase(file, null);
@@ -185,6 +188,7 @@ public class TileCache
         }
         
         mDatabaseChanged = true;
+        mMap.runInvalidateTimer();
     }
     
     // getter, setter ======================================================================
