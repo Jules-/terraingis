@@ -458,6 +458,8 @@ public class MapView extends SurfaceView
                     {
                         layer.clickSelectionObject(mNavigator.getMRectangle(null), clickedPoint, selectVertex);
                         mMainActivity.getAttributesFragment().selectItemWithRowid(layer.getSelectedRowid());
+                        
+                        mMapFragment.setMapTools();
                         invalidate();
                     }
                     catch (Exception e)
@@ -482,11 +484,30 @@ public class MapView extends SurfaceView
                     Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
 
                     // open old object
-                    if(!layer.hasOpenedRecordObject())
+                    if(!layer.hasOpenedRecordObject() && layer.getType() != VectorLayerType.POINT)
                     {
                         try
                         {
                             layer.clickRecordingObject(mNavigator.getMRectangle(null), clickedPoint);
+                            mMapFragment.setMapTools();
+                            invalidate();
+                        }
+                        catch (Exception e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        catch (ParseException e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            layer.checkClickRecordedVertex(mNavigator.getMRectangle(null), clickedPoint);
                             mMapFragment.setMapTools();
                             invalidate();
                         }

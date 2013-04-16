@@ -17,6 +17,7 @@
             android:src="@drawable/ic_menu_hide_left"
             android:layout_gravity="center_vertical"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/title_hide_panel"
             android:padding="14dp" />
         
         <ImageButton
@@ -26,6 +27,7 @@
             android:src="@drawable/ic_menu_attributes"
             android:layout_gravity="center_vertical"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/title_show_attributes"
             android:padding="14dp" />
         
         <LinearLayout
@@ -40,6 +42,7 @@
             android:src="@drawable/ic_menu_hide_layer"
             android:layout_gravity="center_vertical"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/title_hide_layer"
             android:layout_weight="0"
             android:padding="14dp" />
         
@@ -50,6 +53,7 @@
             android:src="@drawable/ic_menu_zoom_to_layer"
             android:layout_gravity="center_vertical"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/title_zoom_layer"
             android:layout_weight="0"
             android:padding="14dp" />
         
@@ -60,16 +64,7 @@
             android:src="@drawable/ic_menu_add"
             android:layout_gravity="center_vertical"
             android:background="@android:color/transparent"
-            android:layout_weight="0"
-            android:padding="14dp" />
-
-        <ImageButton
-            android:id="@+id/button_remove"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu_remove"
-            android:layout_gravity="center_vertical"
-            android:background="@android:color/transparent"
+            android:contentDescription="@string/title_add_layer"
             android:layout_weight="0"
             android:padding="14dp" />
 

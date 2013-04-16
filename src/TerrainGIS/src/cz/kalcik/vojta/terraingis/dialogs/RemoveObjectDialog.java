@@ -24,11 +24,6 @@ public class RemoveObjectDialog extends SimpleDialog
     {
         private static final long serialVersionUID = 1L;
         public String mRowid;
-        public String mLayerName;
-
-        public RemoveObjectDialogData()
-        {
-        }
     }
 
     RemoveObjectDialogData data = new RemoveObjectDialogData();
@@ -41,14 +36,6 @@ public class RemoveObjectDialog extends SimpleDialog
     public void setRowid(String rowid)
     {
         this.data.mRowid = rowid;
-    }
-        
-    /**
-     * @param layerName the mLayerName to set
-     */
-    public void setLayerName(String layerName)
-    {
-        this.data.mLayerName = layerName;
     }
 
     // on methods =============================================================
@@ -77,7 +64,6 @@ public class RemoveObjectDialog extends SimpleDialog
     {
         MainActivity activity = (MainActivity)getActivity();
         AttributesFragment fragment = activity.getAttributesFragment();
-        SpatiaLiteIO spatialite = LayerManager.getInstance().getSpatialiteIO();
         
         try
         {
@@ -87,7 +73,7 @@ public class RemoveObjectDialog extends SimpleDialog
                 layer.removeSelectionOfObject();
             }
             
-            spatialite.removeObject(data.mLayerName, Integer.parseInt(data.mRowid));
+            layer.removeObject(data.mRowid);
             fragment.removeSelectedRow();
             
             activity.getMapFragment().getMap().invalidate();

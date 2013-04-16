@@ -281,7 +281,7 @@ public class MapFragment extends Fragment
         mButtonRecordEndObject = (ImageButton)myView.findViewById(R.id.button_record_end_object);
         mButtonRecordEndObject.setOnClickListener(endRecordedObjectHandler);
         mButtonRecordPoint = (ImageButton)myView.findViewById(R.id.button_record_point);
-        mButtonRecordPoint.setOnClickListener(addPointHandler);
+        mButtonRecordPoint.setOnClickListener(pointHandler);
         mButtonBack = (ImageButton)myView.findViewById(R.id.button_back);
         mButtonBack.setOnClickListener(backHandler);
         mButtonRemove = (ImageButton)myView.findViewById(R.id.button_remove);
@@ -637,7 +637,7 @@ public class MapFragment extends Fragment
                     showBackButton = true;
                     showPointButton = true;
                 }
-                else
+                else if(selectedLayer.hasSelectedObject())
                 {
                     showRemoveButton = true;
                 }
@@ -658,6 +658,18 @@ public class MapFragment extends Fragment
         if(showPointButton)
         {
             mButtonRecordPoint.setVisibility(View.VISIBLE);
+            if(selectedLayer.hasRecordedMovableVertex())
+            {
+                mButtonRecordAuto.setContentDescription(getString(R.string.button_record_move_point));
+                mButtonRecordPoint.setImageDrawable(
+                        getResources().getDrawable(R.drawable.button_move_point));
+            }
+            else
+            {
+                mButtonRecordAuto.setContentDescription(getString(R.string.button_record_point));
+                mButtonRecordPoint.setImageDrawable(
+                        getResources().getDrawable(R.drawable.button_add_point));
+            }
         }
         else
         {
@@ -771,7 +783,7 @@ public class MapFragment extends Fragment
     /**
      * add point
      */
-    View.OnClickListener addPointHandler = new View.OnClickListener()
+    View.OnClickListener pointHandler = new View.OnClickListener()
     {
         @Override
         public synchronized void onClick(View v)
@@ -787,7 +799,25 @@ public class MapFragment extends Fragment
                         return;
                     }            
                     
-                    recordInsertPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
+                    if(selectedLayer.hasRecordedMovableVertex())
+                    {
+                        try
+                        {
+                            selectedLayer.moveRecordedVertex(mLocationM);
+                        }
+                        catch (NumberFormatException e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
+                        }
+                        catch (Exception e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                    else
+                    {
+                        recordInsertPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
+                    }
                 }
                 else if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
                         mMainActivity.isAddPointMode())
@@ -883,6 +913,7 @@ public class MapFragment extends Fragment
                     else if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
                     {
                         selectedLayer.cancelNotSavedRecordedChanges();
+                        setMapTools();
                     }
                     mMap.invalidate();
                 }

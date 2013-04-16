@@ -36,6 +36,7 @@
     <string name="database_error">Problem with using database!</string>
     <!-- map buttons -->
     <string name="button_record_point">Add point</string>
+    <string name="button_record_move_point">Move point</string>
     <string name="button_record_end_object">End object</string>
     <string name="button_record_auto_start">Start automatic</string>
     <string name="button_record_auto_stop">Stop automatic</string>
@@ -43,11 +44,19 @@
     <string name="button_back">Back</string>
     <!-- icon titles -->
     <string name="title_record">on/off recording</string>
+    <string name="title_edit">on/off editing</string>
     <string name="title_gps">on/off location service</string>
     <string name="title_show_gps">show location</string>
-    <string name="title_edit">edit</string>
-    <string name="title_remove">remove</string>
     <string name="title_add_point">on/off inserting points</string>
+    <string name="title_show_attributes">show attribute table</string>
+    <string name="title_show_layers">show layers</string>
+    <string name="title_hide_layer">hide/show layer</string>
+    <string name="title_zoom_layer">zoom to layer</string>
+    <string name="title_add_layer">add layer</string>
+    <string name="title_zoom_object">zoom to object</string>
+    <string name="title_edit_attributes">edit attributes</string>
+    <string name="title_remove_object">remove object</string>
+    <string name="title_hide_panel">hide_panel</string>
     <!-- new layer dialog -->
     <string name="new_layer_message">New layer</string>
     <string name="empty_layer">Empty layer</string>
@@ -64,7 +73,7 @@
     <!-- find srid dialog -->
     <string name="find_srid_message">Find SRS</string>
     <!-- layers context menu -->
-    <string name="menu_show_attribute_table">Show attribute table</string>
+    <string name="menu_remove_layer">Remove layer</string>
     <string name="menu_export_shapefile">Export Shapefile</string>
     <!-- other -->
     <string name="confirm_remove_message">Really remove %s layer?</string>

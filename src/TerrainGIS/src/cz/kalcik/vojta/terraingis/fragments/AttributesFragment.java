@@ -371,7 +371,6 @@ public class AttributesFragment extends PanelFragment
             RemoveObjectDialog dialog = new RemoveObjectDialog();
             dialog.setMessage(getResources().getString(R.string.confirm_remove_object_message));
             dialog.setRowid(mData.selectedRowId);
-            dialog.setLayerName(mLayer.getData().name);
             mMainActivity.showDialog(dialog);
         }
     };

@@ -12,6 +12,7 @@ import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
 import cz.kalcik.vojta.terraingis.layer.VectorLayerPaints.PaintType;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 
 public class PointsLayer extends VectorLayer
 {
@@ -40,21 +41,30 @@ public class PointsLayer extends VectorLayer
         {
             float radius;
             Coordinate coordinate;
+            Paint paint;
             
             Geometry geometry = iter.next();
-            if(isSelectedObject(iter))
+            if(isSelectedObject(iter) || isRecordedObject(iter))
             {
                 radius = VectorLayerPaints.getPointRadius(PaintType.SELECTED);
-                coordinate = mVectorLayerData.selectedObjectPoints.get(0);
+                paint = mSelectedPaint;
+                if(isSelectedObject(iter))
+                {
+                    coordinate = mVectorLayerData.selectedObjectPoints.get(0);
+                }
+                else
+                {
+                    coordinate = mVectorLayerData.recordedPoints.get(0);
+                }
             }
             else
             {
                 radius = VectorLayerPaints.getPointRadius(PaintType.DEFAULT);
                 coordinate = geometry.getCoordinate();
+                paint = mPaint;
             }
             
-            mDrawer.drawCircleM(canvas, selectObjectPaint(iter),
-                    coordinate, radius);
+            mDrawer.drawCircleM(canvas, paint, coordinate, radius);
         }
     }
     

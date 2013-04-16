@@ -159,7 +159,16 @@ public class LayersFragment extends PanelFragment
         mMainActivity.getAttributesLayout().setVisibility(View.GONE);
         mMainActivity.getLayersLayout().setVisibility(View.VISIBLE);
     }
+    
     // getter, setter =====================================================
+    
+    /**
+     * @return the mContextMenuSelectedlayer
+     */
+    public AbstractLayer getContextMenuSelectedlayer()
+    {
+        return mContextMenuSelectedlayer;
+    }    
     
     // on methods =========================================================
     @Override
@@ -185,8 +194,6 @@ public class LayersFragment extends PanelFragment
         buttonZoomLayer.setOnClickListener(zoomLayerHandler);
         ImageButton buttonAdd = (ImageButton)myView.findViewById(R.id.button_add);
         buttonAdd.setOnClickListener(addLayerHandler);
-        ImageButton buttonRemove = (ImageButton)myView.findViewById(R.id.button_remove);
-        buttonRemove.setOnClickListener(removeLayerHandler);
         
         // background colors
         mBackgroundColors = new ListBackgroundColors(mMainActivity);
@@ -254,7 +261,8 @@ public class LayersFragment extends PanelFragment
     @Override
     public boolean onContextItemSelected(MenuItem item)
     {
-        if(item.getItemId() == R.id.menuitem_export_shapefile)
+        int id = item.getItemId();
+        if(id == R.id.menuitem_export_shapefile)
         {
             if(mContextMenuSelectedlayer instanceof VectorLayer)
             {
@@ -271,6 +279,23 @@ public class LayersFragment extends PanelFragment
                 return false;
             }
                 
+        }
+        else if(id == R.id.menuitem_remove_layer)
+        {
+            // check selectedLayer
+            if (mContextMenuSelectedlayer instanceof TilesLayer)
+            {
+                Toast.makeText(getActivity(), R.string.tileslayer_remove_error, Toast.LENGTH_LONG).show();
+                return false;
+            }
+            
+            RemoveLayerDialog dialog = new RemoveLayerDialog();
+            String text = getString(R.string.confirm_remove_message);
+            dialog.setMessage(String.format(text, mContextMenuSelectedlayer.toString()));
+            
+            mMainActivity.showDialog(dialog);
+            
+            return true;
         }
         else
         {
@@ -443,35 +468,6 @@ public class LayersFragment extends PanelFragment
         public void onClick(View v)
         {
             mMainActivity.showDialog(new NewLayerDialog());
-        }        
-    };
-    
-    /**
-     * open dialog for remove layer
-     */
-    View.OnClickListener removeLayerHandler = new View.OnClickListener()
-    {
-        @Override
-        public void onClick(View v)
-        {
-            AbstractLayer selectedLayer = getSelectedLayer();
-            if(selectedLayer == null)
-            {
-                Toast.makeText(getActivity(), R.string.not_selected_layer, Toast.LENGTH_LONG).show();
-                return;               
-            }
-            // check selectedLayer
-            if (selectedLayer instanceof TilesLayer)
-            {
-                Toast.makeText(getActivity(), R.string.tileslayer_remove_error, Toast.LENGTH_LONG).show();
-                return;
-            }
-            
-            RemoveLayerDialog dialog = new RemoveLayerDialog();
-            String text = getString(R.string.confirm_remove_message);
-            dialog.setMessage(String.format(text, getSelectedLayer().toString()));
-            
-            mMainActivity.showDialog(dialog);
         }        
     };
 

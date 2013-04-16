@@ -104,7 +104,7 @@ public class Drawer
      * @param radius
      * @param selected
      */
-    public void drawPathNodesSurfacePx(Canvas canvas, PointF[] points, Paint paintDefault,
+    public void drawPathVertexsSurfacePx(Canvas canvas, PointF[] points, Paint paintDefault,
             Paint paintSelected, float radius, int selected)
     {
         int size = points.length;
@@ -124,10 +124,10 @@ public class Drawer
      * @param paintDefault
      * @param radius
      */
-    public void drawPathNodesSurfacePx(Canvas canvas, PointF[] points,
+    public void drawPathVertexsSurfacePx(Canvas canvas, PointF[] points,
             Paint paintDefault, float radius)
     {
-        drawPathNodesSurfacePx(canvas, points, paintDefault, null, radius, -1);
+        drawPathVertexsSurfacePx(canvas, points, paintDefault, null, radius, -1);
     }
     
     /**

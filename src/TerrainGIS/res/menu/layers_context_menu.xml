@@ -2,4 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 	<item android:id="@+id/menuitem_export_shapefile"
         android:title="@string/menu_export_shapefile"/>
+	<item android:id="@+id/menuitem_remove_layer"
+        android:title="@string/menu_remove_layer"/>
 </menu>

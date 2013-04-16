@@ -24,8 +24,8 @@ import cz.kalcik.vojta.terraingis.layer.VectorLayerPaints.PaintType;
  */
 public abstract class PolyPointsLayer extends VectorLayer
 {
-    protected Paint mSelectedNodeSelectedObjectPaint;
-    protected Paint mNodesSelectedObjectPaint;
+    protected Paint mSelectedVertexSelectedObjectPaint;
+    protected Paint mVertexsSelectedObjectPaint;
     protected Paint mStrokePolygonPaint;
     
     public PolyPointsLayer(VectorLayerType type, String name, int srid,
@@ -33,8 +33,8 @@ public abstract class PolyPointsLayer extends VectorLayer
     {
         super(type, name, srid, spatialite, mapFragment);
         
-        mNodesSelectedObjectPaint = VectorLayerPaints.getPoint(PaintType.SELECTED);
-        mSelectedNodeSelectedObjectPaint = VectorLayerPaints.getPoint(PaintType.SELECTED_SELECTED_NODE);
+        mVertexsSelectedObjectPaint = VectorLayerPaints.getPoint(PaintType.SELECTED);
+        mSelectedVertexSelectedObjectPaint = VectorLayerPaints.getPoint(PaintType.SELECTED_SELECTED_NODE);
         mStrokePolygonPaint = VectorLayerPaints.getLine(PaintType.SELECTED);
     }
 
@@ -72,8 +72,9 @@ public abstract class PolyPointsLayer extends VectorLayer
             mDrawer.drawCanvasPathSurfacePx(canvas,
                     points, mNotSavedPaint);
             
-            mDrawer.drawPathNodesSurfacePx(canvas, points, mPaintPoint,
-                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT));
+            mDrawer.drawPathVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
+                    mSelectedVertexSelectedObjectPaint,
+                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT), mVectorLayerData.recordedVertexIndex);
         }
         
         // selected object
@@ -95,8 +96,8 @@ public abstract class PolyPointsLayer extends VectorLayer
                         mStrokePolygonPaint);                
             }
             
-            mDrawer.drawPathNodesSurfacePx(canvas, points, mNodesSelectedObjectPaint,
-                    mSelectedNodeSelectedObjectPaint,
+            mDrawer.drawPathVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
+                    mSelectedVertexSelectedObjectPaint,
                     VectorLayerPaints.getPointRadius(PaintType.DEFAULT), mVectorLayerData.selectedVertexIndex);
         }
     }

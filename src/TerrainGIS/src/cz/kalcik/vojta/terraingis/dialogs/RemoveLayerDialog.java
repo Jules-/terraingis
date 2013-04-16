@@ -29,7 +29,7 @@ public class RemoveLayerDialog extends SimpleDialog
         MapFragment mapFragment = mainActivity.getMapFragment();
         
         LayersFragment layersFragment = mainActivity.getLayersFragment();
-        VectorLayer selectedVectorLayer = (VectorLayer)layersFragment.getSelectedLayer();
+        VectorLayer selectedVectorLayer = (VectorLayer)layersFragment.getContextMenuSelectedlayer();
         
         try
         {
