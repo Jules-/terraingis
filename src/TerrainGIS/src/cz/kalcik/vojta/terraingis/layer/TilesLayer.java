@@ -1,23 +1,23 @@
 package cz.kalcik.vojta.terraingis.layer;
 
+import java.util.ArrayList;
+
+import jsqlite.Exception;
 import microsoft.mappoint.TileSystem;
 
-import org.osmdroid.DefaultResourceProxyImpl;
-import org.osmdroid.ResourceProxy;
-import org.osmdroid.tileprovider.MapTile;
-import org.osmdroid.tileprovider.MapTileProviderBase;
-import org.osmdroid.util.TileLooper;
-
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.components.Navigator;
+import cz.kalcik.vojta.terraingis.components.TileCache;
+import cz.kalcik.vojta.terraingis.components.TileDownloader;
+import cz.kalcik.vojta.terraingis.components.TileCache.Tile;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 
-import android.content.Context;
-import android.graphics.Bitmap;
+import android.content.res.Resources;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -25,167 +25,62 @@ import android.util.Log;
 
 public class TilesLayer extends AbstractLayer
 {
-    /** Current tile source */
-    protected final MapTileProviderBase mTileProvider;
+    // constants ===============================================================================
+    private static int MIN_ZOOM_LEVEL = 0;
+    private static int MAX_ZOOM_LEVEL = 18;
     
-    /** A drawable loading tile **/
-    private BitmapDrawable mLoadingTile = null;
-    private int mLoadingBackgroundColor = Color.rgb(216, 208, 208);
-    private int mLoadingLineColor = Color.rgb(200, 192, 192);
-
-    /* to avoid allocations during draw */
-    private final Rect mTileRect = new Rect();
-    
-    private int mWorldSize_2;
-    
-    private int mOvershootTileCache = 0;
-    
-    protected final ResourceProxy mResourceProxy;
-    protected final float mScale;
-    
-    private final Context aContext;
-    private double scale;
-    private Rect currentRect = new Rect();
+    // attributes ==============================================================================
     private Envelope currentRealRect = new Envelope();
+    private Rect currentRect = new Rect();
+    private double scale;
+    private int mWorldSize_2;
+    private Point mUpperLeft = new Point();
+    private Point mLowerRight = new Point();
+    private TileCache mTileCache = TileCache.getInstance();
+    private Rect mTileRect = new Rect();
+    private TileDownloader mDownloader;
     
-    /**
-     * constructor
-     * @param aTileProvider
-     * @param aContext
-     */
-    public TilesLayer(final MapTileProviderBase aTileProvider, final Context aContext)
-    {       
-        this.aContext = aContext;
-        
-        mResourceProxy = new DefaultResourceProxyImpl(aContext);
-        mScale = mResourceProxy.getDisplayMetricsDensity();
-        
-        if (aTileProvider == null)
-        {
-            throw new IllegalArgumentException("You must pass a valid tile provider to the tiles overlay.");
-        }
-        
-        this.mTileProvider = aTileProvider;
-        
-        super.data.name = aTileProvider.getTileSource().name();
+    // public methods ==========================================================================
+    public TilesLayer()
+    {
+        super.data.name = "OSM Mapnik";
         mEnvelope = new Envelope(-LayerManager.SPHERICAL_MERCATOR_DIST,
-                                LayerManager.SPHERICAL_MERCATOR_DIST,
-                                -LayerManager.SPHERICAL_MERCATOR_DIST,
-                                LayerManager.SPHERICAL_MERCATOR_DIST);
+                LayerManager.SPHERICAL_MERCATOR_DIST,
+                -LayerManager.SPHERICAL_MERCATOR_DIST,
+                LayerManager.SPHERICAL_MERCATOR_DIST);
         mSrid = SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR;
-    }
-       
-
+    }    
+    
     @Override
-    public void draw(Canvas canvas, Envelope rect)
+    public void draw(Canvas canvas, Envelope rect) throws Exception,
+            ParseException
     {
         int zoomLevel = Navigator.mpxToZoomLevel(mNavigator.getZoom());
-        zoomLevel = Math.max(Math.min(zoomLevel, mTileProvider.getMaximumZoomLevel()), mTileProvider.getMinimumZoomLevel());
+        zoomLevel = Math.max(Math.min(zoomLevel, MAX_ZOOM_LEVEL), MIN_ZOOM_LEVEL);
         double tilesZoom = Navigator.zoomLevelToMpx(zoomLevel);
-        
         scale = mNavigator.getZoom() / tilesZoom;
-               
+        
         mWorldSize_2 = TileSystem.MapSize(zoomLevel) >> 1;
         
         mNavigator.getPxRectangle(currentRealRect);
-        
         rectRealToTiles(currentRealRect, currentRect);
-
         currentRect.offset(mWorldSize_2, mWorldSize_2);
         
-        drawTiles(canvas, zoomLevel, TileSystem.getTileSize(), currentRect);      
+        TileSystem.PixelXYToTileXY(currentRect.left, currentRect.top, mUpperLeft);
+        mUpperLeft.offset(-1, -1);
+        TileSystem.PixelXYToTileXY(currentRect.right, currentRect.bottom, mLowerRight);
+        
+        drawTiles(canvas, zoomLevel);
     }
-    
+
     @Override
     public void detach()
     {
-        mTileProvider.detach();
-    }
-    
-    // protected methods ============================================================================
-    
-    protected void onTileReadyToDraw(final Canvas c, final Drawable currentMapTile,
-                                     final Rect tileRect)
-    {
-        tileRect.offset(-mWorldSize_2, -mWorldSize_2);
-
-        rectTilesToReal(tileRect, currentRealRect);
+        // TODO Auto-generated method stub
         
-        mDrawer.drawCanvasDraweblePx(c, currentMapTile, currentRealRect);
     }
     
-    // private methods ==============================================================================
-    
-    private void drawTiles(final Canvas c, final int zoomLevel, final int tileSizePx,
-                           final Rect viewPort)
-    {
-        mTileLooper.loop(c, zoomLevel, tileSizePx, viewPort);
-    }
-    
-    private final TileLooper mTileLooper = new TileLooper()
-    {
-        @Override
-        public void initialiseLoop(final int pZoomLevel, final int pTileSizePx)
-        {
-            // make sure the cache is big enough for all the tiles
-            final int numNeeded = (mLowerRight.y - mUpperLeft.y + 1) * (mLowerRight.x - mUpperLeft.x + 1);
-            mTileProvider.ensureCapacity(numNeeded + mOvershootTileCache);
-        }
-        
-        @Override
-        public void handleTile(final Canvas pCanvas, final int pTileSizePx, final MapTile pTile, final int pX, final int pY)
-        {
-            Drawable currentMapTile = mTileProvider.getMapTile(pTile);
-            if (currentMapTile == null)
-            {
-                currentMapTile = getLoadingTile();
-            }
-
-            if (currentMapTile != null)
-            {
-                mTileRect.set(pX * pTileSizePx, pY * pTileSizePx, pX * pTileSizePx + pTileSizePx, pY
-                        * pTileSizePx + pTileSizePx);
-                onTileReadyToDraw(pCanvas, currentMapTile, mTileRect);
-            }
-        }
-        @Override
-        public void finaliseLoop() {
-        }
-    };
-    
-    private Drawable getLoadingTile()
-    {
-        if (mLoadingTile == null && mLoadingBackgroundColor != Color.TRANSPARENT)
-        {
-            try
-            {
-                final int tileSize = mTileProvider.getTileSource() != null ? mTileProvider
-                        .getTileSource().getTileSizePixels() : 256;
-                final Bitmap bitmap = Bitmap.createBitmap(tileSize, tileSize,
-                        Bitmap.Config.RGB_565);
-                final Canvas canvas = new Canvas(bitmap);
-                final Paint paint = new Paint();
-                canvas.drawColor(mLoadingBackgroundColor);
-                paint.setColor(mLoadingLineColor);
-                paint.setStrokeWidth(0);
-                final int lineSize = tileSize / 16;
-                for (int a = 0; a < tileSize; a += lineSize)
-                {
-                    canvas.drawLine(0, a, tileSize, a, paint);
-                    canvas.drawLine(a, 0, a, tileSize, paint);
-                }
-
-                mLoadingTile = new BitmapDrawable(aContext.getResources(), bitmap);
-            }
-            catch (final OutOfMemoryError e)
-            {
-                Log.e("TerrainGIS", "OutOfMemoryError getting loading tile");
-                System.gc();
-            }
-        }
-        return mLoadingTile;
-    }
-    
+    // private methods ==========================================================================
     private void rectRealToTiles(Envelope input, Rect output)
     {
         output.set(coordRealToTiles(input.getMinX()),
@@ -193,7 +88,7 @@ public class TilesLayer extends AbstractLayer
                    coordRealToTiles(input.getMaxX()),
                    coordRealToTiles(-input.getMinY()));        
     }
-
+    
     private void rectTilesToReal(Rect input, Envelope output)
     {
         output.init(coordTilesToReal(input.left),
@@ -210,5 +105,30 @@ public class TilesLayer extends AbstractLayer
     private double coordTilesToReal(double coord)
     {
         return coord / scale;
+    }
+    
+    private void drawTiles(Canvas canvas, int zoom)
+    {
+        ArrayList<Tile> tiles = mTileCache.getTiles(mUpperLeft.x, mLowerRight.x,
+                mUpperLeft.y, mLowerRight.y, zoom);
+        if(mTileCache.hasIncompletedRequest() &&
+                (mDownloader == null || !mDownloader.isAlive()))
+        {
+            Log.d("TerrainGIS", "start downloader");
+            mDownloader = new TileDownloader();
+            mDownloader.start();
+        }        
+        
+        int tileSize = TileSystem.getTileSize();
+        for(Tile tile: tiles)
+        {
+            mTileRect.set(tile.x * tileSize, tile.y * tileSize,
+                    tile.x * tileSize + tileSize, tile.y * tileSize + tileSize);
+            mTileRect.offset(-mWorldSize_2, -mWorldSize_2);
+            
+            rectTilesToReal(mTileRect, currentRealRect);
+            
+            mDrawer.drawCanvasDraweblePx(canvas, tile.imageTile, currentRealRect);
+        }
     }
 }

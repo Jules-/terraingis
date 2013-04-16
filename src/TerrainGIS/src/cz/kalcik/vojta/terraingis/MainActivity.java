@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.Settings;
+import cz.kalcik.vojta.terraingis.components.TileCache;
 import cz.kalcik.vojta.terraingis.dialogs.ExitDialog;
 import cz.kalcik.vojta.terraingis.fragments.AttributesFragment;
 import cz.kalcik.vojta.terraingis.fragments.LayersFragment;
@@ -236,6 +237,9 @@ public class MainActivity extends AbstractActivity
         mLocationWorker = new LocationWorker(this);
         MapView map = mMapFragment.getMap();
         map.setMainActivity(this);
+        
+        // tile cache
+        TileCache.getInstance().open(TILE_CACHE_FILE, getResources());
         
         if(mSettings.isHideActionBar())
         {

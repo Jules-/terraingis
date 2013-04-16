@@ -407,7 +407,7 @@ public class Navigator
     static public int mpxToZoomLevel(double zoom)
     {
         double doubleZoomLevel = -(Math.log(zoom/O_EARTH_ZOOM_LEVEL)+8*Math.log(2))/Math.log(2);
-        return (int)Math.ceil(doubleZoomLevel);
+        return (int)Math.round(doubleZoomLevel);
     }
 
     static public double zoomLevelToMpx(int zoomLevel)

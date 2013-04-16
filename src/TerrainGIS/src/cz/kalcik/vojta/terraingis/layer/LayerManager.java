@@ -352,17 +352,11 @@ public class LayerManager
      * @param aContext
      * @param map
      */
-    private void addTilesLayer(final Context aContext, MapView map)
+    private void addTilesLayer(Context context, MapView map)
     {
         removeTilesLayers();
         
-        final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
-        MapTileProviderBase tileProvider = new MapTileProviderBasic(aContext, tileSource);
-        
-        layers.add(new TilesLayer(tileProvider, aContext));
-        
-        Handler mTileRequestCompleteHandler = new SimpleInvalidationHandler(map);
-        tileProvider.setTileRequestCompleteHandler(mTileRequestCompleteHandler);
+        layers.add(new TilesLayer());
     }
     
     /**
