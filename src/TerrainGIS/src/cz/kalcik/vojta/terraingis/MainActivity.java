@@ -33,7 +33,7 @@ public class MainActivity extends AbstractActivity
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
     private static final String MAIN_ACTIVITY_DATA = "MainActivityData";
     private static final String SHOWN_LAYERS = "ShownLayers";
-    private static final float MIN_WIDTH_PANEL_DP = 300;
+    private static final float WIDTH_PANEL_DP = 300;
     
     public enum ActivityMode {EXPLORE, RECORD, EDIT};
     // properties =========================================================
@@ -65,6 +65,7 @@ public class MainActivity extends AbstractActivity
     private LinearLayout mPanelLayout;
     private LinearLayout mLayersLayout;
     private LinearLayout mAttributesLayout;
+    private View mDividerLayout;
     private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE, false);
     private ConnectivityManager mConnectivityManager; 
     
@@ -85,11 +86,12 @@ public class MainActivity extends AbstractActivity
     /**
      * hide layers fragment
      */
-    public void hideLayersFragment()
+    public void hidePanel()
     {
         if(mPanelLayout.isShown())
         {
             mPanelLayout.setVisibility(View.GONE);
+            mDividerLayout.setVisibility(View.GONE);
             if(!mMapLayout.isShown())
             {
                 mMapLayout.setVisibility(View.VISIBLE);
@@ -100,38 +102,13 @@ public class MainActivity extends AbstractActivity
     /**
      * show layers fragment
      */
-    public void showLayersFragment()
+    public void showPanel()
     {
         if(!mPanelLayout.isShown())
-        {
-            Display display = getWindowManager().getDefaultDisplay();
-            
-            Point outSize = new Point();
-            display.getSize(outSize);
-            
-            float dp_width = ConvertUnits.px2dp(outSize.x);
-            
-            boolean run = true;
-            int i = 3;
-            while(run)
-            {
-                if(i == 0)
-                {
-                    mMapLayout.setVisibility(View.GONE);
-                    run = false;
-                }
-                else if(dp_width/(i+1) > MIN_WIDTH_PANEL_DP)
-                {
-                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)mPanelLayout.getLayoutParams();
-                    params.weight = i;
-                    run = false;
-                }
-                
-                i--;
-            }
-            
+        {           
             hideActionBarNow();
             mPanelLayout.setVisibility(View.VISIBLE);
+            mDividerLayout.setVisibility(View.VISIBLE);
         }
     }
     
@@ -241,6 +218,7 @@ public class MainActivity extends AbstractActivity
         mPanelLayout = (LinearLayout)findViewById(R.id.panel_layout);
         mLayersLayout = (LinearLayout)findViewById(R.id.layers_layout);
         mAttributesLayout = (LinearLayout)findViewById(R.id.attributes_layout);
+        mDividerLayout = findViewById(R.id.divider_layout);
         
         mMapFragment = (MapFragment)getFragmentManager().findFragmentById(R.id.map_fragment);
         mLayersFragment = (LayersFragment)getFragmentManager().findFragmentById(R.id.layers_fragment);
@@ -391,7 +369,7 @@ public class MainActivity extends AbstractActivity
         // Shown layers
         if(savedInstanceState.getBoolean(SHOWN_LAYERS))
         {
-            showLayersFragment();
+            showPanel();
         }
         
         // GPS state
@@ -410,7 +388,7 @@ public class MainActivity extends AbstractActivity
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             if(mPanelLayout.isShown())
             {
-                hideLayersFragment();
+                hidePanel();
             }
             else
             {

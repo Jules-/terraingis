@@ -120,7 +120,7 @@ public class LayersView extends DragSortListView
             if(e1.getX() - e2.getX() > getWidth()*MEASURE_PATH_MIN_DISTANCE &&
                Math.abs(velocityX) > ConvertUnits.dp2px(SWIPE_THRESHOLD_VELOCITY))
             {
-                mMainActivity.hideLayersFragment();
+                mMainActivity.hidePanel();
                 return true;
             }
             

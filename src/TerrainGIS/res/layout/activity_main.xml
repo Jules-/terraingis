@@ -6,9 +6,9 @@
 
     <LinearLayout
         android:id="@+id/panel_layout"
-        android:layout_width="match_parent"
+        android:layout_width="320dp"
         android:layout_height="match_parent"
-        android:layout_weight="2"
+        android:layout_weight="0"
         android:visibility="gone"
         android:orientation="horizontal">
 
@@ -41,7 +41,9 @@
                
     </LinearLayout>
 
-    <View 
+    <View
+        android:id="@+id/divider_layout"
+        android:visibility="gone"
         android:layout_width="3dp"
         android:layout_height="match_parent"
         android:background="@drawable/divider"

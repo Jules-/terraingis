@@ -456,7 +456,7 @@ public class MapView extends SurfaceView
             }
             else if(mTouchPoint.x <= size && mMainActivity.isHiddenLayersFragment())
             {
-                mMainActivity.showLayersFragment();
+                mMainActivity.showPanel();
             }
             else if(mode == ActivityMode.EDIT && mMainActivity.isAddPointMode())
             {

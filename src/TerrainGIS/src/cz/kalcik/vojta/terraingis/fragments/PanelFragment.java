@@ -83,7 +83,7 @@ public abstract class PanelFragment extends Fragment
         @Override
         public void onClick(View v)
         {
-            mMainActivity.hideLayersFragment();
+            mMainActivity.hidePanel();
         }        
     };
     
