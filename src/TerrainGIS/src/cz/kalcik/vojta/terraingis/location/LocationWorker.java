@@ -7,18 +7,21 @@ import com.vividsolutions.jts.geom.Coordinate;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
+import cz.kalcik.vojta.terraingis.fragments.SettingsFragment;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.GpsStatus;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -47,7 +50,7 @@ public class LocationWorker implements LocationListener
     // attributes ====================================================================
     private MainActivity mMainActivity;
     private MapFragment mMapFragment;
-    private Settings mSettings = Settings.getInstance();
+    private SharedPreferences mSharedPref;
     private Coordinate locationPoint = new Coordinate();
     private CommonLocationListener mCommon;
     private GPSStatusListener mGPSStatusListener = new GPSStatusListener();
@@ -67,6 +70,7 @@ public class LocationWorker implements LocationListener
         mCommon = new CommonLocationListener(mMainActivity);
         mMapFragment = mMainActivity.getMapFragment();
         hasGPS = mCommon.hasGPSDevice();
+        mSharedPref = PreferenceManager.getDefaultSharedPreferences(mMainActivity);
     }
     
     // public methods ================================================================
@@ -188,8 +192,8 @@ public class LocationWorker implements LocationListener
         if(hasGPS)
         {
             // default
-            mCommon.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mSettings.getLocationMinTime(),
-                    Settings.LOCATION_MINDIST_DEFAULT, this);
+            mCommon.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    getMinTime(), Settings.LOCATION_MINDIST_DEFAULT, this);
             mCommon.locationManager.addGpsStatusListener(mGPSStatusListener);
         }        
     }
@@ -200,8 +204,8 @@ public class LocationWorker implements LocationListener
     private void runNetwork()
     {
         // default
-        mCommon.locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mSettings.getLocationMinTime(),
-                Settings.LOCATION_MINDIST_DEFAULT, this);
+        mCommon.locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 
+                getMinTime(), Settings.LOCATION_MINDIST_DEFAULT, this);
     }
 
     /**
@@ -243,6 +247,13 @@ public class LocationWorker implements LocationListener
         }
     }
     
+    /**
+     * @return mintime of GPS
+     */
+    private int getMinTime()
+    {
+        return 1000 * Integer.parseInt(mSharedPref.getString(SettingsFragment.KEY_GPS_MINTIME, Settings.LOCATION_MINTIME_DEFAULT));
+    }
     // classes =======================================================================
     
     /**
@@ -260,7 +271,8 @@ public class LocationWorker implements LocationListener
             {
                 if (mLastGPSMillis != 0)
                 {
-                    isGPSFix = (SystemClock.elapsedRealtime() - mLastGPSMillis) < mSettings.getLocationMinTime() * 2;
+                    isGPSFix = (SystemClock.elapsedRealtime() - mLastGPSMillis) < 
+                             getMinTime() * 2;
                 }
             }
             else if (event == GpsStatus.GPS_EVENT_FIRST_FIX)

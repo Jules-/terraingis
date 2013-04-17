@@ -20,7 +20,6 @@ import cz.kalcik.vojta.terraingis.view.MapView;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 

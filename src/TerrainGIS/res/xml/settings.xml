@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory 
+        android:title="@string/settings_gps_category"
+        android:key="settings GPS">
+        <EditTextPreference
+            android:key="settings_record_min_time"
+            android:summary="@string/settings_record_min_time_title"
+            android:title="@string/settings_record_min_time_summary"
+            android:inputType="number" 
+            android:defaultValue="2" />
+        <EditTextPreference
+            android:key="settings_record_min_distance"
+            android:summary="@string/settings_record_min_distance_title"
+            android:title="@string/settings_record_min_distance_summary"
+            android:inputType="number" 
+            android:defaultValue="20" />
+    </PreferenceCategory>   
+</PreferenceScreen>

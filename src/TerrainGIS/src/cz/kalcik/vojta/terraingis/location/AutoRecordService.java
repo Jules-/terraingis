@@ -10,14 +10,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
+import cz.kalcik.vojta.terraingis.fragments.SettingsFragment;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 /**
@@ -32,6 +35,7 @@ public class AutoRecordService extends Service implements LocationListener
     private final IBinder binder = new AutoRecordBinder();
     private ArrayList<Coordinate> mPoints = new ArrayList<Coordinate>();
     private MapFragment mMapFragment = null;
+    private SharedPreferences mSharedPref;
     
     // public methods ==============================================================
     public synchronized void setMapFragment(MapFragment mapFragment)
@@ -54,6 +58,7 @@ public class AutoRecordService extends Service implements LocationListener
     public void onCreate()
     {    
         mCommon = new CommonLocationListener(this);
+        mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
     }
     
     @Override
@@ -128,8 +133,9 @@ public class AutoRecordService extends Service implements LocationListener
     private void runGPS()
     {
         // default
-        mCommon.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, mSettings.getLocationMinTime(),
-                mSettings.getAutoRecordMinDist(), this);
+        mCommon.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                1000 * Integer.parseInt(mSharedPref.getString(SettingsFragment.KEY_GPS_MINTIME, Settings.LOCATION_MINTIME_DEFAULT)),
+                Integer.parseInt(mSharedPref.getString(SettingsFragment.KEY_GPS_MINDIST, Settings.AUTORECORD_MINDISTANCE_DEFAULT)), this);
     }
     
     /**

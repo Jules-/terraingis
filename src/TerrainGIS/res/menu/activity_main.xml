@@ -23,5 +23,8 @@
           android:showAsAction="always"
           android:icon="@drawable/ic_menu_show_gps"
           android:title="@string/title_show_gps"/>
-
+    <item android:id="@+id/menu_settings"
+          android:showAsAction="always"
+          android:icon="@drawable/ic_menu_settings"
+          android:title="@string/title_settings"/>
 </menu>

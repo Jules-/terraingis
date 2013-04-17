@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.content.Intent;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -317,6 +318,12 @@ public class MainActivity extends AbstractActivity
             {
                 changeMode(ActivityMode.EDIT);
             }
+        }
+        // edit
+        else if(R.id.menu_settings == id)
+        {
+            Intent i = new Intent(this, SettingsActivity.class);      
+            this.startActivity(i);            
         }
         // hide icon
         else if(android.R.id.home == id)

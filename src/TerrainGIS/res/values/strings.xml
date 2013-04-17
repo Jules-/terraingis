@@ -56,7 +56,8 @@
     <string name="title_zoom_object">zoom to object</string>
     <string name="title_edit_attributes">edit attributes</string>
     <string name="title_remove_object">remove object</string>
-    <string name="title_hide_panel">hide_panel</string>
+    <string name="title_hide_panel">hide panel</string>
+    <string name="title_settings">open settings</string>
     <!-- new layer dialog -->
     <string name="new_layer_message">New layer</string>
     <string name="empty_layer">Empty layer</string>
@@ -75,6 +76,12 @@
     <!-- layers context menu -->
     <string name="menu_remove_layer">Remove layer</string>
     <string name="menu_export_shapefile">Export Shapefile</string>
+    <!-- settings -->
+    <string name="settings_gps_category">GPS</string>
+    <string name="settings_record_min_distance_summary">Minimal distance vertex</string>
+    <string name="settings_record_min_distance_title">for autorecord, in meters</string>
+    <string name="settings_record_min_time_summary">Minimal time GPS</string>
+    <string name="settings_record_min_time_title">save battery, in seconds</string>
     <!-- other -->
     <string name="confirm_remove_message">Really remove %s layer?</string>
     <string name="confirm_remove_object_message">Really remove selected object?</string>
