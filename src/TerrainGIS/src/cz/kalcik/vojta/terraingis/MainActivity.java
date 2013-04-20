@@ -34,7 +34,6 @@ public class MainActivity extends AbstractActivity
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
     private static final String MAIN_ACTIVITY_DATA = "MainActivityData";
     private static final String SHOWN_LAYERS = "ShownLayers";
-    private static final float WIDTH_PANEL_DP = 300;
     
     public enum ActivityMode {EXPLORE, RECORD, EDIT};
     // properties =========================================================
@@ -42,12 +41,12 @@ public class MainActivity extends AbstractActivity
     {
         private static final long serialVersionUID = 1L;
         public ActivityMode activityMode;
-        public boolean addPointMode;
+        public boolean addPointMode = false;
+        public boolean topologyMode = false;
 
-        public MainActivityData(ActivityMode activityMode, boolean addPointMode)
+        public MainActivityData(ActivityMode activityMode)
         {
             this.activityMode = activityMode;
-            this.addPointMode = addPointMode;
         }
     }
     
@@ -56,6 +55,7 @@ public class MainActivity extends AbstractActivity
     private MenuItem mMenuRecord;
     private MenuItem mMenuEdit;
     private MenuItem mMenuAddPoint;
+    private MenuItem mMenuTopology;
     private Timer timer;
     private LocationWorker mLocationWorker;
     private Settings mSettings = Settings.getInstance();
@@ -67,7 +67,7 @@ public class MainActivity extends AbstractActivity
     private LinearLayout mLayersLayout;
     private LinearLayout mAttributesLayout;
     private View mDividerLayout;
-    private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE, false);
+    private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE);
     private ConnectivityManager mConnectivityManager; 
     
     // public methods =====================================================
@@ -203,6 +203,14 @@ public class MainActivity extends AbstractActivity
     {
         return data.addPointMode;
     }
+    
+    /**
+     * @return true if is run topology mode of record
+     */
+    public boolean isTopologymode()
+    {
+        return data.topologyMode;
+    }
     // on methods =========================================================
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -250,6 +258,7 @@ public class MainActivity extends AbstractActivity
         mMenuRecord = menu.findItem(R.id.menu_record);
         mMenuEdit = menu.findItem(R.id.menu_edit);
         mMenuAddPoint = menu.findItem(R.id.menu_add_point);
+        mMenuTopology = menu.findItem(R.id.menu_topology);
         setActionBarIcons();
         
         return true;
@@ -295,17 +304,16 @@ public class MainActivity extends AbstractActivity
                 changeMode(ActivityMode.RECORD);
             }
         }
+        // create topology
+        else if(mMenuTopology.getItemId() == id)
+        {
+            setTopologyMode(!data.topologyMode);
+        }
         // add point mode
         else if(mMenuAddPoint.getItemId() == id)
         {
-            if(data.addPointMode)
-            {
-                setAddPointMode(false);
-            }
-            else
-            {
-                setAddPointMode(true);
-            }
+            setAddPointMode(!data.addPointMode);
+
         }
         // edit
         else if(mMenuEdit.getItemId() == id)
@@ -454,10 +462,20 @@ public class MainActivity extends AbstractActivity
         if(data.activityMode == ActivityMode.RECORD)
         {
             mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_on));
+            mMenuTopology.setVisible(true);
+            if(data.topologyMode)
+            {
+                mMenuTopology.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_topology_on));
+            }
+            else
+            {
+                mMenuTopology.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_topology_off));
+            }
         }
         else
         {
             mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_off));
+            mMenuTopology.setVisible(false);
         }
         
         // edit icon
@@ -517,7 +535,12 @@ public class MainActivity extends AbstractActivity
         {
             setAddPointMode(false);
         }
+        if(data.activityMode == ActivityMode.RECORD)
+        {
+            setTopologyMode(false);
+        }
         
+        // change of mode
         data.activityMode = mode;
         
         // new mode
@@ -566,6 +589,20 @@ public class MainActivity extends AbstractActivity
     {
         data.addPointMode = state;
         
+        if(!state)
+        {
+            mMapFragment.setCoordinatesAddPointM(null);
+        }
+    }
+    
+    /**
+     * change topology mode
+     * @param state
+     */
+    private void setTopologyMode(boolean state)
+    {
+        data.topologyMode = state;
+
         if(!state)
         {
             mMapFragment.setCoordinatesAddPointM(null);

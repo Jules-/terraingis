@@ -1,6 +1,7 @@
 package cz.kalcik.vojta.terraingis.view;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -493,48 +494,90 @@ public class MapView extends SurfaceView
             }
             else if(mode == ActivityMode.RECORD)
             {
-                VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
-                if(layer != null)
-                {
-                    Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
+                Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
 
-                    // open old object
-                    if(!layer.hasOpenedRecordObject() && layer.getType() != VectorLayerType.POINT)
+                // cursor for add topology
+                if(mMainActivity.isTopologymode())
+                {
+                    ArrayList<AbstractLayer> layers = LayerManager.getInstance().getLayers();
+                    
+                    Coordinate result = null;
+                    
+                    for(AbstractLayer layerFromAll : layers)
                     {
-                        try
+                        if (layerFromAll instanceof VectorLayer)
                         {
-                            layer.clickRecordingObject(mNavigator.getMRectangle(null), clickedPoint);
-                            mMapFragment.setMapTools();
-                            invalidate();
-                        }
-                        catch (Exception e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        catch (ParseException e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
+                            try
+                            {
+                                result = ((VectorLayer)layerFromAll).
+                                        getClickPoint(mNavigator.getMRectangle(null), clickedPoint);
+                                
+                                if(result != null)
+                                {
+                                    break;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Toast.makeText(mMainActivity, R.string.database_error,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            catch (ParseException e)
+                            {
+                                Toast.makeText(mMainActivity, R.string.database_error,
+                                        Toast.LENGTH_LONG).show();
+                            }
                         }
                     }
-                    else
+                    
+                    mMapFragment.setCoordinatesAddPointM(result);
+                    invalidate();
+                }
+                else
+                {
+                    VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+
+                    if(layer != null)
                     {
-                        try
+    
+                        // open old object
+                        if(!layer.hasOpenedRecordObject() && layer.getType() != VectorLayerType.POINT)
                         {
-                            layer.checkClickRecordedVertex(mNavigator.getMRectangle(null), clickedPoint);
-                            mMapFragment.setMapTools();
-                            invalidate();
+                            try
+                            {
+                                layer.clickRecordingObject(mNavigator.getMRectangle(null), clickedPoint);
+                                mMapFragment.setMapTools();
+                                invalidate();
+                            }
+                            catch (Exception e)
+                            {
+                                Toast.makeText(mMainActivity, R.string.database_error,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            catch (ParseException e)
+                            {
+                                Toast.makeText(mMainActivity, R.string.database_error,
+                                        Toast.LENGTH_LONG).show();
+                            }
                         }
-                        catch (Exception e)
+                        else
                         {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        catch (ParseException e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
+                            try
+                            {
+                                layer.checkClickRecordedVertex(mNavigator.getMRectangle(null), clickedPoint);
+                                mMapFragment.setMapTools();
+                                invalidate();
+                            }
+                            catch (Exception e)
+                            {
+                                Toast.makeText(mMainActivity, R.string.database_error,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            catch (ParseException e)
+                            {
+                                Toast.makeText(mMainActivity, R.string.database_error,
+                                        Toast.LENGTH_LONG).show();
+                            }
                         }
                     }
                 }

@@ -658,7 +658,13 @@ public class MapFragment extends Fragment
         if(showPointButton)
         {
             mButtonRecordPoint.setVisibility(View.VISIBLE);
-            if(selectedLayer.hasRecordedMovableVertex())
+            if(mMainActivity.isTopologymode())
+            {
+                mButtonRecordAuto.setContentDescription(getString(R.string.button_record_topology_point));
+                mButtonRecordPoint.setImageDrawable(
+                        getResources().getDrawable(R.drawable.button_add_topology_point));
+            }
+            else if(selectedLayer.hasRecordedMovableVertex())
             {
                 mButtonRecordAuto.setContentDescription(getString(R.string.button_record_move_point));
                 mButtonRecordPoint.setImageDrawable(
@@ -793,14 +799,15 @@ public class MapFragment extends Fragment
             {
                 if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
                 {
-                    if(!mLocationValid)
-                    {
-                        Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
-                        return;
-                    }            
-                    
+                    // move vertex
                     if(selectedLayer.hasRecordedMovableVertex())
                     {
+                        if(!mLocationValid)
+                        {
+                            Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
+                            return;
+                        } 
+                        
                         try
                         {
                             selectedLayer.moveRecordedVertex(mLocationM);
@@ -816,7 +823,26 @@ public class MapFragment extends Fragment
                     }
                     else
                     {
-                        recordInsertPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
+                        Coordinate recordingLocation = null;
+                        
+                        // create point connected to another
+                        if(mMainActivity.isTopologymode())
+                        {
+                            recordingLocation = mAddPointLocationM;
+                        }
+                        // new point from GPS
+                        else
+                        {
+                            if(!mLocationValid)
+                            {
+                                Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
+                                return;
+                            }
+                            
+                            recordingLocation = mLocationM;
+                        }
+                        
+                        recordInsertPoint(recordingLocation, selectedLayer, mLayerManager.getSrid());
                     }
                 }
                 else if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
@@ -896,6 +922,9 @@ public class MapFragment extends Fragment
         }        
     };
 
+    /**
+     * return state of object back
+     */
     View.OnClickListener backHandler = new View.OnClickListener()
     {
         @Override
@@ -933,6 +962,9 @@ public class MapFragment extends Fragment
         }        
     };
     
+    /**
+     * remove object or point
+     */
     View.OnClickListener removeHandler = new View.OnClickListener()
     {
         @Override

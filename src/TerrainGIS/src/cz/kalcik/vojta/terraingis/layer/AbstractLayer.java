@@ -40,7 +40,8 @@ public abstract class AbstractLayer
     protected Navigator mNavigator = Navigator.getInstance();
 
     // abstract methods ========================================================
-    public abstract void draw(final Canvas canvas, Envelope rect) throws Exception, ParseException;
+    public abstract void draw(final Canvas canvas, Envelope rect, boolean drawVertexs)
+            throws Exception, ParseException;
     public abstract void detach();
     
     // getter, setter ==========================================================

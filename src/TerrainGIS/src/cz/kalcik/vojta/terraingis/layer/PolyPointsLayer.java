@@ -45,7 +45,7 @@ public abstract class PolyPointsLayer extends VectorLayer
      * @throws Exception 
      */
     @Override
-    public void draw(Canvas canvas, Envelope rect)
+    public void draw(Canvas canvas, Envelope rect, boolean drawVertexs)
             throws Exception, ParseException
     {
         // saved objects
@@ -60,6 +60,12 @@ public abstract class PolyPointsLayer extends VectorLayer
                 Drawer.drawCanvasPathSurfacePx(canvas,
                         points, 
                         mPaint);
+                
+                if(drawVertexs)
+                {
+                    Drawer.drawVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
+                            VectorLayerPaints.getVertexRadius());                    
+                }
             }
         }
         

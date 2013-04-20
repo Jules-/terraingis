@@ -1,22 +1,16 @@
 package cz.kalcik.vojta.terraingis.view;
 
-import android.R.layout;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ListView;
 
 import com.mobeta.android.dslv.DragSortListView;
-import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
-import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
-import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
-import cz.kalcik.vojta.terraingis.layer.VectorLayer;
 
 
 public class LayersView extends DragSortListView

@@ -15,6 +15,7 @@ import android.util.FloatMath;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
+import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 
 /**
@@ -38,7 +39,7 @@ public class Drawer
      * @param width
      * @param height
      */
-    public static void draw(Canvas canvas, int width, int height, Context context)
+    public static void draw(Canvas canvas, int width, int height, MainActivity mainActivity)
     {
         Rect screen = mNavigator.getScreen();
         
@@ -48,7 +49,9 @@ public class Drawer
             mNavigator.setScreen(screen);
         }
         
-        mLayerManager.redraw(canvas, mNavigator.getMRectangle(null), context);
+        boolean drawVertexs = mainActivity.isTopologymode();
+        mLayerManager.redraw(canvas, mNavigator.getMRectangle(null), mainActivity,
+                drawVertexs);
     }   
     
     /**

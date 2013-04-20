@@ -472,6 +472,44 @@ public abstract class VectorLayer extends AbstractLayer
         updateLayerAttributes();
     }
     
+    /**
+     * find clicked vertex coordinates
+     * @param envelope
+     * @param point
+     * @return vertex coordinates or null
+     * @throws Exception
+     * @throws ParseException
+     */
+    public Coordinate getClickPoint(Envelope envelope, Coordinate point)
+            throws Exception, ParseException
+    {
+        if(mVectorLayerData.recordedPoints.size() != 0)
+        {
+            Coordinate vertex =findNearestVertex(mVectorLayerData.recordedPoints, point);
+            if(vertex != null)
+            {
+                return vertex;
+            }
+        }
+
+        String rowid = getNearestObjectToPoint(envelope, point);
+        
+        if(rowid == null || rowid.equals(mVectorLayerData.recordedRowid))
+        {
+            return null;
+        }
+
+
+        if(mType == VectorLayerType.POINT)
+        {
+            Geometry geom = getObject(rowid);
+            return geom.getCoordinate();
+        }
+
+        ArrayList<Coordinate> points = getPointsOfRowidObject(rowid);
+        return findNearestVertex(points, point);
+    }
+    
     // getter, setter =========================================================
     /**
      * @return typ of vyctor layer
@@ -759,7 +797,7 @@ public abstract class VectorLayer extends AbstractLayer
      * find index of nearest point
      * @param points
      * @param point
-     * @return
+     * @return index of nearest point or -1 if any
      */
     private int findIndexNearestPoint(ArrayList<Coordinate> points, Coordinate point)
     {
@@ -785,6 +823,22 @@ public abstract class VectorLayer extends AbstractLayer
         }
         
         return minIndex;
+    }
+    
+    /**
+     * @param points
+     * @param point
+     * @return nearest vertex
+     */
+    private Coordinate findNearestVertex(ArrayList<Coordinate> points, Coordinate point)
+    {
+        int index = findIndexNearestPoint(points, point);
+        if(index != -1)
+        {
+            return points.get(index);
+        }
+        
+        return null;
     }
     
     /**

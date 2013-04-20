@@ -42,6 +42,7 @@
     <string name="button_record_auto_stop">Stop automatic</string>
     <string name="button_remove">Remove selected</string>
     <string name="button_back">Back</string>
+    <string name="button_record_topology_point">Add topology point</string>
     <!-- icon titles -->
     <string name="title_record">on/off recording</string>
     <string name="title_edit">on/off editing</string>
@@ -58,6 +59,7 @@
     <string name="title_remove_object">remove object</string>
     <string name="title_hide_panel">hide panel</string>
     <string name="title_settings">open settings</string>
+    <string name="title_topology">create topology</string>
     <!-- new layer dialog -->
     <string name="new_layer_message">New layer</string>
     <string name="empty_layer">Empty layer</string>

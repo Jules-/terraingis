@@ -49,7 +49,7 @@ public class TilesLayer extends AbstractLayer
     }    
     
     @Override
-    public void draw(Canvas canvas, Envelope rect) throws Exception,
+    public void draw(Canvas canvas, Envelope rect, boolean drawVertexs) throws Exception,
             ParseException
     {
         int zoomLevel = Navigator.mpxToZoomLevel(mNavigator.getZoom());
