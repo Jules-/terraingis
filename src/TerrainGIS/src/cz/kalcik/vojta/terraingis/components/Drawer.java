@@ -10,6 +10,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.util.FloatMath;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -22,20 +23,12 @@ import cz.kalcik.vojta.terraingis.layer.LayerManager;
  */
 public class Drawer
 {
-    // singleton code =====================================================================
+    // constatns ==========================================================================
+    private static float SQRT_2 = FloatMath.sqrt(2);
     
-    private static Drawer instance = new Drawer();
-    
-    private Drawer() { }
-    
-    public static Drawer getInstance()
-    {
-        return instance;
-    }
-
     // attributes =========================================================================
-    private Navigator mNavigator = Navigator.getInstance();
-    private LayerManager mLayerManager = LayerManager.getInstance();
+    private static Navigator mNavigator = Navigator.getInstance();
+    private static LayerManager mLayerManager = LayerManager.getInstance();
     
     // public methods =====================================================================
     
@@ -45,7 +38,7 @@ public class Drawer
      * @param width
      * @param height
      */
-    public void draw(Canvas canvas, int width, int height, Context context)
+    public static void draw(Canvas canvas, int width, int height, Context context)
     {
         Rect screen = mNavigator.getScreen();
         
@@ -64,7 +57,7 @@ public class Drawer
      * @param drawable
      * @param bound
      */
-    public void drawCanvasDraweblePx(Canvas canvas, Drawable drawable, Envelope bound)
+    public static void drawCanvasDraweblePx(Canvas canvas, Drawable drawable, Envelope bound)
     {
         drawable.setBounds(mNavigator.pxToSurfacePx(bound, null));
         drawable.draw(canvas);
@@ -76,7 +69,7 @@ public class Drawer
      * @param points
      * @param paint
      */
-    public void drawCanvasPathSurfacePx(Canvas canvas, PointF[] points, Paint paint)
+    public static void drawCanvasPathSurfacePx(Canvas canvas, PointF[] points, Paint paint)
     {
         Path path = new Path();
         int size = points.length;
@@ -104,7 +97,7 @@ public class Drawer
      * @param radius
      * @param selected
      */
-    public void drawPathVertexsSurfacePx(Canvas canvas, PointF[] points, Paint paintDefault,
+    public static void drawVertexsSurfacePx(Canvas canvas, PointF[] points, Paint paintDefault,
             Paint paintSelected, float radius, int selected)
     {
         int size = points.length;
@@ -113,7 +106,11 @@ public class Drawer
         {
             Paint paint = i == selected ? paintSelected : paintDefault;
             
-            canvas.drawCircle(points[i].x, points[i].y, radius, paint);
+            drawCross45Degree(canvas, paint, points[i], radius);
+            if(i == 0)
+            {
+                drawCross(canvas, paint, points[i], radius);
+            }
         }        
     }
 
@@ -124,10 +121,10 @@ public class Drawer
      * @param paintDefault
      * @param radius
      */
-    public void drawPathVertexsSurfacePx(Canvas canvas, PointF[] points,
+    public static void drawVertexsSurfacePx(Canvas canvas, PointF[] points,
             Paint paintDefault, float radius)
     {
-        drawPathVertexsSurfacePx(canvas, points, paintDefault, null, radius, -1);
+        drawVertexsSurfacePx(canvas, points, paintDefault, null, radius, -1);
     }
     
     /**
@@ -137,7 +134,7 @@ public class Drawer
      * @param center
      * @param radius
      */
-    public void drawCircleM(Canvas canvas, Paint paint, Coordinate center, float radius)
+    public static void drawCircleM(Canvas canvas, Paint paint, Coordinate center, float radius)
     {
         PointF centerSurfacePx = mNavigator.mToSurfacePx(center, null);
         canvas.drawCircle(centerSurfacePx.x, centerSurfacePx.y, radius, paint);
@@ -149,7 +146,7 @@ public class Drawer
      * @param point
      * @param icon
      */
-    public void drawIconM(Canvas canvas, Coordinate point, Drawable icon)
+    public static void drawIconM(Canvas canvas, Coordinate point, Drawable icon)
     {
         Coordinate pointPx = mNavigator.mToPx(point, null);
       
@@ -165,5 +162,38 @@ public class Drawer
             icon.setBounds(bounds);
             icon.draw(canvas);
         }
+    }
+    
+    // private methods =================================================================
+    
+    /**
+     * draw cross rotated 45 degrees
+     * @param canvas
+     * @param paint
+     * @param center
+     * @param radius
+     */
+    private static void drawCross45Degree(Canvas canvas, Paint paint, PointF centerSurfacePx, float radius)
+    {
+        float length = radius / SQRT_2;
+        canvas.drawLine(centerSurfacePx.x-length, centerSurfacePx.y-length,
+                centerSurfacePx.x+length, centerSurfacePx.y+length, paint);
+        canvas.drawLine(centerSurfacePx.x-length, centerSurfacePx.y+length,
+                centerSurfacePx.x+length, centerSurfacePx.y-length, paint);
+    }
+
+    /**
+     * draw cross
+     * @param canvas
+     * @param paint
+     * @param centerSurfacePx
+     * @param radius
+     */
+    private static void drawCross(Canvas canvas, Paint paint, PointF centerSurfacePx, float radius)
+    {
+        canvas.drawLine(centerSurfacePx.x-radius, centerSurfacePx.y,
+                centerSurfacePx.x+radius, centerSurfacePx.y, paint);
+        canvas.drawLine(centerSurfacePx.x, centerSurfacePx.y-radius,
+                centerSurfacePx.x, centerSurfacePx.y+radius, paint);
     }
 }

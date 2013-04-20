@@ -13,6 +13,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
+import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
@@ -33,8 +34,8 @@ public abstract class PolyPointsLayer extends VectorLayer
     {
         super(type, name, srid, spatialite, mapFragment);
         
-        mVertexsSelectedObjectPaint = VectorLayerPaints.getPoint(PaintType.SELECTED);
-        mSelectedVertexSelectedObjectPaint = VectorLayerPaints.getPoint(PaintType.SELECTED_SELECTED_NODE);
+        mVertexsSelectedObjectPaint = VectorLayerPaints.getVertex(PaintType.DEFAULT);
+        mSelectedVertexSelectedObjectPaint = VectorLayerPaints.getVertex(PaintType.SELECTED);
         mStrokePolygonPaint = VectorLayerPaints.getLine(PaintType.SELECTED);
     }
 
@@ -56,7 +57,7 @@ public abstract class PolyPointsLayer extends VectorLayer
             if(!isSelectedObject(iter) && !isRecordedObject(iter))
             {
                 PointF[] points = mNavigator.mToSurfacePx(geometry.getCoordinates());
-                mDrawer.drawCanvasPathSurfacePx(canvas,
+                Drawer.drawCanvasPathSurfacePx(canvas,
                         points, 
                         mPaint);
             }
@@ -69,12 +70,12 @@ public abstract class PolyPointsLayer extends VectorLayer
                     new Coordinate[mVectorLayerData.recordedPoints.size()]);
             PointF[] points = mNavigator.mToSurfacePx(metersCoordinates);
             
-            mDrawer.drawCanvasPathSurfacePx(canvas,
+            Drawer.drawCanvasPathSurfacePx(canvas,
                     points, mNotSavedPaint);
             
-            mDrawer.drawPathVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
+            Drawer.drawVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
                     mSelectedVertexSelectedObjectPaint,
-                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT), mVectorLayerData.recordedVertexIndex);
+                    VectorLayerPaints.getVertexRadius(), mVectorLayerData.recordedVertexIndex);
         }
         
         // selected object
@@ -84,21 +85,21 @@ public abstract class PolyPointsLayer extends VectorLayer
                     mVectorLayerData.selectedObjectPoints.toArray(
                             new Coordinate[mVectorLayerData.selectedObjectPoints.size()]));
             
-            mDrawer.drawCanvasPathSurfacePx(canvas,
+            Drawer.drawCanvasPathSurfacePx(canvas,
                     points, 
                     mSelectedPaint);
             
             // stroke of polygon
             if(mType == VectorLayerType.POLYGON)
             {
-                mDrawer.drawCanvasPathSurfacePx(canvas,
+                Drawer.drawCanvasPathSurfacePx(canvas,
                         points, 
                         mStrokePolygonPaint);                
             }
             
-            mDrawer.drawPathVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
+            Drawer.drawVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
                     mSelectedVertexSelectedObjectPaint,
-                    VectorLayerPaints.getPointRadius(PaintType.DEFAULT), mVectorLayerData.selectedVertexIndex);
+                    VectorLayerPaints.getVertexRadius(), mVectorLayerData.selectedVertexIndex);
         }
     }
 }

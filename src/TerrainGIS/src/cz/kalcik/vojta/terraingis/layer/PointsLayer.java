@@ -7,6 +7,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
+import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
@@ -64,7 +65,7 @@ public class PointsLayer extends VectorLayer
                 paint = mPaint;
             }
             
-            mDrawer.drawCircleM(canvas, paint, coordinate, radius);
+            Drawer.drawCircleM(canvas, paint, coordinate, radius);
         }
     }
     

@@ -35,7 +35,6 @@ public abstract class AbstractLayer
     
     protected Envelope mEnvelope;
     protected int mSrid;
-    protected Drawer mDrawer = Drawer.getInstance();
     protected LayerManager mLayerManager = LayerManager.getInstance();
     protected AbstractLayerData data = new AbstractLayerData(true);
     protected Navigator mNavigator = Navigator.getInstance();

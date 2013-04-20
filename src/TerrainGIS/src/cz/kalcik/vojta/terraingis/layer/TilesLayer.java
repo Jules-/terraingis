@@ -8,6 +8,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.components.Drawer;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.components.SphericalMercatorTiles;
 import cz.kalcik.vojta.terraingis.components.TileCache;
@@ -131,7 +132,7 @@ public class TilesLayer extends AbstractLayer
             
             rectTilesToReal(mTileRect, currentRealRect);
             
-            mDrawer.drawCanvasDraweblePx(canvas, tile.imageTile, currentRealRect);
+            Drawer.drawCanvasDraweblePx(canvas, tile.imageTile, currentRealRect);
         }
     }
 }

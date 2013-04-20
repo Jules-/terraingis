@@ -604,6 +604,14 @@ public abstract class VectorLayer extends AbstractLayer
     {
         return (mVectorLayerData.selectedObjectPoints.size() != 0);
     }
+    
+    /**
+     * @return color of layer
+     */
+    public int getLayerColor()
+    {
+        return mPaint.getColor();
+    }
     // public static ============================================================
 
     /**

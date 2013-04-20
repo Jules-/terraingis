@@ -62,7 +62,6 @@ public class MapView extends SurfaceView
     private LayerManager layerManager = LayerManager.getInstance();
     private Navigator mNavigator = Navigator.getInstance();
     private Settings settings = Settings.getInstance();
-    private Drawer mDrawer = Drawer.getInstance();
     private GestureDetector gestureDetector;
     private MainActivity mMainActivity;
     private MapFragment mMapFragment;
@@ -207,7 +206,7 @@ public class MapView extends SurfaceView
             canvas.translate(mTouchDiff.x, mTouchDiff.y);
         }
         
-        mDrawer.draw(canvas, getWidth(), getHeight(), mMainActivity);
+        Drawer.draw(canvas, getWidth(), getHeight(), mMainActivity);
         
         drawLocations(canvas);
     }
@@ -335,13 +334,13 @@ public class MapView extends SurfaceView
         Coordinate location = mMapFragment.getCoordinatesLocation();
         if(location != null)
         {
-            mDrawer.drawIconM(canvas, location, locationIcon);
+            Drawer.drawIconM(canvas, location, locationIcon);
         }
         
         location = mMapFragment.getCoordinatesAddPoint();
         if(location != null)
         {
-            mDrawer.drawIconM(canvas, location, locationAddPointIcon);
+            Drawer.drawIconM(canvas, location, locationAddPointIcon);
         }
     }
     

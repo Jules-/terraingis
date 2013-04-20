@@ -24,4 +24,8 @@
     <style name="attribute_table" parent="@android:style/TextAppearance.Medium">
         <item name="android:padding">10dp</item>
     </style>
+    
+    <style name="toolbar_icons">
+        <item name="android:padding">18dp</item>
+    </style>
 </resources>

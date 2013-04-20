@@ -15,25 +15,53 @@ import android.graphics.Paint;
 public class VectorLayerPaints
 {
     // constants ===================================================================
-    enum PaintType {DEFAULT, SELECTED, SELECTED_SELECTED_NODE, NOT_SAVED};
+    enum PaintType {DEFAULT, SELECTED, NOT_SAVED};
     
-    private static final float POINT_RADIUS_DP = 6;
-    private static final float POINT_RADIUS_SELECTED_DP = 8;
     private static final float LINE_WIDTH = 2;
     private static final float LINE_WIDTH_SELECTED = 3;
     private static final float HUE_STEP = 80;
     private static final float VALUE_STEP = 0.2f;
     private static final float MIN_VALUE = 0.3f;
     private static final float[] DEFAULT_HSV = {0, 1, 1};
-    private static final int SELECTED_COLOR = Color.argb(255, 255, 127, 0);
-    private static final int SELECTED_DEFAULT_NODE_COLOR = Color.YELLOW;
     private static final float[] DASHED_PARAMS = {10, 5};
     private final static int TRANCPARENCE_NOTSAVED = 64;
+
+    // radius
+    private static final float POINT_RADIUS_DP = 6;
+    private static final float POINT_RADIUS_SELECTED_DP = 8;
+    private static final float VERTEX_RADIUS_DP = 8;
+    
+    // colors
+    private static final int SELECTED_COLOR = Color.argb(255, 255, 127, 0);
+    
     // static atributes ============================================================
     private static float[] mPreviousHSV = DEFAULT_HSV.clone();
     private static float[] mCurrentHSV = DEFAULT_HSV.clone();
     
     // public static methods =======================================================
+    /**
+     * paint for vertex
+     * @param paintType
+     * @return
+     */
+    public static Paint getVertex(PaintType paintType)
+    {
+        Paint result = commonAttrs(paintType);
+        result.setStyle(Paint.Style.STROKE);
+        
+        if(paintType == PaintType.SELECTED)
+        {
+            result.setColor(SELECTED_COLOR);
+            result.setStrokeWidth(LINE_WIDTH_SELECTED);
+        }
+        else
+        {
+            result.setColor(getCurrentColor());
+            result.setStrokeWidth(LINE_WIDTH);
+        }
+        
+        return result;        
+    }
     
     /**
      * paint for point
@@ -43,6 +71,7 @@ public class VectorLayerPaints
     public static Paint getPoint(PaintType paintType)
     {
         Paint result = commonAttrs(paintType);
+        commonColors(result, paintType);
         
         return result;
     }
@@ -55,6 +84,7 @@ public class VectorLayerPaints
     public static Paint getLine(PaintType paintType)
     {
         Paint result = commonAttrs(paintType);
+        commonColors(result, paintType);
         result.setStyle(Paint.Style.STROKE);
         // stroke width
         if(paintType == PaintType.SELECTED)
@@ -82,6 +112,7 @@ public class VectorLayerPaints
     public static Paint getPolygon(PaintType paintType)
     {
         Paint result = commonAttrs(paintType);
+        commonColors(result, paintType);
         result.setStyle(Paint.Style.FILL);
         
         // transparency
@@ -116,6 +147,14 @@ public class VectorLayerPaints
             return ConvertUnits.dp2px(POINT_RADIUS_DP);
         }
     }
+    
+    /**
+     * @return radius of vertex
+     */
+    public static float getVertexRadius()
+    {
+        return ConvertUnits.dp2px(VERTEX_RADIUS_DP);
+    }
     // private static methods ======================================================
     /**
      * common settings of paint
@@ -126,24 +165,29 @@ public class VectorLayerPaints
     {
         Paint result = new Paint();
         result.setAntiAlias(true);
+        
+        return result;
+    }
+    
+    /**
+     * set color by type 
+     * @param paint
+     * @param paintType
+     */
+    private static void commonColors(Paint paint, PaintType paintType)
+    {
         if(paintType == PaintType.SELECTED)
         {
-            result.setColor(SELECTED_COLOR);
-        }
-        else if(paintType == PaintType.SELECTED_SELECTED_NODE)
-        {
-            result.setColor(SELECTED_DEFAULT_NODE_COLOR);
+            paint.setColor(SELECTED_COLOR);
         }
         else if(paintType == PaintType.NOT_SAVED)
         {
-            result.setColor(getCurrentColor());
+            paint.setColor(getCurrentColor());
         }
         else
         {
-            result.setColor(getNextColor());
-        }
-        
-        return result;
+            paint.setColor(getNextColor());
+        }        
     }
     
     /**
