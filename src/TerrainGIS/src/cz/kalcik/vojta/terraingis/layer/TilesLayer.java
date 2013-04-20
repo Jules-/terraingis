@@ -3,13 +3,13 @@ package cz.kalcik.vojta.terraingis.layer;
 import java.util.ArrayList;
 
 import jsqlite.Exception;
-import microsoft.mappoint.TileSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.components.Navigator;
+import cz.kalcik.vojta.terraingis.components.SphericalMercatorTiles;
 import cz.kalcik.vojta.terraingis.components.TileCache;
 import cz.kalcik.vojta.terraingis.components.TileDownloader;
 import cz.kalcik.vojta.terraingis.components.TileCache.Tile;
@@ -56,15 +56,15 @@ public class TilesLayer extends AbstractLayer
         double tilesZoom = Navigator.zoomLevelToMpx(zoomLevel);
         scale = mNavigator.getZoom() / tilesZoom;
         
-        mWorldSize_2 = TileSystem.MapSize(zoomLevel) >> 1;
+        mWorldSize_2 = SphericalMercatorTiles.getMapSize(zoomLevel-1); 
         
         mNavigator.getPxRectangle(currentRealRect);
         rectRealToTiles(currentRealRect, currentRect);
         currentRect.offset(mWorldSize_2, mWorldSize_2);
         
-        TileSystem.PixelXYToTileXY(currentRect.left, currentRect.top, mUpperLeft);
+        SphericalMercatorTiles.getTileFromPx(currentRect.left, currentRect.top, mUpperLeft);
         mUpperLeft.offset(-1, -1);
-        TileSystem.PixelXYToTileXY(currentRect.right, currentRect.bottom, mLowerRight);
+        SphericalMercatorTiles.getTileFromPx(currentRect.right, currentRect.bottom, mLowerRight);
         
         drawTiles(canvas, zoomLevel);
     }
@@ -105,7 +105,7 @@ public class TilesLayer extends AbstractLayer
     
     private void drawTiles(Canvas canvas, int zoom)
     {
-        int tileSize = TileSystem.getTileSize();
+        int tileSize = SphericalMercatorTiles.TILE_SIZE;
         int countTiles = (mWorldSize_2 * 2) / tileSize;
         
         int minX = Math.max(Math.min(mUpperLeft.x, countTiles-1), 0);
