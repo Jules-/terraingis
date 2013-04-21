@@ -726,11 +726,11 @@ public class SpatiaLiteIO
      * @throws Exception 
      * @throws ParseException 
      */
-    public String getRowidNearCoordinate(Envelope envelope, String name, String column,
+    public ArrayList<String> getRowidNearCoordinate(Envelope envelope, String name, String column,
             int layerSrid, int mapSrid, boolean useRTree, Coordinate point, double bufferDistance)
                     throws Exception, ParseException
     {
-        String result = null;
+        ArrayList<String> result = new ArrayList<String>();
         
         String columnBufferCondition;
         if(layerSrid != mapSrid)
@@ -752,9 +752,9 @@ public class SpatiaLiteIO
         stmt.bind(3, point.y);
         stmt.bind(4, mapSrid);
         
-        if(stmt.step())
+        while(stmt.step())
         {
-            result = stmt.column_string(0);
+            result.add(stmt.column_string(0));
         }
         
         stmt.close();

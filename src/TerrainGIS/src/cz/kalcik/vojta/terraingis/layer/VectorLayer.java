@@ -245,7 +245,18 @@ public abstract class VectorLayer extends AbstractLayer
         mVectorLayerData.clickedPoint = point;
         mVectorLayerData.selectVertex = selectVertex;
         
-        String rowid = getNearestObjectToPoint(envelope, point);
+        ArrayList<String> rowidObjects = getNearestObjectsToPoint(envelope, point);
+        
+        String rowid = null;
+        if(mVectorLayerData.selectedRowid != null &&
+                rowidObjects.contains(mVectorLayerData.selectedRowid))
+        {
+            rowid = mVectorLayerData.selectedRowid;
+        }
+        else if(rowidObjects.size() > 0)
+        {
+            rowid = rowidObjects.get(0);
+        }
         
         changeSelectionOfObject(rowid);
     }
@@ -260,7 +271,9 @@ public abstract class VectorLayer extends AbstractLayer
     public void clickRecordingObject(Envelope envelope, Coordinate point)
             throws Exception, ParseException
     {
-        mVectorLayerData.recordedRowid = getNearestObjectToPoint(envelope, point);
+        ArrayList<String> rowidObjects = getNearestObjectsToPoint(envelope, point);
+        
+        mVectorLayerData.recordedRowid = rowidObjects.size() == 0 ? null : rowidObjects.get(0);
         
         if(mVectorLayerData.recordedRowid != null)
         {
@@ -492,9 +505,20 @@ public abstract class VectorLayer extends AbstractLayer
             }
         }
 
-        String rowid = getNearestObjectToPoint(envelope, point);
+        ArrayList<String> rowidObjects = getNearestObjectsToPoint(envelope, point);
         
-        if(rowid == null || rowid.equals(mVectorLayerData.recordedRowid))
+        String rowid = null;
+        
+        for(String currentRowid: rowidObjects)
+        {
+            if(!currentRowid.equals(mVectorLayerData.recordedRowid))
+            {
+                rowid = currentRowid;
+                break;
+            }
+        }
+        
+        if(rowid == null)
         {
             return null;
         }
@@ -946,7 +970,7 @@ public abstract class VectorLayer extends AbstractLayer
      * @throws Exception
      * @throws ParseException
      */
-    private String getNearestObjectToPoint(Envelope envelope, Coordinate point)
+    private ArrayList<String> getNearestObjectsToPoint(Envelope envelope, Coordinate point)
             throws Exception, ParseException
     {
         double bufferDistance = mNavigator.getBufferDistance();

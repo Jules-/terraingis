@@ -630,7 +630,8 @@ public class MapFragment extends Fragment
             // editing
             else if(mode == ActivityMode.EDIT)
             {
-                if(selectedLayer.hasSelectedObject())
+                if(selectedLayer.hasSelectedObject() &&
+                        !(mMainActivity.isAddPointMode() || mMainActivity.isTopologymode()))
                 {
                     showRemoveButton = true;
                 }
