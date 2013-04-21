@@ -458,9 +458,48 @@ public class MapView extends SurfaceView
             {
                 mMainActivity.showPanel();
             }
-            else if(mode == ActivityMode.EDIT && mMainActivity.isAddPointMode())
+            // cursor for add point
+            else if(mMainActivity.isAddPointMode())
             {
                 mMapFragment.setCoordinatesAddPointM(mNavigator.surfacePxToM(mTouchPoint, null));
+            }
+            // cursor for add topology
+            else if(mMainActivity.isTopologymode())
+            {
+                ArrayList<AbstractLayer> layers = LayerManager.getInstance().getLayers();
+                
+                Coordinate result = null;
+                
+                for(AbstractLayer layerFromAll : layers)
+                {
+                    if (layerFromAll instanceof VectorLayer)
+                    {
+                        try
+                        {
+                            result = ((VectorLayer)layerFromAll).
+                                    getClickPoint(mNavigator.getMRectangle(null),
+                                            mNavigator.surfacePxToM(mTouchPoint, null));
+                            
+                            if(result != null)
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        catch (ParseException e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+                
+                mMapFragment.setCoordinatesAddPointM(result);
+                invalidate();
             }
             else if(mMainActivity.canSelectObject())
             {
@@ -496,88 +535,48 @@ public class MapView extends SurfaceView
             {
                 Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
 
-                // cursor for add topology
-                if(mMainActivity.isTopologymode())
+                VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+
+                if(layer != null)
                 {
-                    ArrayList<AbstractLayer> layers = LayerManager.getInstance().getLayers();
-                    
-                    Coordinate result = null;
-                    
-                    for(AbstractLayer layerFromAll : layers)
+
+                    // open old object
+                    if(!layer.hasOpenedRecordObject() && layer.getType() != VectorLayerType.POINT)
                     {
-                        if (layerFromAll instanceof VectorLayer)
+                        try
                         {
-                            try
-                            {
-                                result = ((VectorLayer)layerFromAll).
-                                        getClickPoint(mNavigator.getMRectangle(null), clickedPoint);
-                                
-                                if(result != null)
-                                {
-                                    break;
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Toast.makeText(mMainActivity, R.string.database_error,
-                                        Toast.LENGTH_LONG).show();
-                            }
-                            catch (ParseException e)
-                            {
-                                Toast.makeText(mMainActivity, R.string.database_error,
-                                        Toast.LENGTH_LONG).show();
-                            }
+                            layer.clickRecordingObject(mNavigator.getMRectangle(null), clickedPoint);
+                            mMapFragment.setMapTools();
+                            invalidate();
+                        }
+                        catch (Exception e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        catch (ParseException e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
                         }
                     }
-                    
-                    mMapFragment.setCoordinatesAddPointM(result);
-                    invalidate();
-                }
-                else
-                {
-                    VectorLayer layer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
-
-                    if(layer != null)
+                    else
                     {
-    
-                        // open old object
-                        if(!layer.hasOpenedRecordObject() && layer.getType() != VectorLayerType.POINT)
+                        try
                         {
-                            try
-                            {
-                                layer.clickRecordingObject(mNavigator.getMRectangle(null), clickedPoint);
-                                mMapFragment.setMapTools();
-                                invalidate();
-                            }
-                            catch (Exception e)
-                            {
-                                Toast.makeText(mMainActivity, R.string.database_error,
-                                        Toast.LENGTH_LONG).show();
-                            }
-                            catch (ParseException e)
-                            {
-                                Toast.makeText(mMainActivity, R.string.database_error,
-                                        Toast.LENGTH_LONG).show();
-                            }
+                            layer.checkClickRecordedVertex(mNavigator.getMRectangle(null), clickedPoint);
+                            mMapFragment.setMapTools();
+                            invalidate();
                         }
-                        else
+                        catch (Exception e)
                         {
-                            try
-                            {
-                                layer.checkClickRecordedVertex(mNavigator.getMRectangle(null), clickedPoint);
-                                mMapFragment.setMapTools();
-                                invalidate();
-                            }
-                            catch (Exception e)
-                            {
-                                Toast.makeText(mMainActivity, R.string.database_error,
-                                        Toast.LENGTH_LONG).show();
-                            }
-                            catch (ParseException e)
-                            {
-                                Toast.makeText(mMainActivity, R.string.database_error,
-                                        Toast.LENGTH_LONG).show();
-                            }
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        catch (ParseException e)
+                        {
+                            Toast.makeText(mMainActivity, R.string.database_error,
+                                    Toast.LENGTH_LONG).show();
                         }
                     }
                 }

@@ -36,13 +36,13 @@ public class MainActivity extends AbstractActivity
     private static final String SHOWN_LAYERS = "ShownLayers";
     
     public enum ActivityMode {EXPLORE, RECORD, EDIT};
+    public enum AddPointMode {NONE, ANY_POINT, TOPOLOGY_POINT};
     // properties =========================================================
     public static class MainActivityData implements Serializable
     {
         private static final long serialVersionUID = 1L;
         public ActivityMode activityMode;
-        public boolean addPointMode = false;
-        public boolean topologyMode = false;
+        public AddPointMode addPointMode = AddPointMode.NONE;
 
         public MainActivityData(ActivityMode activityMode)
         {
@@ -201,7 +201,7 @@ public class MainActivity extends AbstractActivity
      */
     public boolean isAddPointMode()
     {
-        return data.addPointMode;
+        return data.addPointMode == AddPointMode.ANY_POINT;
     }
     
     /**
@@ -209,7 +209,7 @@ public class MainActivity extends AbstractActivity
      */
     public boolean isTopologymode()
     {
-        return data.topologyMode;
+        return data.addPointMode == AddPointMode.TOPOLOGY_POINT;
     }
     // on methods =========================================================
     @Override
@@ -307,13 +307,26 @@ public class MainActivity extends AbstractActivity
         // create topology
         else if(mMenuTopology.getItemId() == id)
         {
-            setTopologyMode(!data.topologyMode);
+            if(data.addPointMode == AddPointMode.TOPOLOGY_POINT)
+            {
+                setAddPointMode(AddPointMode.NONE);
+            }
+            else
+            {
+                setAddPointMode(AddPointMode.TOPOLOGY_POINT);
+            }
         }
         // add point mode
         else if(mMenuAddPoint.getItemId() == id)
         {
-            setAddPointMode(!data.addPointMode);
-
+            if(data.addPointMode == AddPointMode.ANY_POINT)
+            {
+                setAddPointMode(AddPointMode.NONE);
+            }
+            else
+            {
+                setAddPointMode(AddPointMode.ANY_POINT);
+            }
         }
         // edit
         else if(mMenuEdit.getItemId() == id)
@@ -462,8 +475,39 @@ public class MainActivity extends AbstractActivity
         if(data.activityMode == ActivityMode.RECORD)
         {
             mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_on));
+        }
+        else
+        {
+            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_off));
+        }
+        
+        // edit icon
+        if(data.activityMode == ActivityMode.EDIT)
+        {
+            mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_on));
+        }
+        else
+        {
+            mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_off));
+        }
+        
+        // edit or record
+        if(data.activityMode == ActivityMode.EDIT || data.activityMode == ActivityMode.RECORD)
+        {
+            // add point icon
+            mMenuAddPoint.setVisible(true);
+            if(isAddPointMode())
+            {
+                mMenuAddPoint.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_add_point_on));
+            }
+            else
+            {
+                mMenuAddPoint.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_add_point_off));
+            }
+            
+            // topology icon
             mMenuTopology.setVisible(true);
-            if(data.topologyMode)
+            if(isTopologymode())
             {
                 mMenuTopology.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_topology_on));
             }
@@ -474,30 +518,8 @@ public class MainActivity extends AbstractActivity
         }
         else
         {
-            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_off));
-            mMenuTopology.setVisible(false);
-        }
-        
-        // edit icon
-        if(data.activityMode == ActivityMode.EDIT)
-        {
-            mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_on));
-            
-            // add point icon
-            mMenuAddPoint.setVisible(true);
-            if(data.addPointMode)
-            {
-                mMenuAddPoint.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_add_point_on));
-            }
-            else
-            {
-                mMenuAddPoint.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_add_point_off));
-            }
-        }
-        else
-        {
-            mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_off));
             mMenuAddPoint.setVisible(false);
+            mMenuTopology.setVisible(false);
         }
     }
 
@@ -530,15 +552,7 @@ public class MainActivity extends AbstractActivity
     {
         // old mode
         getLayersFragment().removeSelectedObject();
-        
-        if(data.activityMode == ActivityMode.EDIT)
-        {
-            setAddPointMode(false);
-        }
-        if(data.activityMode == ActivityMode.RECORD)
-        {
-            setTopologyMode(false);
-        }
+        setAddPointMode(AddPointMode.NONE);
         
         // change of mode
         data.activityMode = mode;
@@ -585,29 +599,12 @@ public class MainActivity extends AbstractActivity
      * change add point mode
      * @param state
      */
-    private void setAddPointMode(boolean state)
+    private void setAddPointMode(AddPointMode mode)
     {
-        data.addPointMode = state;
-        
-        if(!state)
-        {
-            mMapFragment.setCoordinatesAddPointM(null);
-        }
+        data.addPointMode = mode;
+        mMapFragment.setCoordinatesAddPointM(null);
     }
     
-    /**
-     * change topology mode
-     * @param state
-     */
-    private void setTopologyMode(boolean state)
-    {
-        data.topologyMode = state;
-
-        if(!state)
-        {
-            mMapFragment.setCoordinatesAddPointM(null);
-        }
-    }
     // classes =================================================================
     /**
      * task for hidding action bar

@@ -3,14 +3,12 @@
  */
 package cz.kalcik.vojta.terraingis.components;
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.util.FloatMath;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -25,7 +23,7 @@ import cz.kalcik.vojta.terraingis.layer.LayerManager;
 public class Drawer
 {
     // constatns ==========================================================================
-    private static float SQRT_2 = FloatMath.sqrt(2);
+    private static float SQRT_2 = (float) Math.sqrt(2);
     
     // attributes =========================================================================
     private static Navigator mNavigator = Navigator.getInstance();
