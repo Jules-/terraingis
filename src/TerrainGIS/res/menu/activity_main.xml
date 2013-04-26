@@ -14,11 +14,6 @@
         android:showAsAction="always"
         android:icon="@drawable/ic_menu_edit_off"
         android:title="@string/title_edit"/>
-    <item android:id="@+id/menu_record"
-        android:checkable="true"
-        android:showAsAction="always"
-        android:icon="@drawable/ic_menu_record_off"
-        android:title="@string/title_record"/>
     <item android:id="@+id/menu_location"
         android:checkable="true"
         android:showAsAction="always"

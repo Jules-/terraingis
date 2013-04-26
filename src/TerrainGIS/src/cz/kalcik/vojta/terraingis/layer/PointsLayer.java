@@ -45,17 +45,17 @@ public class PointsLayer extends VectorLayer
             Paint paint;
             
             Geometry geometry = iter.next();
-            if(isSelectedObject(iter) || isRecordedObject(iter))
+            if(isSelectedObject(iter) || isEditedObject(iter))
             {
                 radius = VectorLayerPaints.getPointRadius(PaintType.SELECTED);
                 paint = mSelectedPaint;
                 if(isSelectedObject(iter))
                 {
-                    coordinate = mVectorLayerData.selectedObjectPoints.get(0);
+                    coordinate = geometry.getCoordinate();
                 }
                 else
                 {
-                    coordinate = mVectorLayerData.recordedPoints.get(0);
+                    coordinate = mEditedObject.getVertices().get(0);
                 }
             }
             else

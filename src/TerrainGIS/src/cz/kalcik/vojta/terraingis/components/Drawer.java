@@ -14,6 +14,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.MainActivity.AddPointMode;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 
 /**
@@ -47,7 +48,7 @@ public class Drawer
             mNavigator.setScreen(screen);
         }
         
-        boolean drawVertexs = mainActivity.isTopologymode();
+        boolean drawVertexs = mainActivity.getAddPointMode() == AddPointMode.TOPOLOGY_POINT;
         mLayerManager.redraw(canvas, mNavigator.getMRectangle(null), mainActivity,
                 drawVertexs);
     }   

@@ -35,7 +35,7 @@ public class MainActivity extends AbstractActivity
     private static final String MAIN_ACTIVITY_DATA = "MainActivityData";
     private static final String SHOWN_LAYERS = "ShownLayers";
     
-    public enum ActivityMode {EXPLORE, RECORD, EDIT};
+    public enum ActivityMode {EXPLORE, EDIT};
     public enum AddPointMode {NONE, ANY_POINT, TOPOLOGY_POINT};
     // properties =========================================================
     public static class MainActivityData implements Serializable
@@ -52,7 +52,6 @@ public class MainActivity extends AbstractActivity
     
     private MenuItem mMenuRunLocation;
     private MenuItem mMenuShowLocation;
-    private MenuItem mMenuRecord;
     private MenuItem mMenuEdit;
     private MenuItem mMenuAddPoint;
     private MenuItem mMenuTopology;
@@ -118,7 +117,7 @@ public class MainActivity extends AbstractActivity
      */
     public boolean canSelectObject()
     {
-        return data.activityMode != ActivityMode.RECORD;
+        return data.activityMode == ActivityMode.EXPLORE;
     }
     
     /**
@@ -195,22 +194,15 @@ public class MainActivity extends AbstractActivity
     {
         return mLocationWorker;
     }
-    
+       
     /**
-     * @return if is run add point mode of edit
+     * @return add point mode
      */
-    public boolean isAddPointMode()
+    public AddPointMode getAddPointMode()
     {
-        return data.addPointMode == AddPointMode.ANY_POINT;
+        return data.addPointMode;
     }
     
-    /**
-     * @return true if is run topology mode of record
-     */
-    public boolean isTopologymode()
-    {
-        return data.addPointMode == AddPointMode.TOPOLOGY_POINT;
-    }
     // on methods =========================================================
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -255,7 +247,6 @@ public class MainActivity extends AbstractActivity
         
         mMenuRunLocation = menu.findItem(R.id.menu_location);
         mMenuShowLocation = menu.findItem(R.id.menu_show_location);
-        mMenuRecord = menu.findItem(R.id.menu_record);
         mMenuEdit = menu.findItem(R.id.menu_edit);
         mMenuAddPoint = menu.findItem(R.id.menu_add_point);
         mMenuTopology = menu.findItem(R.id.menu_topology);
@@ -292,16 +283,16 @@ public class MainActivity extends AbstractActivity
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
-        // record
-        else if(mMenuRecord.getItemId() == id)
+        // edit
+        else if(mMenuEdit.getItemId() == id)
         {
-            if(data.activityMode == ActivityMode.RECORD)
+            if(data.activityMode == ActivityMode.EDIT)
             {
                 changeMode(ActivityMode.EXPLORE);
             }
             else
             {
-                changeMode(ActivityMode.RECORD);
+                changeMode(ActivityMode.EDIT);
             }
         }
         // create topology
@@ -328,19 +319,7 @@ public class MainActivity extends AbstractActivity
                 setAddPointMode(AddPointMode.ANY_POINT);
             }
         }
-        // edit
-        else if(mMenuEdit.getItemId() == id)
-        {
-            if(data.activityMode == ActivityMode.EDIT)
-            {
-                changeMode(ActivityMode.EXPLORE);
-            }
-            else
-            {
-                changeMode(ActivityMode.EDIT);
-            }
-        }
-        // edit
+        // settings
         else if(R.id.menu_settings == id)
         {
             Intent i = new Intent(this, SettingsActivity.class);      
@@ -472,31 +451,13 @@ public class MainActivity extends AbstractActivity
         }
         
         // record icon
-        if(data.activityMode == ActivityMode.RECORD)
-        {
-            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_on));
-        }
-        else
-        {
-            mMenuRecord.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_record_off));
-        }
-        
-        // edit icon
         if(data.activityMode == ActivityMode.EDIT)
         {
             mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_on));
-        }
-        else
-        {
-            mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_off));
-        }
-        
-        // edit or record
-        if(data.activityMode == ActivityMode.EDIT || data.activityMode == ActivityMode.RECORD)
-        {
+            
             // add point icon
             mMenuAddPoint.setVisible(true);
-            if(isAddPointMode())
+            if(data.addPointMode == AddPointMode.ANY_POINT)
             {
                 mMenuAddPoint.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_add_point_on));
             }
@@ -507,7 +468,7 @@ public class MainActivity extends AbstractActivity
             
             // topology icon
             mMenuTopology.setVisible(true);
-            if(isTopologymode())
+            if(data.addPointMode == AddPointMode.TOPOLOGY_POINT)
             {
                 mMenuTopology.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_topology_on));
             }
@@ -518,6 +479,7 @@ public class MainActivity extends AbstractActivity
         }
         else
         {
+            mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_off));
             mMenuAddPoint.setVisible(false);
             mMenuTopology.setVisible(false);
         }
@@ -538,7 +500,7 @@ public class MainActivity extends AbstractActivity
      */
     private void stopLocation()
     {
-        if(data.activityMode == ActivityMode.RECORD)
+        if(data.activityMode == ActivityMode.EDIT)
         {
             changeMode(ActivityMode.EXPLORE);
         }
@@ -558,13 +520,6 @@ public class MainActivity extends AbstractActivity
         data.activityMode = mode;
         
         // new mode
-        if(data.activityMode == ActivityMode.RECORD)
-        {
-            if(!mLocationWorker.isRunLocation())
-            {
-                startLocation();
-            }
-        }
     }
     
     /**

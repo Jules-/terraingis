@@ -23,7 +23,6 @@ import com.vividsolutions.jts.io.ParseException;
 import cz.kalcik.vojta.terraingis.components.LonLatFormat;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog;
-import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog.InsertObjectType;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
@@ -35,6 +34,7 @@ import cz.kalcik.vojta.terraingis.location.AutoRecordServiceConnection;
 import cz.kalcik.vojta.terraingis.view.MapView;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.MainActivity.ActivityMode;
+import cz.kalcik.vojta.terraingis.MainActivity.AddPointMode;
 import cz.kalcik.vojta.terraingis.R;
 
 /**
@@ -72,15 +72,16 @@ public class MapFragment extends Fragment
     
     private ImageButton mButtonRecordAuto;
     private ImageButton mButtonRecordEndObject;
-    private ImageButton mButtonRecordPoint;
+    private ImageButton mButtonAddPoint;
     private ImageButton mButtonBack;
     private ImageButton mButtonRemove;
+    private ImageButton mButtonMovePoint;
     
     private TextView mCoordinatesLocationText;
     private TextView mCoordinatesAddPointText;
 
     private Coordinate mLocationM = new Coordinate(0,0); // location from GPS or Wi-Fi
-    private Coordinate mAddPointLocationM = null; // location of point for insert point to object
+    private Coordinate mManualLocationM = null; // location of point for insert point to object
     private boolean mLocationValid = false;
 
     // public methods =====================================================
@@ -103,7 +104,7 @@ public class MapFragment extends Fragment
         {
             try
             {
-                mAutoRecordLayer.addPointsRecording(points, SpatiaLiteIO.EPSG_LONLAT);
+                mAutoRecordLayer.addPointsToEdited(points, SpatiaLiteIO.EPSG_LONLAT);
             }
             catch (Exception e)
             {
@@ -208,7 +209,7 @@ public class MapFragment extends Fragment
      */
     public void setCoordinatesAddPointM(Coordinate location)
     {
-        mAddPointLocationM = location;
+        mManualLocationM = location;
         
         setCoordinatesAddPointText();
         mMap.invalidate();
@@ -217,10 +218,9 @@ public class MapFragment extends Fragment
     /**
      * end recorded object
      */
-    public void endNewObject(VectorLayer layer, InsertObjectType insertObjectType)
+    public void endNewObject(VectorLayer layer)
     {
         InsertAttributesDialog dialog = new InsertAttributesDialog();
-        dialog.setInsertObjectType(insertObjectType);
         dialog.setLayer(layer);
         mMainActivity.showDialog(dialog);
     }
@@ -266,7 +266,7 @@ public class MapFragment extends Fragment
      */
     public Coordinate getCoordinatesAddPoint()
     {
-        return mAddPointLocationM;
+        return mManualLocationM;
     }
     // on methods =========================================================
     @Override
@@ -280,8 +280,10 @@ public class MapFragment extends Fragment
         mButtonRecordAuto.setOnClickListener(autoRecordObjectHandler);
         mButtonRecordEndObject = (ImageButton)myView.findViewById(R.id.button_record_end_object);
         mButtonRecordEndObject.setOnClickListener(endRecordedObjectHandler);
-        mButtonRecordPoint = (ImageButton)myView.findViewById(R.id.button_record_point);
-        mButtonRecordPoint.setOnClickListener(pointHandler);
+        mButtonAddPoint = (ImageButton)myView.findViewById(R.id.button_add_point);
+        mButtonAddPoint.setOnClickListener(addPointHandler);
+        mButtonMovePoint = (ImageButton)myView.findViewById(R.id.button_move_point);
+        mButtonMovePoint.setOnClickListener(movePointHandler);
         mButtonBack = (ImageButton)myView.findViewById(R.id.button_back);
         mButtonBack.setOnClickListener(backHandler);
         mButtonRemove = (ImageButton)myView.findViewById(R.id.button_remove);
@@ -370,7 +372,7 @@ public class MapFragment extends Fragment
     {
         try
         {
-            layer.addPoint(location, srid);
+            layer.addPointToEdited(location, srid);
         }
         catch (Exception e)
         {
@@ -386,32 +388,7 @@ public class MapFragment extends Fragment
         }
         if(layer.getType() == VectorLayerType.POINT)
         {
-            endNewObject(layer, InsertObjectType.RECORDING);
-        }
-    }
-
-    private void editInsertPoint(Coordinate location, VectorLayer layer)
-    {
-        try
-        {
-            layer.addPointEdit(location);
-        }
-        catch (Exception e)
-        {
-            Toast.makeText(mMainActivity, R.string.database_error,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        catch (ParseException e)
-        {
-            Toast.makeText(mMainActivity, R.string.database_error,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        
-        if(layer.getType() == VectorLayerType.POINT)
-        {
-            endNewObject(layer, InsertObjectType.EDITING);
+            endNewObject(layer);
         }
     }
     
@@ -534,11 +511,11 @@ public class MapFragment extends Fragment
      */
     private String getCoordinatesAddPointText()
     {
-        if(mAddPointLocationM != null)
+        if(mManualLocationM != null)
         {
             try
             {
-                Coordinate location = mLayerManager.mToLonLatWGS84(mAddPointLocationM);
+                Coordinate location = mLayerManager.mToLonLatWGS84(mManualLocationM);
                 return LonLatFormat.getFormatDM(location);
             }
             catch (Exception e)
@@ -583,8 +560,9 @@ public class MapFragment extends Fragment
     private void setMapButtons()
     {
         boolean showEndObjectButton = false;
-        boolean showPointButton = false;
         boolean showAutoButton = false;
+        boolean showAddPointButton = false;
+        boolean showMovePointButton = false;
         boolean showBackButton = false;
         boolean showRemoveButton = false;
         
@@ -597,55 +575,57 @@ public class MapFragment extends Fragment
         {
             VectorLayerType type = selectedLayer.getType();
 
-            // recording
-            if(mode == ActivityMode.RECORD)
+            // editing
+            if(mode == ActivityMode.EDIT)
             {
-                // point button
-                showPointButton = true;
-    
-                // object button
-                if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
+                boolean isRunLocation = mMainActivity.getLocationWorker().isRunLocation();
+                
+                if(isRunLocation || mMainActivity.getAddPointMode() != AddPointMode.NONE)
                 {
-                    showAutoButton = true;
-                    if (selectedLayer.hasOpenedRecordObject())
+                    // add point button
+                    if(!(type == VectorLayerType.POINT && selectedLayer.hasOpenedEditedObject()))
                     {
-                        showBackButton = true;
-                        
-                        if(selectedLayer.hasRecordedObjectEnoughPoints())
-                        {
-                            showEndObjectButton = true;
-                        }
+                        showAddPointButton = true;
+                    }
+        
+                    // move point button
+                    if(selectedLayer.hasEditedObjectSelectedVertex())
+                    {
+                        showMovePointButton = true;
                     }
                 }
-                
+                               
                 //run automatic recording
                 if(data.isRunAutoRecord)
                 {
-                    if(selectedLayer instanceof VectorLayer)
+                    showAutoButton = true;
+                }
+                
+                if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
+                {
+                    // end, auto record object button
+                    if(isRunLocation)
                     {
                         showAutoButton = true;
                     }
                 }
-            }
-            // editing
-            else if(mode == ActivityMode.EDIT)
-            {
-                if(selectedLayer.hasSelectedObject() &&
-                        !(mMainActivity.isAddPointMode() || mMainActivity.isTopologymode()))
+                
+                if (selectedLayer.hasOpenedEditedObject())
                 {
+                    // end object button
+                    if(selectedLayer.hasEditedObjectEnoughPoints())
+                    {
+                        showEndObjectButton = true;
+                    }
+                    
+                    // back button
+                    if(!selectedLayer.isEditedObjectNew())
+                    {
+                        showBackButton = true;
+                    }
+                    
+                    // remove butoon
                     showRemoveButton = true;
-                }
-                
-            }
-            
-            // add point modes
-            if(mMainActivity.isAddPointMode() || mMainActivity.isTopologymode())
-            {
-                showPointButton = true;
-                
-                if(type == VectorLayerType.LINE || type == VectorLayerType.POLYGON)
-                {
-                    showBackButton = true;
                 }
             }
         }
@@ -661,31 +641,36 @@ public class MapFragment extends Fragment
         }
         
         // add point button
-        if(showPointButton)
+        if(showAddPointButton)
         {
-            mButtonRecordPoint.setVisibility(View.VISIBLE);
-            if(mMainActivity.isTopologymode())
+            mButtonAddPoint.setVisibility(View.VISIBLE);
+            
+            if(mMainActivity.getAddPointMode() == AddPointMode.TOPOLOGY_POINT)
             {
-                mButtonRecordAuto.setContentDescription(getString(R.string.button_record_topology_point));
-                mButtonRecordPoint.setImageDrawable(
+                mButtonAddPoint.setContentDescription(getString(R.string.button_record_topology_point));
+                mButtonAddPoint.setImageDrawable(
                         getResources().getDrawable(R.drawable.button_add_topology_point));
-            }
-            else if(selectedLayer.hasRecordedMovableVertex())
-            {
-                mButtonRecordAuto.setContentDescription(getString(R.string.button_record_move_point));
-                mButtonRecordPoint.setImageDrawable(
-                        getResources().getDrawable(R.drawable.button_move_point));
             }
             else
             {
-                mButtonRecordAuto.setContentDescription(getString(R.string.button_record_point));
-                mButtonRecordPoint.setImageDrawable(
-                        getResources().getDrawable(R.drawable.button_add_point));
+                mButtonAddPoint.setContentDescription(getString(R.string.button_add_point));
+                mButtonAddPoint.setImageDrawable(
+                        getResources().getDrawable(R.drawable.button_add_point));                
             }
         }
         else
         {
-            mButtonRecordPoint.setVisibility(View.GONE);
+            mButtonAddPoint.setVisibility(View.GONE);
+        }
+
+        // move point button
+        if(showMovePointButton)
+        {
+            mButtonMovePoint.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            mButtonMovePoint.setVisibility(View.GONE);
         }
         
         // auto record button
@@ -752,7 +737,7 @@ public class MapFragment extends Fragment
         }
         
         // coordinates add point
-        if(mMainActivity.isAddPointMode() || mMainActivity.isTopologymode())
+        if(mMainActivity.getAddPointMode() != AddPointMode.NONE)
         {
             if(mCoordinatesAddPointText.getVisibility() != View.VISIBLE)
             {
@@ -775,7 +760,7 @@ public class MapFragment extends Fragment
     {
         try
         {
-            layer.updateRecordedObject();
+            layer.updateEditedObject();
             mMap.invalidate();
         }
         catch (NumberFormatException e)
@@ -789,12 +774,41 @@ public class MapFragment extends Fragment
                     Toast.LENGTH_LONG).show();
         }
     }
+    
+    /**
+     * @return coordinates for point by application mode
+     */
+    private Coordinate getCoordinateByMode()
+    {
+        if(mMainActivity.getAddPointMode() != AddPointMode.NONE)
+        {
+            if(mManualLocationM == null)
+            {
+                Toast.makeText(mMainActivity, R.string.not_selected_position, Toast.LENGTH_LONG).show();
+                return null;                    
+            }
+            
+            return mManualLocationM;
+        }
+        else
+        {
+            // new point from GPS
+            if(!mLocationValid)
+            {
+                Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
+                return null;
+            }
+             
+            return mLocationM;
+        }        
+    }
+    
     // handlers ===============================================================
     
     /**
      * add point
      */
-    View.OnClickListener pointHandler = new View.OnClickListener()
+    View.OnClickListener addPointHandler = new View.OnClickListener()
     {
         @Override
         public synchronized void onClick(View v)
@@ -802,63 +816,46 @@ public class MapFragment extends Fragment
             VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
             if(selectedLayer != null)
             {
-                if(mMainActivity.isAddPointMode() || mMainActivity.isTopologymode())
+                Coordinate coordinates = getCoordinateByMode();
+                
+                if(coordinates != null)
                 {
-                    if(mAddPointLocationM == null)
+                    recordInsertPoint(coordinates, selectedLayer, mLayerManager.getSrid());
+                
+                    setMapTools();
+                    mMap.invalidate();
+                }
+            }
+        }        
+    };
+
+    /**
+     * move point
+     */
+    View.OnClickListener movePointHandler = new View.OnClickListener()
+    {
+        @Override
+        public synchronized void onClick(View v)
+        {
+            VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
+            if(selectedLayer != null)
+            {
+                Coordinate coordinates = getCoordinateByMode();
+                
+                if(coordinates != null)
+                {
+                    try
                     {
-                        Toast.makeText(mMainActivity, R.string.not_selected_position, Toast.LENGTH_LONG).show();
-                        return;                    
+                        selectedLayer.setPositionSelectedVertex((Coordinate) mLocationM.clone());
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
                     }
                     
-                    if(mMainActivity.getActivityMode() == ActivityMode.EDIT)
-                    {
-                        editInsertPoint(mAddPointLocationM, selectedLayer);
-                    }
-                    // create point connected to another
-                    else if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
-                    {
-                        recordInsertPoint(mAddPointLocationM, selectedLayer, mLayerManager.getSrid());
-                    }
+                    setMapTools();
+                    mMap.invalidate();
                 }
-                else if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
-                {
-                    // move vertex
-                    if(selectedLayer.hasRecordedMovableVertex())
-                    {
-                        if(!mLocationValid)
-                        {
-                            Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
-                            return;
-                        } 
-                        
-                        try
-                        {
-                            selectedLayer.moveRecordedVertex(mLocationM);
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
-                        }
-                        catch (Exception e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.end_object_error, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                    else
-                    {
-                        // new point from GPS
-                        if(!mLocationValid)
-                        {
-                            Toast.makeText(mMainActivity, R.string.location_fix_error, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                            
-                        recordInsertPoint(mLocationM, selectedLayer, mLayerManager.getSrid());
-                    }
-                }
-                
-                setMapTools();
-                mMap.invalidate();
             }
         }        
     };
@@ -881,9 +878,9 @@ public class MapFragment extends Fragment
                         stopAutoRecord();
                     }
                     
-                    if(selectedLayer.isRecordedObjectNew())
+                    if(selectedLayer.isEditedObjectNew())
                     {
-                        endNewObject(selectedLayer, InsertObjectType.RECORDING);
+                        endNewObject(selectedLayer);
                     }
                     else
                     {
@@ -933,31 +930,10 @@ public class MapFragment extends Fragment
             VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
             if(selectedLayer != null)
             {
-                try
-                {
-                    if(mMainActivity.getActivityMode() == ActivityMode.EDIT)
-                    {
-                        selectedLayer.cancelNotSavedEditedChanges();
-                    }
-                    else if(mMainActivity.getActivityMode() == ActivityMode.RECORD)
-                    {
-                        selectedLayer.cancelNotSavedRecordedChanges();
-                    }
+                selectedLayer.cancelNotSavedEditedChanges();
 
-                    setMapTools();
-                    mMap.invalidate();
-                }
-                catch (Exception e)
-                {
-                    Toast.makeText(mMainActivity, R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                }
-                catch (ParseException e)
-                {
-                    Toast.makeText(mMainActivity, R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                }
-            
+                setMapTools();
+                mMap.invalidate();         
             }
         }        
     };
@@ -975,7 +951,7 @@ public class MapFragment extends Fragment
             {
                 try
                 {
-                    selectedLayer.removeSelected();
+                    selectedLayer.removeSelectedEdited();
                     mMainActivity.getAttributesFragment().reload();
                     
                     setMapTools();

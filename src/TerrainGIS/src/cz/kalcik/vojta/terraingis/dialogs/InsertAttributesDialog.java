@@ -7,13 +7,10 @@ import java.util.Locale;
 
 import jsqlite.Exception;
 
-import android.content.DialogInterface;
-import android.os.Bundle;
 import android.widget.Toast;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.layer.AttributeHeader;
 import cz.kalcik.vojta.terraingis.layer.AttributeRecord;
 import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
 
@@ -24,40 +21,12 @@ import cz.kalcik.vojta.terraingis.layer.AttributeHeader.Column;
 public class InsertAttributesDialog extends SetAttributesDialog
 {
     // constants ========================================================================================
-    public enum InsertObjectType{RECORDING, EDITING};
-    private final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.InsertAttributesDialogSaveState";
     
     // attributes =======================================================================================
-    private InsertObjectType mInsertObjectType;
     
     // public methods ===================================================================================
-    /**
-     * @param insertObjectType the mInsertObjectType to set
-     */
-    public void setInsertObjectType(InsertObjectType insertObjectType)
-    {
-        this.mInsertObjectType = insertObjectType;
-    }
     
     // on methods =======================================================================================
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState)
-    {       
-        super.onActivityCreated(savedInstanceState);
-
-        if(savedInstanceState != null)
-        {
-            setInsertObjectType((InsertObjectType)savedInstanceState.getSerializable(TAG_SAVESTATE));
-        }
-    }
-    
-    @Override
-    public void onSaveInstanceState(Bundle outState)
-    {
-        outState.putSerializable(TAG_SAVESTATE, mInsertObjectType);
-        
-        super.onSaveInstanceState(outState);
-    }
     
     // protected methods ================================================================================    
     @Override
@@ -80,16 +49,9 @@ public class InsertAttributesDialog extends SetAttributesDialog
         MainActivity mainActivity = (MainActivity)getActivity();
         try
         {
-            if(mInsertObjectType == InsertObjectType.RECORDING)
-            {
-                mLayer.insertRecordedObject(attributes);
-                
-                mainActivity.getMapFragment().setMapTools();
-            }
-            else if(mInsertObjectType == InsertObjectType.EDITING)
-            {
-                mLayer.insertEditedObject(attributes);
-            }
+            mLayer.insertEditedObject(attributes);
+            mainActivity.getMapFragment().setMapTools();
+
             
             mainActivity.getAttributesFragment().reload();
             mainActivity.getMapFragment().getMap().invalidate();

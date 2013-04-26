@@ -19,10 +19,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 import com.vividsolutions.jts.io.ParseException;
 
-import cz.kalcik.vojta.terraingis.R;
-import cz.kalcik.vojta.terraingis.components.ConvertUnits;
-import cz.kalcik.vojta.terraingis.components.Settings;
-import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog.InsertObjectType;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.ShapeFileRecord;
@@ -31,9 +27,7 @@ import cz.kalcik.vojta.terraingis.io.SpatialiteAttributesIterator;
 import cz.kalcik.vojta.terraingis.io.SpatialiteGeomIterator;
 import cz.kalcik.vojta.terraingis.layer.VectorLayerPaints.PaintType;
 
-import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.widget.Toast;
 
 /**
  * class for vector layer
@@ -50,22 +44,13 @@ public abstract class VectorLayer extends AbstractLayer
     {
         private static final long serialVersionUID = 1L;
         
-        public ArrayList<Coordinate> recordedPoints;
-        public String recordedRowid = null;
-        public int recordedVertexIndex = -1;
         public String selectedRowid;
-        public ArrayList<Coordinate> selectedObjectPoints; // in srid of map
-        public int selectedVertexIndex;
         public Coordinate clickedPoint;
-        public boolean selectVertex = false;
-
-        public VectorLayerData(ArrayList<Coordinate> recordedPoints,
-                ArrayList<Coordinate> selectedObjectPoints, int selectedNodeIndex)
-        {
-            this.recordedPoints = recordedPoints;
-            this.selectedObjectPoints = selectedObjectPoints;
-            this.selectedVertexIndex = selectedNodeIndex;
-        }
+       
+        // temporery edited object values
+        public String tempEditedRowid;
+        public int tempEditedSelectedVertexIndex;
+        public ArrayList<Coordinate> tempEditedVertices;
     }
     
     private boolean mHasIndex;
@@ -76,10 +61,11 @@ public abstract class VectorLayer extends AbstractLayer
     protected VectorLayerType mType;
     protected SpatiaLiteIO mSpatialite;
     protected String mGeometryColumn;
-    protected VectorLayerData mVectorLayerData = new VectorLayerData(new ArrayList<Coordinate>(),
-            new ArrayList<Coordinate>(), -1);
+    protected VectorLayerData mVectorLayerData = new VectorLayerData();
     protected AttributeHeader mAttributeHeader;
     protected MapFragment mMapFragment;
+    
+    protected EditedObject mEditedObject = new EditedObject();
     protected int mCountObjects;    
     // constructors ============================================================
     
@@ -116,76 +102,27 @@ public abstract class VectorLayer extends AbstractLayer
     }
     
     /**
-     * add lon lat point to recorded object
+     * add lon lat point to edited object
      * @param coordinate
      * @throws ParseException 
      * @throws Exception 
      */
-    public void addPoint(Coordinate coordinate, int srid)
+    public void addPointToEdited(Coordinate coordinate, int srid)
             throws Exception, ParseException
     {
-        int layerManagerSrid = mLayerManager.getSrid();
-
-        if(layerManagerSrid != srid)
-        {
-            coordinate = mSpatialite.transformSRS(coordinate, srid, layerManagerSrid);
-        }
-        mVectorLayerData.recordedPoints.add(coordinate);
+        mEditedObject.addPoint(coordinate, srid);
     }
 
     /**
-     * add lon lat points to recorded objects
+     * add lon lat points to edited objects
      * @param points
      * @throws ParseException 
      * @throws Exception 
      */
-    public void addPointsRecording(ArrayList<Coordinate> points, int srid)
+    public void addPointsToEdited(ArrayList<Coordinate> points, int srid)
             throws Exception, ParseException
     {
-        int layerManagerSrid = mLayerManager.getSrid();
-
-        if(layerManagerSrid != srid)
-        {
-            points = mSpatialite.transformSRS(points, srid, layerManagerSrid);
-        }
-        mVectorLayerData.recordedPoints.addAll(points);
-    }
-    
-    /**
-     * insert recorded object
-     * @param attributes
-     * @throws Exception 
-     */
-    public void insertRecordedObject(AttributeRecord attributes)
-            throws Exception
-    {
-        insertObject(attributes, createRecordedGeometry());
-        
-        clearRecorded();
-    }
-    
-    /**
-     * update recorded object
-     * @throws NumberFormatException
-     * @throws Exception
-     */
-    public void updateRecordedObject() throws NumberFormatException, Exception
-    {
-        Geometry geometry = createGeometry(mVectorLayerData.recordedPoints, mType);
-        mSpatialite.updateObject(data.name, mGeometryColumn,
-                Integer.parseInt(mVectorLayerData.recordedRowid), geometry,
-                mSrid, mLayerManager.getSrid());
-        clearRecorded();
-        
-        updateLayerAttributes();
-    }
-
-    /**
-     * @return true if object is not saved
-     */
-    public boolean isRecordedObjectNew()
-    {
-        return (mVectorLayerData.recordedRowid == null);
+        mEditedObject.addPoints(points, srid);
     }
     
     /**
@@ -196,8 +133,32 @@ public abstract class VectorLayer extends AbstractLayer
     public void insertEditedObject(AttributeRecord attributes)
             throws Exception
     {
-        insertObject(attributes, createGeometry(mVectorLayerData.selectedObjectPoints, mType));
-        clearSelected();
+        insertObject(attributes, mEditedObject.getGeometry());
+        mEditedObject.clear();
+    }
+    
+    /**
+     * update edited object
+     * @throws NumberFormatException
+     * @throws Exception
+     */
+    public void updateEditedObject() throws NumberFormatException, Exception
+    {
+        Geometry geometry = createGeometry(mEditedObject.getVertices(), mType);
+        mSpatialite.updateObject(data.name, mGeometryColumn,
+                Integer.parseInt(mEditedObject.getRowid()), geometry,
+                mSrid, mLayerManager.getSrid());
+        mEditedObject.clear();
+        
+        updateLayerAttributes();
+    }
+
+    /**
+     * @return true if object is not saved
+     */
+    public boolean isEditedObjectNew()
+    {
+        return mEditedObject.isNew();
     }
     
     /**
@@ -239,55 +200,50 @@ public abstract class VectorLayer extends AbstractLayer
      * @throws ParseException 
      * @throws Exception 
      */
-    public void clickSelectionObject(Envelope envelope, Coordinate point, boolean selectVertex)
+    public void clickSelectionObject(Envelope envelope, Coordinate point)
             throws Exception, ParseException
     {
         mVectorLayerData.clickedPoint = point;
-        mVectorLayerData.selectVertex = selectVertex;
         
         ArrayList<String> rowidObjects = getNearestObjectsToPoint(envelope, point);
         
         String rowid = null;
-        if(mVectorLayerData.selectedRowid != null &&
-                rowidObjects.contains(mVectorLayerData.selectedRowid))
-        {
-            rowid = mVectorLayerData.selectedRowid;
-        }
-        else if(rowidObjects.size() > 0)
+        if(rowidObjects.size() > 0)
         {
             rowid = rowidObjects.get(0);
         }
         
-        changeSelectionOfObject(rowid);
+        mVectorLayerData.selectedRowid = rowid;
     }
     
     /**
-     * open recording object
+     * open editing object
      * @param envelope
      * @param point
      * @throws Exception
      * @throws ParseException
      */
-    public void clickRecordingObject(Envelope envelope, Coordinate point)
+    public void clickEditingObject(Envelope envelope, Coordinate point)
             throws Exception, ParseException
     {
         ArrayList<String> rowidObjects = getNearestObjectsToPoint(envelope, point);
         
-        mVectorLayerData.recordedRowid = rowidObjects.size() == 0 ? null : rowidObjects.get(0);
-        
-        if(mVectorLayerData.recordedRowid != null)
-        {
-            try
-            {
-                mVectorLayerData.recordedPoints =
-                        getPointsOfRowidObject(mVectorLayerData.recordedRowid);
-            }
-            catch (RuntimeException e)
-            {
-                clearRecorded();
-                return;
-            }
-        }
+        String rowid = rowidObjects.size() == 0 ? null : rowidObjects.get(0);
+        mEditedObject.openObject(rowid);
+    }
+
+    
+    /**
+     * check click on vertex of polygon
+     * @param envelope
+     * @param point
+     * @throws Exception
+     * @throws ParseException
+     */
+    public void checkClickEditedVertex(Envelope envelope, Coordinate point)
+            throws Exception, ParseException
+    {
+        mEditedObject.findeSelectedVertex(envelope, point);
     }
     
     /**
@@ -299,9 +255,7 @@ public abstract class VectorLayer extends AbstractLayer
     public void selectObject(String rowid) throws Exception, ParseException
     {
         mVectorLayerData.clickedPoint = null;
-        mVectorLayerData.selectVertex = false;
-        
-        changeSelectionOfObject(rowid);
+        mVectorLayerData.selectedRowid = rowid;
     }
     
     /**
@@ -311,85 +265,12 @@ public abstract class VectorLayer extends AbstractLayer
      */
     public void removeSelectionOfObject() throws Exception, ParseException
     {
-        changeSelectionOfObject(null);
+        mVectorLayerData.selectedRowid = null;
     }
     
-    /**
-     * insert point to selected layer by edit
-     * @param point
-     * @throws Exception 
-     * @throws ParseException 
-     */
-    public void addPointEdit(Coordinate point)
-            throws Exception, ParseException
-    {
-        if(mType == VectorLayerType.POINT)
-        {
-            removeSelectionOfObject();
-            clearSelected();
-            mVectorLayerData.selectedObjectPoints.add(point);
-        }
-        else
-        {
-            if(mVectorLayerData.selectedVertexIndex >= 0)
-            {
-                mVectorLayerData.selectedObjectPoints.add(mVectorLayerData.selectedVertexIndex, point);
-                mVectorLayerData.selectedVertexIndex++;
-            }
-            else
-            {
-                mVectorLayerData.selectedObjectPoints.add(point);
-            }
-        }
-    }
-    
-    /**
-     * remove selected object
-     * @throws Exception 
-     * @throws NumberFormatException 
-     */
-    public void removeSelected() throws Exception
-    {
-        if(mVectorLayerData.selectedVertexIndex >= 0 && mType != VectorLayerType.POINT)
-        {
-            mVectorLayerData.selectedObjectPoints.remove(mVectorLayerData.selectedVertexIndex);
-            if(mVectorLayerData.selectedVertexIndex >= mVectorLayerData.selectedObjectPoints.size())
-            {
-                mVectorLayerData.selectedVertexIndex = mVectorLayerData.selectedObjectPoints.size()-1;
-            }
-        }
-        else
-        {
-            if(mVectorLayerData.selectedRowid != null)
-            {
-                removeObject(mVectorLayerData.selectedRowid);
-            }
-            
-            clearSelected();
-        }
-    }
-    
-    /**
-     * cancel not saved changes
-     * @throws ParseException 
-     * @throws Exception 
-     */
     public void cancelNotSavedEditedChanges()
-            throws Exception, ParseException
     {
-        if(mVectorLayerData.selectedRowid != null)
-        {
-            loadSelectedPoints();
-        }
-        else
-        {
-            clearSelected();
-        }
-    }
-    
-    public void cancelNotSavedRecordedChanges()
-    {
-        clearRecorded();
+        mEditedObject.clear();
     }
     
     /**
@@ -397,18 +278,9 @@ public abstract class VectorLayer extends AbstractLayer
      * @param point
      * @return
      */
-    public boolean isNearSelectedPoint(Coordinate point)
+    public boolean isNearSelectedVertex(Coordinate point)
     {
-        if(mVectorLayerData.selectedVertexIndex >= 0)
-        {
-            Double distance = mVectorLayerData.selectedObjectPoints.get(
-                    mVectorLayerData.selectedVertexIndex).distance(point);
-            double bufferDistance = mNavigator.getBufferDistance();
-            
-            return distance < bufferDistance;
-        }
-        
-        return false;
+        return mEditedObject.isNearSelectedVertex(point);
     }
     
     /**
@@ -416,61 +288,9 @@ public abstract class VectorLayer extends AbstractLayer
      * position is not cloned
      * @param position
      */
-    public void setPositionSelectedPoint(Coordinate position)
+    public void setPositionSelectedVertex(Coordinate position)
     {
-        if(mVectorLayerData.selectedVertexIndex >= 0)
-        {
-            mVectorLayerData.selectedObjectPoints.set(
-                    mVectorLayerData.selectedVertexIndex, position);
-        }        
-    }
-    
-    /**
-     * check click on vertex of polygon
-     * @param envelope
-     * @param point
-     * @throws Exception
-     * @throws ParseException
-     */
-    public void checkClickRecordedVertex(Envelope envelope, Coordinate point)
-            throws Exception, ParseException
-    {
-        if(mType == VectorLayerType.POINT)
-        {
-            clearRecorded();
-            clickRecordingObject(envelope, point);
-            if(mVectorLayerData.recordedRowid != null)
-            {
-                mVectorLayerData.recordedVertexIndex = 0;
-            }
-        }
-        else
-        {
-            mVectorLayerData.recordedVertexIndex = 
-                    findIndexNearestPoint(mVectorLayerData.recordedPoints, point);
-        }
-    }
-    
-    /**
-     * move vertex to new position
-     * @param point
-     * @throws Exception 
-     * @throws NumberFormatException 
-     */
-    public void moveRecordedVertex(Coordinate point) throws NumberFormatException, Exception
-    {
-        if(mVectorLayerData.recordedVertexIndex != -1)
-        {
-            mVectorLayerData.recordedPoints.set(mVectorLayerData.recordedVertexIndex,
-                    (Coordinate) point.clone());
-            
-            if(mType == VectorLayerType.POINT)
-            {
-                updateRecordedObject();
-            }
-        }
-        
-        mVectorLayerData.recordedVertexIndex = -1;
+        mEditedObject.setPositionSelectedVertex(position); 
     }
     
     /**
@@ -496,9 +316,10 @@ public abstract class VectorLayer extends AbstractLayer
     public Coordinate getClickPoint(Envelope envelope, Coordinate point)
             throws Exception, ParseException
     {
-        if(mVectorLayerData.recordedPoints.size() != 0)
+        if(mEditedObject.isOpened())
         {
-            Coordinate vertex =findNearestVertex(mVectorLayerData.recordedPoints, point);
+            Coordinate vertex = findNearestVertex(mEditedObject.getVertices(), point);
+            
             if(vertex != null)
             {
                 return vertex;
@@ -511,7 +332,7 @@ public abstract class VectorLayer extends AbstractLayer
         
         for(String currentRowid: rowidObjects)
         {
-            if(!currentRowid.equals(mVectorLayerData.recordedRowid))
+            if(!currentRowid.equals(mEditedObject.getRowid()))
             {
                 rowid = currentRowid;
                 break;
@@ -534,6 +355,15 @@ public abstract class VectorLayer extends AbstractLayer
         return findNearestVertex(points, point);
     }
     
+    /**
+     * remove vertex or edited object by selection
+     * @throws NumberFormatException
+     * @throws Exception
+     */
+    public void removeSelectedEdited() throws NumberFormatException, Exception
+    {
+        mEditedObject.removeSelected();
+    }
     // getter, setter =========================================================
     /**
      * @return typ of vyctor layer
@@ -559,6 +389,12 @@ public abstract class VectorLayer extends AbstractLayer
     public AbstractLayerData getData()
     {
         AbstractLayerData result = super.getData();
+        
+        // set mVectorLayerData
+        mVectorLayerData.tempEditedRowid = mEditedObject.getRowid();
+        mVectorLayerData.tempEditedSelectedVertexIndex = mEditedObject.getSelectedVertexIndex();
+        mVectorLayerData.tempEditedVertices = mEditedObject.getVertices();
+        
         result.childData = mVectorLayerData;
         return result;
     }
@@ -570,6 +406,11 @@ public abstract class VectorLayer extends AbstractLayer
     {
         super.setData(inData);
         mVectorLayerData = (VectorLayerData)data.childData;
+        
+        // set edited object
+        mEditedObject.setRowid(mVectorLayerData.tempEditedRowid);
+        mEditedObject.setSelectedVertexIndex(mVectorLayerData.tempEditedSelectedVertexIndex);
+        mEditedObject.setVertices(mVectorLayerData.tempEditedVertices);
     }
     
     
@@ -608,25 +449,17 @@ public abstract class VectorLayer extends AbstractLayer
     /**
      * @return true if recorded object has enough points
      */
-    public boolean hasRecordedObjectEnoughPoints()
+    public boolean hasEditedObjectEnoughPoints()
     {
-        return mVectorLayerData.recordedPoints.size() >= getMinCountPoints();
-    }
-
-    /**
-     * @return true if selected object has enough points
-     */
-    public boolean hasSelectedObjectEnoughPoints()
-    {
-        return mVectorLayerData.selectedObjectPoints.size() >= getMinCountPoints();
+        return mEditedObject.hasEnoughPoints();
     }
     
     /**
      * @return true if is selected point for move
      */
-    public boolean hasRecordedMovableVertex()
+    public boolean hasEditedObjectSelectedVertex()
     {
-        return mVectorLayerData.recordedVertexIndex != -1;
+        return mEditedObject.hasSelectedVertex();
     }
     
     /**
@@ -651,20 +484,11 @@ public abstract class VectorLayer extends AbstractLayer
     }
     
     /**
-     * @return true if layer has opened recorded object
+     * @return true if layer has opened edited object
      */
-    public boolean hasOpenedRecordObject()
+    public boolean hasOpenedEditedObject()
     {
-        return (mVectorLayerData.recordedPoints.size() != 0);
-    }
-    
-    
-    /**
-     * @return if layer has selected object
-     */
-    public boolean hasSelectedObject()
-    {
-        return (mVectorLayerData.selectedObjectPoints.size() != 0);
+        return mEditedObject.isOpened();
     }
     
     /**
@@ -761,21 +585,11 @@ public abstract class VectorLayer extends AbstractLayer
      * @param geomIterator
      * @return
      */
-    protected boolean isRecordedObject(SpatialiteGeomIterator geomIterator)
+    protected boolean isEditedObject(SpatialiteGeomIterator geomIterator)
     {
-        return geomIterator.getLastROWID().equals(mVectorLayerData.recordedRowid);
+        return geomIterator.getLastROWID().equals(mEditedObject.getRowid());
     }
-    // private methods ===========================================================
-    
-    /**
-     * onvert points to geometry
-     * @return
-     */
-    private Geometry createRecordedGeometry()
-    {
-        return createGeometry(mVectorLayerData.recordedPoints, mType);
-    }
-    
+    // private methods ===========================================================   
     /**
      * set paints by type
      */
@@ -798,23 +612,6 @@ public abstract class VectorLayer extends AbstractLayer
             mNotSavedPaint = VectorLayerPaints.getPolygon(PaintType.NOT_SAVED);
             mSelectedPaint = VectorLayerPaints.getPolygon(PaintType.SELECTED);
         }           
-    }
-    
-    /**
-     * check if is selected node and set his index 
-     * @param point
-     * @param bufferDistance
-     */
-    private void checkSelectedVertex(Coordinate point)
-    {
-        if(mType == VectorLayerType.POINT)
-        {
-            mVectorLayerData.selectedVertexIndex = 0;
-            return;
-        }
-        
-        mVectorLayerData.selectedVertexIndex =
-                findIndexNearestPoint(mVectorLayerData.selectedObjectPoints, point);
     }
     
     /**
@@ -879,89 +676,7 @@ public abstract class VectorLayer extends AbstractLayer
                 mAttributeHeader, attributes, false);
         
         updateLayerAttributes();
-    }
-    
-    /**
-     * set selection to new rowid
-     * @param rowid
-     * @throws Exception 
-     * @throws ParseException 
-     * @throws NumberFormatException 
-     */
-    private void changeSelectionOfObject(String rowid)
-            throws Exception, ParseException
-    {
-        if(!mVectorLayerData.selectedObjectPoints.isEmpty())
-        {
-            
-            if(mVectorLayerData.selectedRowid == null)
-            {
-                if(hasSelectedObjectEnoughPoints())
-                {
-                    mMapFragment.endNewObject(this, InsertObjectType.EDITING);
-                }
-                else
-                {
-                    clearSelected();
-                }
-            }
-            else
-            {                
-                if(hasSelectedObjectEnoughPoints())
-                {
-                    Geometry geometry = createGeometry(mVectorLayerData.selectedObjectPoints, mType);
-                    mSpatialite.updateObject(data.name, mGeometryColumn,
-                            Integer.parseInt(mVectorLayerData.selectedRowid), geometry,
-                            mSrid, mLayerManager.getSrid());
-                }
-                else
-                {
-                    removeObject(mVectorLayerData.selectedRowid);
-                }
-                
-                clearSelected();
-            }
-        }
-        
-        mVectorLayerData.selectedVertexIndex = -1;
-        mVectorLayerData.selectedRowid = rowid;
-        
-        if(mVectorLayerData.selectedRowid != null)
-        {
-            loadSelectedPoints();
-        }
-    }
-    
-
-    /**
-     * load points of selected object
-     * rowid can not be null
-     * @throws ParseException 
-     * @throws Exception
-     */
-    private void loadSelectedPoints()
-            throws Exception, ParseException
-    {
-        try
-        {
-            mVectorLayerData.selectedObjectPoints = getPointsOfRowidObject(mVectorLayerData.selectedRowid);
-        }
-        catch (RuntimeException e)
-        {
-            clearSelected();
-            return;
-        }
-
-        // selection of vertex
-        if(mVectorLayerData.selectVertex)
-        {
-            checkSelectedVertex(mVectorLayerData.clickedPoint);
-        }
-        else
-        {
-            mVectorLayerData.selectedVertexIndex = -1;
-        }
-    }
+    }    
     
     /**
      * @param envelope
@@ -1005,23 +720,255 @@ public abstract class VectorLayer extends AbstractLayer
         return result;
     }
     
-    /**
-     * clear recorded points
-     */
-    private void clearRecorded()
+    // classes =========================================================================================
+    protected class EditedObject implements Serializable
     {
-        mVectorLayerData.recordedPoints.clear();
-        mVectorLayerData.recordedRowid = null;
-        mVectorLayerData.recordedVertexIndex = -1;
-    }
-    
-    /**
-     * clear selected points
-     */
-    private void clearSelected()
-    {
-        mVectorLayerData.selectedObjectPoints.clear();
-        mVectorLayerData.selectedRowid = null;
-        mVectorLayerData.selectedVertexIndex = -1;
+        private static final long serialVersionUID = 1L;
+        
+        private ArrayList<Coordinate> vertices = new ArrayList<Coordinate>();
+        private String rowid = null;
+
+        private int selectedVertexIndex = -1;
+        
+        /**
+         * add lon lat point to edited object
+         * @param coordinate
+         * @throws ParseException 
+         * @throws Exception 
+         */
+        public void addPoint(Coordinate coordinate, int srid)
+                throws Exception, ParseException
+        {
+            int layerManagerSrid = mLayerManager.getSrid();
+
+            if(layerManagerSrid != srid)
+            {
+                coordinate = mSpatialite.transformSRS(coordinate, srid, layerManagerSrid);
+            }
+            
+            vertices.add(coordinate);
+        }
+        
+        /**
+         * add lon lat points to edited objects
+         * @param points
+         * @throws ParseException 
+         * @throws Exception 
+         */
+        public void addPoints(ArrayList<Coordinate> points, int srid)
+                throws Exception, ParseException
+        {
+            int layerManagerSrid = mLayerManager.getSrid();
+
+            if(layerManagerSrid != srid)
+            {
+                points = mSpatialite.transformSRS(points, srid, layerManagerSrid);
+            }
+            points.addAll(points);
+        }
+        
+        /**
+         * open oject for editing
+         * @param rowid
+         * @throws Exception
+         * @throws ParseException
+         */
+        public void openObject(String rowid) throws Exception, ParseException
+        {
+            if(rowid == null)
+            {
+                clear();
+            }
+            else
+            {
+                try
+                {
+                    vertices = getPointsOfRowidObject(rowid);
+                    this.rowid = rowid;
+                    
+                    if(mType == VectorLayerType.POINT)
+                    {
+                        selectedVertexIndex = 0;
+                    }
+                }
+                catch (RuntimeException e)
+                {
+                    clear();
+                    return;
+                }
+            }
+        }
+        
+        /**
+         * clear edited object
+         */
+        public void clear()
+        {
+            vertices.clear();
+            rowid = null;
+            selectedVertexIndex = -1;
+        }
+        
+        /**
+         * remove vertex or object
+         * @throws Exception 
+         * @throws NumberFormatException 
+         */
+        public void removeSelected() throws NumberFormatException, Exception
+        {
+            // remove vertex
+            if(selectedVertexIndex >= 0 && mType != VectorLayerType.POINT)
+            {
+                vertices.remove(selectedVertexIndex);
+                if(selectedVertexIndex >= vertices.size())
+                {
+                    selectedVertexIndex = vertices.size()-1;
+                }
+            }
+            // remove object
+            else
+            {
+                if(rowid != null)
+                {
+                    removeObject(rowid);
+                }
+                
+                clear();
+            }
+        }
+
+        /**
+         * check if point is near selected point
+         * @param point
+         * @return
+         */
+        public boolean isNearSelectedVertex(Coordinate point)
+        {
+            if(selectedVertexIndex >= 0)
+            {
+                Double distance = vertices.get(selectedVertexIndex).distance(point);
+                double bufferDistance = mNavigator.getBufferDistance();
+                
+                return distance < bufferDistance;
+            }
+            
+            return false;
+        }
+        
+        /**
+         * set new position of selected vertex
+         * position is not cloned
+         * @param position
+         */
+        public void setPositionSelectedVertex(Coordinate position)
+        {
+            if(selectedVertexIndex >= 0)
+            {
+                vertices.set(selectedVertexIndex, position);
+            }        
+        }
+       
+        /**
+         * check click on vertex of object
+         * @param envelope
+         * @param point
+         * @throws Exception
+         * @throws ParseException
+         */
+        public void findeSelectedVertex(Envelope envelope, Coordinate point)
+                throws Exception, ParseException
+        {
+            selectedVertexIndex = 
+                        findIndexNearestPoint(vertices, point);
+        }
+
+        /**
+         * @return geometry created from vertices
+         */
+        public Geometry getGeometry()
+        {
+            return createGeometry(vertices, mType);
+        }
+        // getter, setter ----------------------------------
+        /**
+         * @return points of object
+         */
+        public ArrayList<Coordinate> getVertices()
+        {
+            return vertices;
+        }
+        
+        /**
+         * @return the rowid
+         */
+        public String getRowid()
+        {
+            return rowid;
+        }
+
+        /**
+         * check if edited ebject is new or not
+         * @return
+         */
+        public boolean isNew()
+        {
+            return rowid == null;
+        }
+        
+        /**
+         * @return true if edited object has loaded points
+         */
+        public boolean isOpened()
+        {
+            return vertices.size() > 0;
+        }
+        
+        /**
+         * @return true if object has enough points
+         */
+        public boolean hasEnoughPoints()
+        {
+            return vertices.size() >= getMinCountPoints();
+        }
+        
+        /**
+         * @return true if object has selected vertex
+         */
+        public boolean hasSelectedVertex()
+        {
+            return selectedVertexIndex >= 0;
+        }
+
+        /**
+         * @return the selectedVertexIndex
+         */
+        public int getSelectedVertexIndex()
+        {
+            return selectedVertexIndex;
+        }
+
+        /**
+         * @param vertices the vertices to set
+         */
+        public void setVertices(ArrayList<Coordinate> vertices)
+        {
+            this.vertices = vertices;
+        }
+
+        /**
+         * @param rowid the rowid to set
+         */
+        public void setRowid(String rowid)
+        {
+            this.rowid = rowid;
+        }
+
+        /**
+         * @param selectedVertexIndex the selectedVertexIndex to set
+         */
+        public void setSelectedVertexIndex(int selectedVertexIndex)
+        {
+            this.selectedVertexIndex = selectedVertexIndex;
+        }
     }
 }

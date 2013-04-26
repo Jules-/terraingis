@@ -3,6 +3,8 @@
  */
 package cz.kalcik.vojta.terraingis.layer;
 
+import java.util.ArrayList;
+
 import jsqlite.Exception;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -54,14 +56,33 @@ public abstract class PolyPointsLayer extends VectorLayer
         {
             Geometry geometry = iter.next();
 
-            if(!isSelectedObject(iter) && !isRecordedObject(iter))
+            if(!isEditedObject(iter))
             {
                 PointF[] points = mNavigator.mToSurfacePx(geometry.getCoordinates());
+                boolean isSelected = isSelectedObject(iter);           
+                
+                Paint paint = mPaint;
+                // paint for selected
+                if(isSelected)
+                {
+                    paint = mSelectedPaint;   
+                }
+                
                 Drawer.drawCanvasPathSurfacePx(canvas,
                         points, 
-                        mPaint);
+                        paint);
                 
-                if(drawVertexs)
+                
+                // stroke of polygon
+                if(isSelected && mType == VectorLayerType.POLYGON)
+                {
+                    Drawer.drawCanvasPathSurfacePx(canvas,
+                            points, 
+                            mStrokePolygonPaint);                
+                }
+
+                
+                if(drawVertexs || isSelected)
                 {
                     Drawer.drawVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
                             VectorLayerPaints.getVertexRadius());                    
@@ -70,10 +91,11 @@ public abstract class PolyPointsLayer extends VectorLayer
         }
         
         // recording of object
-        if(mVectorLayerData.recordedPoints.size() > 0)
+        if(mEditedObject.isOpened())
         {
-            Coordinate[] metersCoordinates = mVectorLayerData.recordedPoints.toArray(
-                    new Coordinate[mVectorLayerData.recordedPoints.size()]);
+            ArrayList<Coordinate> vertices = mEditedObject.getVertices();
+            Coordinate[] metersCoordinates = vertices.toArray(
+                    new Coordinate[vertices.size()]);
             PointF[] points = mNavigator.mToSurfacePx(metersCoordinates);
             
             Drawer.drawCanvasPathSurfacePx(canvas,
@@ -81,31 +103,7 @@ public abstract class PolyPointsLayer extends VectorLayer
             
             Drawer.drawVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
                     mSelectedVertexSelectedObjectPaint,
-                    VectorLayerPaints.getVertexRadius(), mVectorLayerData.recordedVertexIndex);
-        }
-        
-        // selected object
-        if(!mVectorLayerData.selectedObjectPoints.isEmpty())
-        {
-            PointF[] points = mNavigator.mToSurfacePx(
-                    mVectorLayerData.selectedObjectPoints.toArray(
-                            new Coordinate[mVectorLayerData.selectedObjectPoints.size()]));
-            
-            Drawer.drawCanvasPathSurfacePx(canvas,
-                    points, 
-                    mSelectedPaint);
-            
-            // stroke of polygon
-            if(mType == VectorLayerType.POLYGON)
-            {
-                Drawer.drawCanvasPathSurfacePx(canvas,
-                        points, 
-                        mStrokePolygonPaint);                
-            }
-            
-            Drawer.drawVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
-                    mSelectedVertexSelectedObjectPaint,
-                    VectorLayerPaints.getVertexRadius(), mVectorLayerData.selectedVertexIndex);
+                    VectorLayerPaints.getVertexRadius(), mEditedObject.getSelectedVertexIndex());
         }
     }
 }

@@ -13,6 +13,7 @@ import com.vividsolutions.jts.io.ParseException;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.MainActivity.ActivityMode;
+import cz.kalcik.vojta.terraingis.MainActivity.AddPointMode;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.Drawer;
@@ -51,7 +52,7 @@ public class MapView extends SurfaceView
     // data =========================================================================
     public static class MapViewData implements Serializable
     {
-        private static final long serialVersionUID = -3597152260915322234L;
+        private static final long serialVersionUID = 1L;
         
         // position only for save and restore (value in Navigator)
         public Coordinate position = new Coordinate(0, 0);
@@ -371,7 +372,7 @@ public class MapView extends SurfaceView
         if(selectedLayer != null)
         {
             Coordinate point = mNavigator.surfacePxToM(new PointF(x, y), null);
-            selectedLayer.setPositionSelectedPoint(point);
+            selectedLayer.setPositionSelectedVertex(point);
             
             invalidate();
         }
@@ -387,14 +388,14 @@ public class MapView extends SurfaceView
         mMovingSelectedPoint = false;
         
         if(mMainActivity.getActivityMode() == ActivityMode.EDIT &&
-                !mMainActivity.isAddPointMode())
+                mMainActivity.getAddPointMode() == AddPointMode.NONE)
         {
             VectorLayer selectedLayer = mMainActivity.getLayersFragment().getSelectedLayerIfVector();
             if(selectedLayer != null)
             {
                 Coordinate point = mNavigator.surfacePxToM(mTouchPoint, null);
                 
-                if(selectedLayer.isNearSelectedPoint(point))
+                if(selectedLayer.isNearSelectedVertex(point))
                 {
                     mMovingSelectedPoint = true;
                 }
@@ -459,12 +460,12 @@ public class MapView extends SurfaceView
                 mMainActivity.showPanel();
             }
             // cursor for add point
-            else if(mMainActivity.isAddPointMode())
+            else if(mMainActivity.getAddPointMode() == AddPointMode.ANY_POINT)
             {
                 mMapFragment.setCoordinatesAddPointM(mNavigator.surfacePxToM(mTouchPoint, null));
             }
             // cursor for add topology
-            else if(mMainActivity.isTopologymode())
+            else if(mMainActivity.getAddPointMode() == AddPointMode.TOPOLOGY_POINT)
             {
                 ArrayList<AbstractLayer> layers = LayerManager.getInstance().getLayers();
                 
@@ -508,10 +509,10 @@ public class MapView extends SurfaceView
                 if(layer != null)
                 {
                     Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
-                    boolean selectVertex = (mode == ActivityMode.EDIT);
+
                     try
                     {
-                        layer.clickSelectionObject(mNavigator.getMRectangle(null), clickedPoint, selectVertex);
+                        layer.clickSelectionObject(mNavigator.getMRectangle(null), clickedPoint);
                         mMainActivity.getAttributesFragment().selectItemWithRowid(layer.getSelectedRowid());
                         
                         mMapFragment.setMapTools();
@@ -531,7 +532,7 @@ public class MapView extends SurfaceView
                     invalidate();
                 }
             }
-            else if(mode == ActivityMode.RECORD)
+            else if(mode == ActivityMode.EDIT)
             {
                 Coordinate clickedPoint = mNavigator.surfacePxToM(mTouchPoint, null);
 
@@ -539,45 +540,31 @@ public class MapView extends SurfaceView
 
                 if(layer != null)
                 {
-
-                    // open old object
-                    if(!layer.hasOpenedRecordObject() && layer.getType() != VectorLayerType.POINT)
+                    try
                     {
-                        try
+                        // open old object
+                        if(!layer.hasOpenedEditedObject())
                         {
-                            layer.clickRecordingObject(mNavigator.getMRectangle(null), clickedPoint);
+                            layer.clickEditingObject(mNavigator.getMRectangle(null), clickedPoint);
                             mMapFragment.setMapTools();
                             invalidate();
                         }
-                        catch (Exception e)
+                        else
                         {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        catch (ParseException e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
+                            layer.checkClickEditedVertex(mNavigator.getMRectangle(null), clickedPoint);
+                            mMapFragment.setMapTools();
+                            invalidate();
                         }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        try
-                        {
-                            layer.checkClickRecordedVertex(mNavigator.getMRectangle(null), clickedPoint);
-                            mMapFragment.setMapTools();
-                            invalidate();
-                        }
-                        catch (Exception e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        catch (ParseException e)
-                        {
-                            Toast.makeText(mMainActivity, R.string.database_error,
-                                    Toast.LENGTH_LONG).show();
-                        }
+                        Toast.makeText(mMainActivity, R.string.database_error,
+                                Toast.LENGTH_LONG).show();
+                    }
+                    catch (ParseException e)
+                    {
+                        Toast.makeText(mMainActivity, R.string.database_error,
+                                Toast.LENGTH_LONG).show();
                     }
                 }
             }
