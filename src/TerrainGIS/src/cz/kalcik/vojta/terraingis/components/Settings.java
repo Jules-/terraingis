@@ -33,7 +33,7 @@ public class Settings
     private int locationAddPontIcon = R.drawable.location_add_point;
     private boolean hideActionBar = true;
     private int timeHideActionBar = 8000;
-    private int mRecordMinAccuracy = 20;
+    private int mRecordMinAccuracy = 30;
     
     // getters, setters =============================================================
     

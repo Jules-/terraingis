@@ -772,7 +772,8 @@ public abstract class VectorLayer extends AbstractLayer
             {
                 points = mSpatialite.transformSRS(points, srid, layerManagerSrid);
             }
-            points.addAll(points);
+            
+            vertices.addAll(points);
         }
         
         /**
@@ -825,13 +826,14 @@ public abstract class VectorLayer extends AbstractLayer
         public void removeSelected() throws NumberFormatException, Exception
         {
             // remove vertex
-            if(selectedVertexIndex >= 0 && mType != VectorLayerType.POINT)
+            if(selectedVertexIndex >= 0 && vertices.size() > 1)
             {
                 vertices.remove(selectedVertexIndex);
                 if(selectedVertexIndex >= vertices.size())
                 {
                     selectedVertexIndex = vertices.size()-1;
-                }
+                }                
+                
             }
             // remove object
             else

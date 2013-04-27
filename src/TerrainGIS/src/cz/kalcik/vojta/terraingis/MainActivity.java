@@ -55,6 +55,7 @@ public class MainActivity extends AbstractActivity
     private MenuItem mMenuEdit;
     private MenuItem mMenuAddPoint;
     private MenuItem mMenuTopology;
+    
     private Timer timer;
     private LocationWorker mLocationWorker;
     private Settings mSettings = Settings.getInstance();
@@ -67,7 +68,9 @@ public class MainActivity extends AbstractActivity
     private LinearLayout mAttributesLayout;
     private View mDividerLayout;
     private MainActivityData data = new MainActivityData(ActivityMode.EXPLORE);
-    private ConnectivityManager mConnectivityManager; 
+    private ConnectivityManager mConnectivityManager;
+    
+    private boolean isLoadedMenu = false;
     
     // public methods =====================================================
     
@@ -250,6 +253,9 @@ public class MainActivity extends AbstractActivity
         mMenuEdit = menu.findItem(R.id.menu_edit);
         mMenuAddPoint = menu.findItem(R.id.menu_add_point);
         mMenuTopology = menu.findItem(R.id.menu_topology);
+        
+        isLoadedMenu = true;
+        
         setActionBarIcons();
         
         return true;
@@ -386,6 +392,7 @@ public class MainActivity extends AbstractActivity
         data = (MainActivityData) savedInstanceState.getSerializable(MAIN_ACTIVITY_DATA);
         
         mMapFragment.setMapTools();
+        
         setActionBarIcons();
     }
     
@@ -438,6 +445,12 @@ public class MainActivity extends AbstractActivity
      */
     private void setActionBarIcons()
     {
+        // if menu is not loaded yet
+        if(!isLoadedMenu)
+        {
+            return;
+        }
+        
         // location icons
         if(mLocationWorker.isRunLocation())
         {

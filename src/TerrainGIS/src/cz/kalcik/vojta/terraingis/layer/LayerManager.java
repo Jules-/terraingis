@@ -123,7 +123,7 @@ public class LayerManager
             
             mapLayers.put(newLayer.toString(), true);
             
-            layers.add(newLayer);
+            layers.add(0, newLayer);
         }
         
         int size = layers.size();
