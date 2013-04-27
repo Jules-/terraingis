@@ -132,7 +132,7 @@ public class MapFragment extends Fragment
     {
         if(mAutoRecordLayer != null)
         {
-            recordInsertPoint(point, mAutoRecordLayer, SpatiaLiteIO.EPSG_LONLAT);
+            recordInsertPoint(point, mAutoRecordLayer, SpatiaLiteIO.EPSG_LONLAT, true);
         }
     }
     
@@ -368,11 +368,11 @@ public class MapFragment extends Fragment
      * add point to layer
      * @param location
      */
-    private void recordInsertPoint(Coordinate location, VectorLayer layer, int srid)
+    private void recordInsertPoint(Coordinate location, VectorLayer layer, int srid, boolean addToEnd)
     {
         try
         {
-            layer.addPointToEdited(location, srid);
+            layer.addPointToEdited(location, srid, addToEnd);
         }
         catch (Exception e)
         {
@@ -820,7 +820,7 @@ public class MapFragment extends Fragment
                 
                 if(coordinates != null)
                 {
-                    recordInsertPoint(coordinates, selectedLayer, mLayerManager.getSrid());
+                    recordInsertPoint(coordinates, selectedLayer, mLayerManager.getSrid(), false);
                 
                     setMapTools();
                     mMap.invalidate();
@@ -846,7 +846,7 @@ public class MapFragment extends Fragment
                 {
                     try
                     {
-                        selectedLayer.setPositionSelectedVertex((Coordinate) mLocationM.clone());
+                        selectedLayer.setPositionSelectedVertex((Coordinate) coordinates.clone());
                     }
                     catch (NumberFormatException e)
                     {

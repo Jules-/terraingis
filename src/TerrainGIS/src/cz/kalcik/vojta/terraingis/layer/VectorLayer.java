@@ -107,10 +107,10 @@ public abstract class VectorLayer extends AbstractLayer
      * @throws ParseException 
      * @throws Exception 
      */
-    public void addPointToEdited(Coordinate coordinate, int srid)
+    public void addPointToEdited(Coordinate coordinate, int srid, boolean addToEnd)
             throws Exception, ParseException
     {
-        mEditedObject.addPoint(coordinate, srid);
+        mEditedObject.addPoint(coordinate, srid, addToEnd);
     }
 
     /**
@@ -736,7 +736,7 @@ public abstract class VectorLayer extends AbstractLayer
          * @throws ParseException 
          * @throws Exception 
          */
-        public void addPoint(Coordinate coordinate, int srid)
+        public void addPoint(Coordinate coordinate, int srid, boolean addToEnd)
                 throws Exception, ParseException
         {
             int layerManagerSrid = mLayerManager.getSrid();
@@ -746,7 +746,15 @@ public abstract class VectorLayer extends AbstractLayer
                 coordinate = mSpatialite.transformSRS(coordinate, srid, layerManagerSrid);
             }
             
-            vertices.add(coordinate);
+            if(selectedVertexIndex >= 0 && !addToEnd)
+            {
+                vertices.add(selectedVertexIndex, coordinate);
+                selectedVertexIndex++;
+            }
+            else
+            {
+                vertices.add(coordinate);
+            }
         }
         
         /**
