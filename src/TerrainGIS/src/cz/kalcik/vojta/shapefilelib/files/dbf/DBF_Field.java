@@ -158,7 +158,7 @@ public class DBF_Field
             firstIndex = 0;
         }
         // numeric
-        else if(DBF_field_type == FieldType.N.ID())
+        else if(DBF_field_type == FieldType.N.ID() && valueBytes != null)
         {
             firstIndex = result.length - valueBytes.length;
         }

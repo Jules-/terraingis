@@ -513,11 +513,6 @@ public class MainActivity extends AbstractActivity
      */
     private void stopLocation()
     {
-        if(data.activityMode == ActivityMode.EDIT)
-        {
-            changeMode(ActivityMode.EXPLORE);
-        }
-        
         mLocationWorker.stop();
         
         mMapFragment.stopLocation();        

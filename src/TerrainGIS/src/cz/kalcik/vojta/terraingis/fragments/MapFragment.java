@@ -23,6 +23,8 @@ import com.vividsolutions.jts.io.ParseException;
 import cz.kalcik.vojta.terraingis.components.LonLatFormat;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.dialogs.InsertAttributesDialog;
+import cz.kalcik.vojta.terraingis.dialogs.RemoveEditedObjectDialog;
+import cz.kalcik.vojta.terraingis.dialogs.RemoveObjectDialog;
 import cz.kalcik.vojta.terraingis.exception.CreateObjectException;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
@@ -803,6 +805,18 @@ public class MapFragment extends Fragment
         }        
     }
     
+    /**
+     * stop automatic recording if is recorded object in layer
+     * @param layer
+     */
+    private void stopAutoRecordIfLayer(VectorLayer layer)
+    {
+        if(layer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
+        {
+            stopAutoRecord();
+        }        
+    }
+    
     // handlers ===============================================================
     
     /**
@@ -873,10 +887,7 @@ public class MapFragment extends Fragment
             {
                 try
                 {                   
-                    if(selectedLayer.equals(mAutoRecordLayer) && data.isRunAutoRecord)
-                    {
-                        stopAutoRecord();
-                    }
+                    stopAutoRecordIfLayer(selectedLayer);
                     
                     if(selectedLayer.isEditedObjectNew())
                     {
@@ -951,11 +962,23 @@ public class MapFragment extends Fragment
             {
                 try
                 {
-                    selectedLayer.removeSelectedEdited();
-                    mMainActivity.getAttributesFragment().reload();
-                    
-                    setMapTools();
-                    mMap.invalidate();
+                    if(!selectedLayer.hasEditedObjectSelectedVertex() ||
+                            selectedLayer.editedObjectHasLastSelectedVertex())
+                    {
+                        stopAutoRecordIfLayer(selectedLayer);
+                        
+                        RemoveEditedObjectDialog dialog = new RemoveEditedObjectDialog();
+                        dialog.setMessage(getResources().getString(R.string.confirm_remove_object_message));
+                        mMainActivity.showDialog(dialog);                        
+                    }
+                    else
+                    {
+                        selectedLayer.removeSelectedEdited();
+                        mMainActivity.getAttributesFragment().reload();
+                        
+                        setMapTools();
+                        mMap.invalidate();
+                    }
                 }
                 catch (Exception e)
                 {

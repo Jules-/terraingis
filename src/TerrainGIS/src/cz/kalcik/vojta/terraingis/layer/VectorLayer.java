@@ -498,6 +498,14 @@ public abstract class VectorLayer extends AbstractLayer
     {
         return mPaint.getColor();
     }
+    
+    /**
+     * @return true if edited object has selected last vertex
+     */
+    public boolean editedObjectHasLastSelectedVertex()
+    {
+        return mEditedObject.hasLastSelectedVertex();
+    }
     // public static ============================================================
 
     /**
@@ -979,6 +987,14 @@ public abstract class VectorLayer extends AbstractLayer
         public void setSelectedVertexIndex(int selectedVertexIndex)
         {
             this.selectedVertexIndex = selectedVertexIndex;
+        }
+        
+        /**
+         * @return true if is selected last vertex
+         */
+        public boolean hasLastSelectedVertex()
+        {
+            return (selectedVertexIndex == 0 && vertices.size() == 1);
         }
     }
 }
