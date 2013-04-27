@@ -23,17 +23,13 @@ public class Settings
     // constants ==========================================================================
     public static final int LOCATION_MINDIST_DEFAULT = 0; 
     public static final int DP_RADIUS_CLICK = 20; 
-    public static final int DP_SIZE_SIDE_CLICK = 50;
-    
-    public static final String LOCATION_MINTIME_DEFAULT = "2"; 
-    public static final String AUTORECORD_MINDISTANCE_DEFAULT = "20"; 
+    public static final int DP_SIZE_SIDE_CLICK = 50; 
     
     // attributes ===================================================================
     private int locationIcon = R.drawable.location;
     private int locationAddPontIcon = R.drawable.location_add_point;
     private boolean hideActionBar = true;
     private int timeHideActionBar = 8000;
-    private int mRecordMinAccuracy = 30;
     
     // getters, setters =============================================================
     
@@ -68,21 +64,5 @@ public class Settings
     public void setTimeHideActionBar(int timeHideActionBar)
     {
         this.timeHideActionBar = timeHideActionBar;
-    }
-
-    /**
-     * @return the mRecordMinAccuracy
-     */
-    public int getRecordMinAccuracy()
-    {
-        return mRecordMinAccuracy;
-    }
-
-    /**
-     * @param mRecordMinAccuracy the mRecordMinAccuracy to set
-     */
-    public void setRecordMinAccuracy(int mRecordMinAccuracy)
-    {
-        this.mRecordMinAccuracy = mRecordMinAccuracy;
     }
 }

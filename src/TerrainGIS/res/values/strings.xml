@@ -79,8 +79,10 @@
     <string name="menu_export_shapefile">Export Shapefile</string>
     <!-- settings -->
     <string name="settings_gps_category">GPS</string>
-    <string name="settings_record_min_distance_summary">Minimal distance vertex</string>
+    <string name="settings_record_min_distance_summary">Minimal distance of vertex</string>
     <string name="settings_record_min_distance_title">for autorecord, in meters</string>
+    <string name="settings_record_min_accuracy_summary">Minimal accuracy of vertex</string>
+    <string name="settings_record_min_accuracy_title">for autorecord, in meters</string>
     <string name="settings_record_min_time_summary">Minimal time GPS</string>
     <string name="settings_record_min_time_title">save battery, in seconds</string>
     <!-- other -->

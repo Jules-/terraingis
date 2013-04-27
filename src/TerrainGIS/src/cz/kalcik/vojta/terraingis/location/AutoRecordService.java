@@ -36,6 +36,7 @@ public class AutoRecordService extends Service implements LocationListener
     private ArrayList<Coordinate> mPoints = new ArrayList<Coordinate>();
     private MapFragment mMapFragment = null;
     private SharedPreferences mSharedPref;
+    private int minAccuracy;
     
     // public methods ==============================================================
     public synchronized void setMapFragment(MapFragment mapFragment)
@@ -58,6 +59,7 @@ public class AutoRecordService extends Service implements LocationListener
     public void onCreate()
     {    
         mCommon = new CommonLocationListener(this);
+        PreferenceManager.setDefaultValues(this, R.xml.settings, false);
         mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
     }
     
@@ -87,7 +89,7 @@ public class AutoRecordService extends Service implements LocationListener
     @Override
     public synchronized void onLocationChanged(Location location)
     {
-        if(location.getAccuracy() <= mSettings.getRecordMinAccuracy())
+        if(location.getAccuracy() <= minAccuracy)
         {
             Coordinate point = new Coordinate(location.getLongitude(), location.getLatitude(),
                     location.getAltitude());
@@ -132,10 +134,11 @@ public class AutoRecordService extends Service implements LocationListener
      */
     private void runGPS()
     {
+        minAccuracy = SettingsFragment.getIntShareSettings(mSharedPref, SettingsFragment.KEY_GPS_MINACCURACY);
         // default
         mCommon.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                1000 * Integer.parseInt(mSharedPref.getString(SettingsFragment.KEY_GPS_MINTIME, Settings.LOCATION_MINTIME_DEFAULT)),
-                Integer.parseInt(mSharedPref.getString(SettingsFragment.KEY_GPS_MINDIST, Settings.AUTORECORD_MINDISTANCE_DEFAULT)), this);
+                1000 * SettingsFragment.getIntShareSettings(mSharedPref, SettingsFragment.KEY_GPS_MINTIME),
+                SettingsFragment.getIntShareSettings(mSharedPref, SettingsFragment.KEY_GPS_MINDIST), this);
     }
     
     /**

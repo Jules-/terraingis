@@ -15,5 +15,11 @@
             android:title="@string/settings_record_min_distance_summary"
             android:inputType="number" 
             android:defaultValue="20" />
+        <EditTextPreference
+            android:key="settings_record_min_accuracy"
+            android:summary="@string/settings_record_min_accuracy_title"
+            android:title="@string/settings_record_min_accuracy_summary"
+            android:inputType="number" 
+            android:defaultValue="20" />
     </PreferenceCategory>   
 </PreferenceScreen>

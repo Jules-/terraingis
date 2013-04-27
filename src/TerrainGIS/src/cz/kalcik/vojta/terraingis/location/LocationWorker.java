@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
+import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.Settings;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.fragments.SettingsFragment;
@@ -70,6 +71,7 @@ public class LocationWorker implements LocationListener
         mCommon = new CommonLocationListener(mMainActivity);
         mMapFragment = mMainActivity.getMapFragment();
         hasGPS = mCommon.hasGPSDevice();
+        PreferenceManager.setDefaultValues(mMainActivity, R.xml.settings, false);
         mSharedPref = PreferenceManager.getDefaultSharedPreferences(mMainActivity);
     }
     
@@ -252,7 +254,7 @@ public class LocationWorker implements LocationListener
      */
     private int getMinTime()
     {
-        return 1000 * Integer.parseInt(mSharedPref.getString(SettingsFragment.KEY_GPS_MINTIME, Settings.LOCATION_MINTIME_DEFAULT));
+        return 1000 * SettingsFragment.getIntShareSettings(mSharedPref, SettingsFragment.KEY_GPS_MINTIME);
     }
     // classes =======================================================================
     
