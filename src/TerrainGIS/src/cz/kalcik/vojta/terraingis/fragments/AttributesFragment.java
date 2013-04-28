@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.NavigableMap;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
@@ -164,23 +165,31 @@ public class AttributesFragment extends PanelFragment
         
         mData.selectedRowId = mTouchedRow.getRowid();
 
+        try
+        {
+            Geometry object = mLayer.getObject(mData.selectedRowId);
+            Envelope envelopeObject = object.getEnvelopeInternal();
+            Navigator navigator = Navigator.getInstance();
+            if(!navigator.getMRectangle(null).intersects(envelopeObject))
+            {
+                navigator.setPositionM(envelopeObject.centre());
+            }
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }
+        catch (ParseException e)
+        {
+            Toast.makeText(mMainActivity, R.string.database_error,
+                    Toast.LENGTH_LONG).show();
+        }
+        
         if(mMainActivity.canSelectObject())
         {
-            try
-            {
-                mLayer.selectObject(mData.selectedRowId);
-                mMainActivity.getMapFragment().getMap().invalidate();
-            }
-            catch (Exception e)
-            {
-                Toast.makeText(mMainActivity, R.string.database_error,
-                        Toast.LENGTH_LONG).show();
-            }
-            catch (ParseException e)
-            {
-                Toast.makeText(mMainActivity, R.string.database_error,
-                        Toast.LENGTH_LONG).show();
-            }
+            mLayer.selectObject(mData.selectedRowId);
+            mMainActivity.getMapFragment().getMap().invalidate();
         }
     }
     

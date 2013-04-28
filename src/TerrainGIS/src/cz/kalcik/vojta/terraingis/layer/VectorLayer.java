@@ -252,10 +252,13 @@ public abstract class VectorLayer extends AbstractLayer
      * @throws Exception
      * @throws ParseException
      */
-    public void selectObject(String rowid) throws Exception, ParseException
+    public void selectObject(String rowid)
     {
         mVectorLayerData.clickedPoint = null;
-        mVectorLayerData.selectedRowid = rowid;
+        if(rowid == null || !rowid.equals(mEditedObject.getRowid()))
+        {
+            mVectorLayerData.selectedRowid = rowid;
+        }
     }
     
     /**
@@ -757,7 +760,6 @@ public abstract class VectorLayer extends AbstractLayer
             if(selectedVertexIndex >= 0 && !addToEnd)
             {
                 vertices.add(selectedVertexIndex, coordinate);
-                selectedVertexIndex++;
             }
             else
             {
