@@ -73,6 +73,12 @@ public class VectorLayerPaints
         Paint result = commonAttrs(paintType);
         commonColors(result, paintType);
         
+        // transparency
+        if(paintType == PaintType.NOT_SAVED)
+        {
+            result.setAlpha(TRANCPARENCE_NOTSAVED);
+        }
+        
         return result;
     }
     

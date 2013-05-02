@@ -30,7 +30,6 @@ public abstract class PolyPointsLayer extends VectorLayer
     protected Paint mSelectedVertexSelectedObjectPaint;
     protected Paint mVertexsSelectedObjectPaint;
     protected Paint mStrokePolygonPaint;
-    protected Paint mStrokePolygonNotSavedPaint;
     
     public PolyPointsLayer(VectorLayerType type, String name, int srid,
             SpatiaLiteIO spatialite, MapFragment mapFragment) throws Exception
@@ -40,7 +39,6 @@ public abstract class PolyPointsLayer extends VectorLayer
         mVertexsSelectedObjectPaint = VectorLayerPaints.getVertex(PaintType.DEFAULT);
         mSelectedVertexSelectedObjectPaint = VectorLayerPaints.getVertex(PaintType.SELECTED);
         mStrokePolygonPaint = VectorLayerPaints.getLine(PaintType.SELECTED);
-        mStrokePolygonNotSavedPaint = VectorLayerPaints.getLine(PaintType.NOT_SAVED);
     }
 
     /**
@@ -108,7 +106,7 @@ public abstract class PolyPointsLayer extends VectorLayer
             {
                 Drawer.drawCanvasPathSurfacePx(canvas,
                         points, 
-                        mStrokePolygonNotSavedPaint);                
+                        mStrokeNotSavedPaint);                
             }
             
             Drawer.drawVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,

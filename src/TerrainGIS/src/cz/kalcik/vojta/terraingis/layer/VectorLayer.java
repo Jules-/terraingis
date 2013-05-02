@@ -58,6 +58,8 @@ public abstract class VectorLayer extends AbstractLayer
     protected Paint mPaint;
     protected Paint mSelectedPaint;
     protected Paint mNotSavedPaint;
+    protected Paint mStrokeNotSavedPaint;
+    
     protected VectorLayerType mType;
     protected SpatiaLiteIO mSpatialite;
     protected String mGeometryColumn;
@@ -610,6 +612,7 @@ public abstract class VectorLayer extends AbstractLayer
         {
             mPaint = VectorLayerPaints.getPoint(PaintType.DEFAULT);
             mSelectedPaint = VectorLayerPaints.getPoint(PaintType.SELECTED);
+            mNotSavedPaint = VectorLayerPaints.getPoint(PaintType.NOT_SAVED);
         }
         else if(mType == VectorLayerType.LINE)
         {
@@ -622,7 +625,9 @@ public abstract class VectorLayer extends AbstractLayer
             mPaint = VectorLayerPaints.getPolygon(PaintType.DEFAULT);
             mNotSavedPaint = VectorLayerPaints.getPolygon(PaintType.NOT_SAVED);
             mSelectedPaint = VectorLayerPaints.getPolygon(PaintType.SELECTED);
-        }           
+        }
+        
+        mStrokeNotSavedPaint = VectorLayerPaints.getLine(PaintType.NOT_SAVED);
     }
     
     /**

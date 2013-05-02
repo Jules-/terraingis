@@ -15,7 +15,7 @@
    inkscape:label="Pozadí"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="zoom_to_layer.svg">
+   sodipodi:docname="ic_menu_zoom_to_layer.svg">
   <defs
      id="defs3" />
   <sodipodi:namedview
@@ -26,7 +26,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="8"
-     inkscape:cx="-7.912898"
+     inkscape:cx="11.899602"
      inkscape:cy="31.675477"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -54,12 +54,12 @@
      id="layer1"
      transform="translate(0,-1004.3622)">
     <path
-       style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.09078240000000015;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans;opacity:0.8"
+       style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.09078240000000015;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans;opacity:1"
        d="m 1,1005.375 0,1.5312 0,42.9063 0,1.5625 1.53125,0 42.9375,0 1.53125,0 0,-1.5625 0,-42.9063 0,-1.5312 -1.53125,0 -42.9375,0 -1.53125,0 z m 3.09375,3.0625 39.8125,0 0,39.8437 -39.8125,0 0,-39.8437 z"
        id="rect3003"
        inkscape:connector-curvature="0" />
     <path
-       style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans;opacity:0.8"
+       style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans;opacity:1"
        d="M 18.1875 7.625 C 12.45264 7.625 7.75 12.3276 7.75 18.0625 C 7.75 23.7974 12.45264 28.5 18.1875 28.5 C 19.621215 28.5 21.002663 28.217977 22.25 27.6875 L 34.15625 39.59375 L 39.375 34.40625 L 27.5625 22.625 C 28.238087 21.246002 28.625 19.692589 28.625 18.0625 C 28.625 12.3276 23.92236 7.625 18.1875 7.625 z M 18.1875 12.625 C 21.22016 12.625 23.625 15.0298 23.625 18.0625 C 23.625 21.0952 21.22016 23.5 18.1875 23.5 C 15.15484 23.5 12.75 21.0952 12.75 18.0625 C 12.75 15.0298 15.15484 12.625 18.1875 12.625 z "
        transform="translate(0,1004.3622)"
        id="path3775" />

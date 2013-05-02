@@ -386,8 +386,7 @@ public class LayersFragment extends PanelFragment
                 return itemView;
             }
         };  
-    }
-    
+    }    
     // handlers ===============================================================
 
     /**
@@ -453,7 +452,14 @@ public class LayersFragment extends PanelFragment
         @Override
         public void onClick(View v)
         {
-            mArrayAdapter.getItem(mListView.getMySelectedPosition()).toggleVisibility();
+            AbstractLayer selectedLayer = getSelectedLayer();
+            if(selectedLayer == null)
+            {
+                Toast.makeText(mMainActivity, R.string.not_selected_layer, Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            selectedLayer.toggleVisibility();
             mMainActivity.getMapFragment().getMap().invalidate();
             mListView.invalidateViews();
         }        

@@ -3,11 +3,13 @@ package cz.kalcik.vojta.terraingis.fragments;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
+import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 public abstract class PanelFragment extends Fragment
 {
@@ -97,6 +99,12 @@ public abstract class PanelFragment extends Fragment
         {
             if(PanelFragment.this instanceof LayersFragment)
             {
+                if(mMainActivity.getLayersFragment().getSelectedLayerIfVector() == null)
+                {
+                    Toast.makeText(mMainActivity, R.string.not_selected_vector_layer, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                
                 mMainActivity.getAttributesFragment().switchToMe();
             }
             else

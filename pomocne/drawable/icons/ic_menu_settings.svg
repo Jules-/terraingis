@@ -363,9 +363,9 @@
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1680"
-     inkscape:window-height="1030"
-     inkscape:window-x="1278"
+     inkscape:window-width="1237"
+     inkscape:window-height="780"
+     inkscape:window-x="41"
      inkscape:window-y="-3"
      inkscape:window-maximized="1" />
   <metadata
@@ -376,7 +376,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -385,46 +385,49 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1004.3622)">
-    <use
-       id="use3038"
-       class="outline-big"
-       xlink:href="#outline1"
-       style="opacity:0.25;stroke:#000000;stroke-width:8;stroke-linejoin:round"
-       x="0"
-       y="0"
-       width="1"
-       height="1"
-       transform="matrix(0.38192503,0,0,0.38192503,-0.48886404,1003.5458)" />
-    <use
-       id="use3040"
-       class="outline-small"
-       xlink:href="#outline1"
-       style="opacity:1;stroke:#000000;stroke-width:4;stroke-linejoin:round"
-       x="0"
-       y="0"
-       width="1"
-       height="1"
-       transform="matrix(0.38192503,0,0,0.38192503,-0.48886404,1003.5458)" />
-    <use
-       id="use3053"
-       class="outline-big"
-       xlink:href="#outline2"
-       style="opacity:0.25;stroke:#000000;stroke-width:8;stroke-linejoin:round"
-       x="0"
-       y="0"
-       width="1"
-       height="1"
-       transform="matrix(0.38192503,0,0,0.38192503,-0.48886404,1003.5458)" />
-    <use
-       id="use3055"
-       class="outline-small stroke-aluminium5"
-       xlink:href="#outline2"
-       style="opacity:1;stroke:#000000;stroke-width:4;stroke-linejoin:round"
-       x="0"
-       y="0"
-       width="1"
-       height="1"
-       transform="matrix(0.38192503,0,0,0.38192503,-0.48886404,1003.5458)" />
+    <g
+       id="g3028">
+      <use
+         transform="matrix(0.38192503,0,0,0.38192503,-0.48886404,1003.5458)"
+         height="1"
+         width="1"
+         y="0"
+         x="0"
+         style="opacity:0.25;stroke:#000000;stroke-width:8;stroke-linejoin:round"
+         xlink:href="#outline1"
+         class="outline-big"
+         id="use3038" />
+      <use
+         transform="matrix(0.38192503,0,0,0.38192503,-0.48886404,1003.5458)"
+         height="1"
+         width="1"
+         y="0"
+         x="0"
+         style="opacity:1;stroke:#000000;stroke-width:4;stroke-linejoin:round"
+         xlink:href="#outline1"
+         class="outline-small"
+         id="use3040" />
+      <use
+         transform="matrix(0.38192503,0,0,0.38192503,-0.48886404,1003.5458)"
+         height="1"
+         width="1"
+         y="0"
+         x="0"
+         style="opacity:0.25;stroke:#000000;stroke-width:8;stroke-linejoin:round"
+         xlink:href="#outline2"
+         class="outline-big"
+         id="use3053" />
+      <use
+         transform="matrix(0.38192503,0,0,0.38192503,-0.48886404,1003.5458)"
+         height="1"
+         width="1"
+         y="0"
+         x="0"
+         style="opacity:1;stroke:#000000;stroke-width:4;stroke-linejoin:round"
+         xlink:href="#outline2"
+         class="outline-small stroke-aluminium5"
+         id="use3055" />
+    </g>
   </g>
   <style
      id="style3034"

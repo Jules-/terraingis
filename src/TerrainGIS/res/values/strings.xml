@@ -22,6 +22,8 @@
     <string name="name_exist_error">The layer %s exist!</string>
     <string name="tileslayer_remove_error">Can not remove tiles layer!</string>
     <string name="not_selected_layer">There is not selected any layer!</string>
+    <string name="not_selected_vector_layer">There is not selected any vector layer!</string>
+    <string name="not_selected_object">There is not selected any object!</string>
     <string name="not_selected_position">There is not selected any position!</string>
     <string name="end_object_error">Few points for object!</string>
     <string name="empty_layer_error">Layer %s is empty!</string>

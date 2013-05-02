@@ -331,25 +331,28 @@ public class AttributesFragment extends PanelFragment
         @Override
         public void onClick(View v)
         {
-            if(mData.selectedRowId != null)
+            if(mData.selectedRowId == null)
             {
-                try
-                {
-                    Geometry object = mLayer.getObject(mData.selectedRowId);
-                    Navigator.getInstance().zoomToEnvelopeM(object.getEnvelopeInternal());
-                    
-                    mMainActivity.getMapFragment().getMap().invalidate();
-                }
-                catch (Exception e)
-                {
-                    Toast.makeText(mMainActivity, R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                }
-                catch (ParseException e)
-                {
-                    Toast.makeText(mMainActivity, R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                }
+                Toast.makeText(mMainActivity, R.string.not_selected_object, Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            try
+            {
+                Geometry object = mLayer.getObject(mData.selectedRowId);
+                Navigator.getInstance().zoomToEnvelopeM(object.getEnvelopeInternal());
+                
+                mMainActivity.getMapFragment().getMap().invalidate();
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
+            catch (ParseException e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -362,6 +365,12 @@ public class AttributesFragment extends PanelFragment
         @Override
         public void onClick(View v)
         {
+            if(mData.selectedRowId == null)
+            {
+                Toast.makeText(mMainActivity, R.string.not_selected_object, Toast.LENGTH_LONG).show();
+                return;
+            }
+            
             UpdateAttributesDialog dialog = new UpdateAttributesDialog();
             dialog.setLayer(mLayer);
             dialog.setRow(findRowByRowId(mData.selectedRowId));
@@ -377,6 +386,12 @@ public class AttributesFragment extends PanelFragment
         @Override
         public void onClick(View v)
         {
+            if(mData.selectedRowId == null)
+            {
+                Toast.makeText(mMainActivity, R.string.not_selected_object, Toast.LENGTH_LONG).show();
+                return;
+            }
+            
             RemoveObjectDialog dialog = new RemoveObjectDialog();
             dialog.setMessage(getResources().getString(R.string.confirm_remove_object_message));
             dialog.setRowid(mData.selectedRowId);
