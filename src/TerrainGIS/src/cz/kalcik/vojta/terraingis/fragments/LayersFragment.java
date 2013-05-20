@@ -404,8 +404,6 @@ public class LayersFragment extends PanelFragment
                 return;
             }
             
-            SpatiaLiteIO spatialite = mLayerManager.getSpatialiteIO();
-            
             // empty layer
             if(selectedLayer instanceof VectorLayer &&
                     ((VectorLayer)selectedLayer).getCountObjects() == 0)
@@ -415,32 +413,22 @@ public class LayersFragment extends PanelFragment
                         Toast.LENGTH_LONG).show();
                 return;
             }
-            
-            int from = selectedLayer.getSrid();
-            int to = mLayerManager.getSrid();
-            Envelope envelope = selectedLayer.getEnvelope();
-            
-            if(from != to)
+                      
+            try
             {
-                try
-                {
-                    envelope = spatialite.transformSRSEnvelope(envelope, from, to);
-                }
-                catch (Exception e)
-                {
-                    Toast.makeText(mMainActivity, R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
-                catch (ParseException e)
-                {
-                    Toast.makeText(mMainActivity, R.string.database_error,
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
+                Envelope envelope = selectedLayer.getEnvelope(mLayerManager.getSrid());
+                mMainActivity.getMapFragment().getMap().zoomToEnvelopeM(envelope);
             }
-            
-            mMainActivity.getMapFragment().getMap().zoomToEnvelopeM(envelope);
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
+            catch (ParseException e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
         }
     };
     

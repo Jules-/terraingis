@@ -52,7 +52,7 @@ public class LayerManager
     // attributes =========================================================================
     private ArrayList<AbstractLayer> layers = new ArrayList<AbstractLayer>();
     private SpatiaLiteIO spatialiteManager = null;
-    private int srid = SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR;
+    private int mSrid = SpatiaLiteIO.EPSG_SPHERICAL_MERCATOR;
 
     // public methods ======================================================================
     
@@ -171,7 +171,7 @@ public class LayerManager
     public Coordinate lonLatWGS84ToM(Coordinate input)
             throws Exception, ParseException
     {        
-        return spatialiteManager.transformSRS(input, SpatiaLiteIO.EPSG_LONLAT, srid);
+        return spatialiteManager.transformSRS(input, SpatiaLiteIO.EPSG_LONLAT, mSrid);
     }
     
     /**
@@ -184,7 +184,7 @@ public class LayerManager
     public Coordinate mToLonLatWGS84(Coordinate input)
             throws Exception, ParseException
     {
-        return spatialiteManager.transformSRS(input, srid, SpatiaLiteIO.EPSG_LONLAT);
+        return spatialiteManager.transformSRS(input, mSrid, SpatiaLiteIO.EPSG_LONLAT);
     }
     
     /**
@@ -284,7 +284,7 @@ public class LayerManager
      */
     public int getSrid()
     {
-        return srid;
+        return mSrid;
     }
     
     /**
@@ -295,6 +295,24 @@ public class LayerManager
         return spatialiteManager;
     }
 
+    /**
+     * @return envelope all vector layers
+     * @throws ParseException 
+     * @throws Exception 
+     */
+    public Envelope getEnvelopeVectorLayers() throws Exception, ParseException
+    {
+        Envelope result = new Envelope();
+        for(AbstractLayer layer: layers)
+        {
+            if(layer instanceof VectorLayer)
+            {
+                result.expandToInclude(layer.getEnvelope(mSrid));
+            }
+        }
+        
+        return result;
+    }
     // public static method ==================================================================
     /**
      * create VectorLayer by layer attributes from spatialite

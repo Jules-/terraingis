@@ -32,6 +32,7 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.FloatMath;
@@ -59,6 +60,8 @@ public class MapView extends SurfaceView
         public Coordinate position = new Coordinate(0, 0);
         // zoom only for save and restore (value in Navigator)
         public double zoom;
+        // detect if it is first open
+        public boolean firstOpenedProgram = true;
     }
     
     // attributes =========================================================================
@@ -212,7 +215,7 @@ public class MapView extends SurfaceView
         else
         {
             mCanvasDrawing.drawColor(Color.WHITE);            
-            Drawer.draw(mCanvasDrawing, getWidth(), getHeight(), mMainActivity);
+            Drawer.draw(mCanvasDrawing, mMainActivity);
             drawLocations(mCanvasDrawing);
         }
         
@@ -223,6 +226,33 @@ public class MapView extends SurfaceView
     protected void onSizeChanged(int w, int h, int oldw, int oldh)
     {
         super.onSizeChanged(w, h, oldw, oldh);
+        
+        mNavigator.setScreen(new Rect(0, 0, w, h));
+        
+        // zoom to vector layers
+        if(mData.firstOpenedProgram)
+        {
+            try
+            {
+                Envelope envelope = mLayerManager.getEnvelopeVectorLayers();
+                if(!envelope.isNull())
+                {
+                    zoomToEnvelopeM(envelope);
+                }
+            }
+            catch (Exception e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
+            catch (ParseException e)
+            {
+                Toast.makeText(mMainActivity, R.string.database_error,
+                        Toast.LENGTH_LONG).show();
+            }
+            
+            mData.firstOpenedProgram = false;
+        }
         
         mCanvasBitmap = Bitmap.createBitmap(w, h, Config.RGB_565);
         mCanvasDrawing = new Canvas(mCanvasBitmap);

@@ -7,9 +7,12 @@ import jsqlite.Exception;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.io.ParseException;
 
+import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.Navigator;
+import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 
 import android.graphics.Canvas;
+import android.widget.Toast;
 
 /**
  * parent of all layers
@@ -44,11 +47,36 @@ public abstract class AbstractLayer
     public abstract void detach();
     
     // getter, setter ==========================================================
+    /**
+     * @return envelope in srid of layer
+     */
     public Envelope getEnvelope()
     {
         return mEnvelope;
     }
 
+    /**
+     * @param srid
+     * @return envelope in srid from argument
+     * @throws Exception
+     * @throws ParseException
+     */
+    public Envelope getEnvelope(int srid) throws Exception, ParseException
+    {
+        Envelope result = mEnvelope;
+        
+        if(mSrid != srid)
+        {
+            SpatiaLiteIO spatialite = mLayerManager.getSpatialiteIO();
+            result = spatialite.transformSRSEnvelope(result, mSrid, srid);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * @return srid of layer
+     */
     public int getSrid()
     {
         return mSrid;

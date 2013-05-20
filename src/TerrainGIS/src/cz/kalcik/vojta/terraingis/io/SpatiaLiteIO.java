@@ -249,6 +249,7 @@ public class SpatiaLiteIO
     
     /**
      * transform envelop coordinates between two srs
+     * returned envelope is new (no reference)
      * @param envelope
      * @param fromSrid
      * @param toSrid

@@ -38,16 +38,8 @@ public class Drawer
      * @param width
      * @param height
      */
-    public static void draw(Canvas canvas, int width, int height, MainActivity mainActivity)
-    {
-        Rect screen = mNavigator.getScreen();
-        
-        if(screen.width() != width || screen.height() != height)
-        {
-            screen.set(0, 0, width, height);
-            mNavigator.setScreen(screen);
-        }
-        
+    public static void draw(Canvas canvas, MainActivity mainActivity)
+    {       
         boolean drawVertexs = mainActivity.getAddPointMode() == AddPointMode.TOPOLOGY_POINT;
         mLayerManager.redraw(canvas, mNavigator.getMRectangle(null), mainActivity,
                 drawVertexs);
