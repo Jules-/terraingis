@@ -28,6 +28,7 @@ import cz.kalcik.vojta.terraingis.layer.VectorLayerType;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -61,17 +62,19 @@ public class MapView extends SurfaceView
     }
     
     // attributes =========================================================================
-    private LayerManager layerManager = LayerManager.getInstance();
+    private LayerManager mLayerManager = LayerManager.getInstance();
     private Navigator mNavigator = Navigator.getInstance();
-    private Settings settings = Settings.getInstance();
-    private GestureDetector gestureDetector;
+    private Settings mSettings = Settings.getInstance();
+    private GestureDetector mGestureDetector;
     private MainActivity mMainActivity;
     private MapFragment mMapFragment;
     
-    private MapViewData data = new MapViewData();
-    private Drawable locationIcon;
-    private Drawable locationAddPointIcon;
+    private MapViewData mData = new MapViewData();
+    private Drawable mLocationIcon;
+    private Drawable mLocationAddPointIcon;
     private Timer mInvalidateTimer;
+    private Bitmap mCanvasBitmap;
+    private Canvas mCanvasDrawing;
 
     // touch attributes
     enum TouchStatus {IDLE, TOUCH, PINCH};
@@ -95,11 +98,11 @@ public class MapView extends SurfaceView
     {
         super(context, attrs);
         
-        locationIcon = context.getResources().getDrawable(settings.getLocationIcon());
-        locationAddPointIcon = context.getResources().getDrawable(settings.getLocationAddPointIcon());
+        mLocationIcon = context.getResources().getDrawable(mSettings.getLocationIcon());
+        mLocationAddPointIcon = context.getResources().getDrawable(mSettings.getLocationAddPointIcon());
         this.setWillNotDraw(false);
         
-        gestureDetector =  new GestureDetector(context, new MySimpleOnGestureListener());
+        mGestureDetector =  new GestureDetector(context, new MySimpleOnGestureListener());
     }
 
     /**
@@ -117,19 +120,19 @@ public class MapView extends SurfaceView
     public MapViewData getData()
     {
         Coordinate position = mNavigator.getPositionM();
-        data.position.x = position.x;
-        data.position.y = position.y;
-        data.zoom = mNavigator.getZoom();
-        return data;
+        mData.position.x = position.x;
+        mData.position.y = position.y;
+        mData.zoom = mNavigator.getZoom();
+        return mData;
     }
     
     public void setData(Serializable data)
     {
-        this.data = (MapViewData)data;
+        this.mData = (MapViewData)data;
         
-        Coordinate position = new Coordinate(this.data.position.x, this.data.position.y);
+        Coordinate position = new Coordinate(this.mData.position.x, this.mData.position.y);
         mNavigator.setPositionM(position);
-        mNavigator.setZoom(this.data.zoom);
+        mNavigator.setZoom(this.mData.zoom);
     }
     
     /**
@@ -195,29 +198,42 @@ public class MapView extends SurfaceView
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        
         canvas.drawColor(Color.WHITE);
-        
+                
+
         if(mTouchStatus == TouchStatus.PINCH)
         {            
             canvas.scale(mScale, mScale, mPivot.x, mPivot.y);
-        }
-        
-        if(mTouchStatus == TouchStatus.TOUCH)
+        }        
+        else if(mTouchStatus == TouchStatus.TOUCH)
         {            
             canvas.translate(mTouchDiff.x, mTouchDiff.y);
         }
+        else
+        {
+            mCanvasDrawing.drawColor(Color.WHITE);            
+            Drawer.draw(mCanvasDrawing, getWidth(), getHeight(), mMainActivity);
+            drawLocations(mCanvasDrawing);
+        }
         
-        Drawer.draw(canvas, getWidth(), getHeight(), mMainActivity);
-        
-        drawLocations(canvas);
+        canvas.drawBitmap(mCanvasBitmap, 0, 0, null);
     }
     
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh)
+    {
+        super.onSizeChanged(w, h, oldw, oldh);
+        
+        mCanvasBitmap = Bitmap.createBitmap(w, h, Config.RGB_565);
+        mCanvasDrawing = new Canvas(mCanvasBitmap);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent e)
     {      
-        if(gestureDetector.onTouchEvent(e))
+        if(mGestureDetector.onTouchEvent(e))
         {
+            mTouchStatus = TouchStatus.IDLE;
             return true;
         }
         
@@ -295,7 +311,7 @@ public class MapView extends SurfaceView
     @Override
     public void onDetachedFromWindow()
     {
-        layerManager.detach();
+        mLayerManager.detach();
     }
     
     // private methods =====================================================================
@@ -336,13 +352,13 @@ public class MapView extends SurfaceView
         Coordinate location = mMapFragment.getCoordinatesLocation();
         if(location != null)
         {
-            Drawer.drawIconM(canvas, location, locationIcon);
+            Drawer.drawIconM(canvas, location, mLocationIcon);
         }
         
         location = mMapFragment.getCoordinatesAddPoint();
         if(location != null)
         {
-            Drawer.drawIconM(canvas, location, locationAddPointIcon);
+            Drawer.drawIconM(canvas, location, mLocationAddPointIcon);
         }
     }
     
