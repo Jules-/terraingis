@@ -17,14 +17,17 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
+import cz.kalcik.vojta.terraingis.components.ConvertUnits;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
 import cz.kalcik.vojta.terraingis.components.Navigator;
 import cz.kalcik.vojta.terraingis.dialogs.RemoveObjectDialog;
@@ -45,6 +48,8 @@ public class AttributesFragment extends PanelFragment
 {
     // constants =====================================================================================
     private static final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.AttributesFragmentSaveState";
+    private static final int MAX_COUNT = 50;
+    private static final int HEIGHT_BUTTON_DP = 60;
     
     // attributes =========================================================
     private static class AttributesFragmentData implements Serializable
@@ -52,6 +57,7 @@ public class AttributesFragment extends PanelFragment
         private static final long serialVersionUID = 1L;
         
         public String selectedRowId;
+        public int beginRow = 0;
     }
     
     private VectorLayer mLayer = null;
@@ -251,6 +257,7 @@ public class AttributesFragment extends PanelFragment
         if(layer == null || !layer.equals(mLayer))
         {
             mLayer = layer;
+            mData.beginRow = 0;
         
             reload();
         }
@@ -274,11 +281,18 @@ public class AttributesFragment extends PanelFragment
             row.addView(cell);
         }
         mTable.addView(row);
+        
+        // previous button
+        if(hasPreviousItems())
+        {
+            addNextPreviousItemsButton(false);
+        }
+
         // table body
         AttributeHeader header = mLayer.getAttributeHeader();
-        SpatialiteAttributesIterator iterValues = mLayer.getAttributes();
+        SpatialiteAttributesIterator iterValues = mLayer.getAttributes(mData.beginRow, MAX_COUNT);
         int count = header.getCountColumns();
-        
+                
         AttributeTableRow bodyRow;
         while(iterValues.hasNext())
         {
@@ -290,6 +304,12 @@ public class AttributesFragment extends PanelFragment
             bodyRow.createCells(inflater, values, count);
             
             mTable.addView(bodyRow);
+        }
+        
+        // previous button
+        if(hasNextItems())
+        {
+            addNextPreviousItemsButton(true);
         }
         
         setBackgroundColors();
@@ -320,6 +340,91 @@ public class AttributesFragment extends PanelFragment
         }
         
         return null;
+    }
+    
+    /**
+     * buttons for view next items
+     * @param next
+     */
+    private void addNextPreviousItemsButton(boolean next)
+    {
+        Button button = new Button(mMainActivity);
+        
+        int[] range;
+        if(next)
+        {
+            button.setOnClickListener(nextItemsHandler);
+            range = getNextRange();
+        }
+        else
+        {
+            button.setOnClickListener(previousItemsHandler);
+            range = getPreviousRange();
+        }
+        
+        button.setText(String.format("%d-%d", range[0]+1, range[1]+1));
+        
+        TableRow.LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, ConvertUnits.dp2px(HEIGHT_BUTTON_DP));
+        params.span = mLayer.getAttributeHeader().getCountColumns();
+        button.setLayoutParams(params);
+        
+        TableRow row = new TableRow(mMainActivity);
+        row.addView(button);
+        mTable.addView(row);
+    }
+    
+    /**
+     * @return range of next items (first index in 0)
+     */
+    private int[] getNextRange()
+    {
+        int count = mLayer.getCountObjects();
+        int[] resultRange = new int[2];
+        resultRange[0] = mData.beginRow + MAX_COUNT;
+        resultRange[1] = resultRange[0] + (MAX_COUNT - 1);
+        
+        if(resultRange[1] >= count)
+        {
+            resultRange[1] = count - 1;
+        }
+        resultRange[0] = resultRange[1] - (MAX_COUNT - 1);
+        
+        return resultRange;
+    }
+    
+    /**
+     * @return range of previous items (first index in 0)
+     */
+    private int[] getPreviousRange()
+    {
+        int[] resultRange = new int[2];
+        resultRange[0] = mData.beginRow - MAX_COUNT;
+        
+        if(resultRange[0] < 0)
+        {
+            resultRange[0] = 0;
+        }
+        resultRange[1] = resultRange[0] + (MAX_COUNT - 1);
+        
+        return resultRange;
+    }
+    
+    /**
+     * @return true if has previous items
+     */
+    private boolean hasPreviousItems()
+    {
+        return mData.beginRow > 0;
+    }
+    
+    /**
+     * @return true if has next items
+     */
+    private boolean hasNextItems()
+    {
+        int count = mLayer.getCountObjects();
+        
+        return mData.beginRow + MAX_COUNT < count;
     }
     // handlers ===============================================================
     
@@ -396,6 +501,34 @@ public class AttributesFragment extends PanelFragment
             dialog.setMessage(getResources().getString(R.string.confirm_remove_object_message));
             dialog.setRowid(mData.selectedRowId);
             mMainActivity.showDialog(dialog);
+        }
+    };
+    
+    /**
+     * previous items
+     */
+    View.OnClickListener previousItemsHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            int[] range = getPreviousRange();
+            mData.beginRow = range[0];
+            reload();
+        }
+    };
+    
+    /**
+     * next items
+     */
+    View.OnClickListener nextItemsHandler = new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            int[] range = getNextRange();
+            mData.beginRow = range[0];
+            reload();
         }
     };
 }

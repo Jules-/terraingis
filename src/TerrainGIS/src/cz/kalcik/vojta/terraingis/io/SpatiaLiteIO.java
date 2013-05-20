@@ -636,6 +636,27 @@ public class SpatiaLiteIO
     }
 
     /**
+     * get attributes of table by limit and offset
+     * @param name
+     * @param header
+     * @param limit
+     * @param offset
+     * @return
+     * @throws Exception
+     */
+    public SpatialiteAttributesIterator getAttributes(String name, AttributeHeader header, int offset, int limit)
+            throws Exception
+    {
+        String query = String.format("SELECT ROWID, %s FROM \"%s\" LIMIT ?, ?",
+                header.getComaNameColumns(true, false), name);
+        Stmt stmt = db.prepare(query);
+        stmt.bind(1, offset);
+        stmt.bind(2, limit);
+        
+        return new SpatialiteAttributesIterator(stmt, header.getCountColumns());       
+    }
+    
+    /**
      * get attributes of one object
      * @param name
      * @param header
@@ -836,6 +857,7 @@ public class SpatiaLiteIO
         
         return result;
     }
+    
     // private methods =======================================================================
     /**
      * open spatialite database

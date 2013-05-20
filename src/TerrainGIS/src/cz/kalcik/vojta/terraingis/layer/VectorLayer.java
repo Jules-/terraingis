@@ -471,9 +471,9 @@ public abstract class VectorLayer extends AbstractLayer
      * @return iterator of attributes
      * @throws Exception
      */
-    public SpatialiteAttributesIterator getAttributes() throws Exception
+    public SpatialiteAttributesIterator getAttributes(int offset, int limit) throws Exception
     {
-        return mSpatialite.getAttributes(data.name, mAttributeHeader);
+        return mSpatialite.getAttributes(data.name, mAttributeHeader, offset, limit);
     }
     
     /**
