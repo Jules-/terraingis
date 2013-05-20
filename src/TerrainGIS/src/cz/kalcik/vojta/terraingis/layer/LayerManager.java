@@ -56,7 +56,7 @@ public class LayerManager
 
     // public methods ======================================================================
     
-    public void redraw(Canvas canvas, Envelope rect, Context context, boolean drawVertexs)
+    public void redraw(Canvas canvas, Envelope rect, Context context, boolean drawVertices)
     {
         int size = layers.size();
         
@@ -68,7 +68,7 @@ public class LayerManager
             {
                 try
                 {
-                    layer.draw(canvas, rect, drawVertexs);
+                    layer.draw(canvas, rect, drawVertices);
                 }
                 catch (Exception e)
                 {

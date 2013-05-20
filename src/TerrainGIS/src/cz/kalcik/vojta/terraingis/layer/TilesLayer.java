@@ -28,8 +28,8 @@ public class TilesLayer extends AbstractLayer
     private static int MAX_ZOOM_LEVEL = 18;
     
     // attributes ==============================================================================
-    private Envelope currentRealRect = new Envelope();
-    private Rect currentRect = new Rect();
+    private Envelope screenRectPx = new Envelope();
+    private Rect screenRectTilesPx = new Rect();
     private double scale;
     private int mWorldSize_2;
     private Point mUpperLeft = new Point();
@@ -49,7 +49,7 @@ public class TilesLayer extends AbstractLayer
     }    
     
     @Override
-    public void draw(Canvas canvas, Envelope rect, boolean drawVertexs) throws Exception,
+    public void draw(Canvas canvas, Envelope rect, boolean drawVertices) throws Exception,
             ParseException
     {
         int zoomLevel = Navigator.mpxToZoomLevel(mNavigator.getZoom());
@@ -59,13 +59,13 @@ public class TilesLayer extends AbstractLayer
         
         mWorldSize_2 = SphericalMercatorTiles.getMapSize(zoomLevel-1); 
         
-        mNavigator.getPxRectangle(currentRealRect);
-        rectRealToTiles(currentRealRect, currentRect);
-        currentRect.offset(mWorldSize_2, mWorldSize_2);
+        mNavigator.getPxRectangle(screenRectPx);
+        rectRealToTiles(screenRectPx, screenRectTilesPx);
+        screenRectTilesPx.offset(mWorldSize_2, mWorldSize_2);
         
-        SphericalMercatorTiles.getTileFromPx(currentRect.left, currentRect.top, mUpperLeft);
+        SphericalMercatorTiles.getTileFromPx(screenRectTilesPx.left, screenRectTilesPx.top, mUpperLeft);
         mUpperLeft.offset(-1, -1);
-        SphericalMercatorTiles.getTileFromPx(currentRect.right, currentRect.bottom, mLowerRight);
+        SphericalMercatorTiles.getTileFromPx(screenRectTilesPx.right, screenRectTilesPx.bottom, mLowerRight);
         
         drawTiles(canvas, zoomLevel);
     }
@@ -130,9 +130,9 @@ public class TilesLayer extends AbstractLayer
                     tile.x * tileSize + tileSize, tile.y * tileSize + tileSize);
             mTileRect.offset(-mWorldSize_2, -mWorldSize_2);
             
-            rectTilesToReal(mTileRect, currentRealRect);
+            rectTilesToReal(mTileRect, screenRectPx);
             
-            Drawer.drawCanvasDraweblePx(canvas, tile.imageTile, currentRealRect);
+            Drawer.drawCanvasDraweblePx(canvas, tile.imageTile, screenRectPx);
         }
     }
 }

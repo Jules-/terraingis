@@ -88,7 +88,7 @@ public abstract class VectorLayer extends AbstractLayer
         this.mSrid = srid;
         this.mSpatialite = spatialite;
         mGeometryColumn = mSpatialite.getColumnGeom(name);
-        mHasIndex = mSpatialite.indexEnabled(name);
+        mHasIndex = mSpatialite.isIndexEnabled(name);
         mAttributeHeader = mSpatialite.getAttributeTable(name);
         updateLayerAttributes();
     }
@@ -112,7 +112,7 @@ public abstract class VectorLayer extends AbstractLayer
     public void addPointToEdited(Coordinate coordinate, int srid, boolean addToEnd)
             throws Exception, ParseException
     {
-        mEditedObject.addPoint(coordinate, srid, addToEnd);
+        mEditedObject.addVertex(coordinate, srid, addToEnd);
     }
 
     /**
@@ -124,7 +124,7 @@ public abstract class VectorLayer extends AbstractLayer
     public void addPointsToEdited(ArrayList<Coordinate> points, int srid)
             throws Exception, ParseException
     {
-        mEditedObject.addPoints(points, srid);
+        mEditedObject.addVertices(points, srid);
     }
     
     /**
@@ -752,7 +752,7 @@ public abstract class VectorLayer extends AbstractLayer
          * @throws ParseException 
          * @throws Exception 
          */
-        public void addPoint(Coordinate coordinate, int srid, boolean addToEnd)
+        public void addVertex(Coordinate coordinate, int srid, boolean addToEnd)
                 throws Exception, ParseException
         {
             int layerManagerSrid = mLayerManager.getSrid();
@@ -774,21 +774,21 @@ public abstract class VectorLayer extends AbstractLayer
         
         /**
          * add lon lat points to edited objects
-         * @param points
+         * @param coordinates
          * @throws ParseException 
          * @throws Exception 
          */
-        public void addPoints(ArrayList<Coordinate> points, int srid)
+        public void addVertices(ArrayList<Coordinate> coordinates, int srid)
                 throws Exception, ParseException
         {
             int layerManagerSrid = mLayerManager.getSrid();
 
             if(layerManagerSrid != srid)
             {
-                points = mSpatialite.transformSRS(points, srid, layerManagerSrid);
+                coordinates = mSpatialite.transformSRS(coordinates, srid, layerManagerSrid);
             }
             
-            vertices.addAll(points);
+            vertices.addAll(coordinates);
         }
         
         /**

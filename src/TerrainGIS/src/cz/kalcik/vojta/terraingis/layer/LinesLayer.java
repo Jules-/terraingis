@@ -4,7 +4,7 @@ import jsqlite.Exception;
 import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.io.SpatiaLiteIO;
 
-public class LinesLayer extends PolyPointsLayer
+public class LinesLayer extends PolyVerticesLayer
 {
     // constants ==============================================================
     public static final int MIN_POINTS = 2;

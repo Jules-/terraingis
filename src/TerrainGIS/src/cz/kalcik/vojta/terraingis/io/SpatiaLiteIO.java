@@ -112,7 +112,7 @@ public class SpatiaLiteIO
      * @return
      * @throws Exception 
      */
-    public boolean indexEnabled(String name) throws Exception
+    public boolean isIndexEnabled(String name) throws Exception
     {
         boolean result = false;
         
@@ -216,18 +216,18 @@ public class SpatiaLiteIO
     /**
      * transform coordinates between two srs
      * @param point
-     * @param from
-     * @param to
+     * @param fromSrid
+     * @param toSrid
      * @return
      * @throws Exception 
      * @throws ParseException 
      */
-    public Coordinate transformSRS(Coordinate point, int from, int to)
+    public Coordinate transformSRS(Coordinate point, int fromSrid, int toSrid)
             throws Exception, ParseException
     {
         Coordinate result = null;
         
-        if(from == to)
+        if(fromSrid == toSrid)
         {
             return (Coordinate)point.clone();
         }
@@ -236,8 +236,8 @@ public class SpatiaLiteIO
         
         stmt.bind(1, point.x);
         stmt.bind(2, point.y);
-        stmt.bind(3, from);
-        stmt.bind(4, to);
+        stmt.bind(3, fromSrid);
+        stmt.bind(4, toSrid);
         if(stmt.step())
         {
             result = wkbReader.read(stmt.column_bytes(0)).getCoordinate();
@@ -250,18 +250,18 @@ public class SpatiaLiteIO
     /**
      * transform envelop coordinates between two srs
      * @param envelope
-     * @param from
-     * @param to
+     * @param fromSrid
+     * @param toSrid
      * @return
      * @throws Exception 
      * @throws ParseException 
      */
-    public Envelope transformSRSEnvelope(Envelope envelope, int from, int to)
+    public Envelope transformSRSEnvelope(Envelope envelope, int fromSrid, int toSrid)
             throws Exception, ParseException
     {
         Envelope result = null;
         
-        if(from == to)
+        if(fromSrid == toSrid)
         {
             return new Envelope(envelope.getMinX(), envelope.getMaxX(),
                                 envelope.getMinY(), envelope.getMaxY());
@@ -273,8 +273,8 @@ public class SpatiaLiteIO
         stmt.bind(2, envelope.getMinY());
         stmt.bind(3, envelope.getMaxX());
         stmt.bind(4, envelope.getMaxY());
-        stmt.bind(5, from);
-        stmt.bind(6, to);
+        stmt.bind(5, fromSrid);
+        stmt.bind(6, toSrid);
         
         if(stmt.step())
         {

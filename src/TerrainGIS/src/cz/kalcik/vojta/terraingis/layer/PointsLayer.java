@@ -34,7 +34,7 @@ public class PointsLayer extends VectorLayer
 	 * @throws Exception 
      */
     @Override
-    public void draw(Canvas canvas, Envelope rect, boolean drawVertexs)
+    public void draw(Canvas canvas, Envelope rect, boolean drawVertices)
             throws Exception, ParseException
     {
         SpatialiteGeomIterator iter = getObjects(rect);

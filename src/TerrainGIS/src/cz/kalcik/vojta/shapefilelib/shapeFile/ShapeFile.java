@@ -86,6 +86,7 @@ public class ShapeFile
     private SHP_File shp_file; // shape-File: contains geometry.
     
     private File qpj_file;
+    private File cpg_file;
 
     /**
      * <pre>
@@ -111,6 +112,7 @@ public class ShapeFile
         dbf_file = new DBF_File(this, new File(dir, filename + ".dbf"), charset);
         shp_file = new SHP_File(this, new File(dir, filename + ".shp"));
         qpj_file = new File(dir, filename + ".qpj");
+        cpg_file = new File(dir, filename + ".cpg");
     }
 
     /**
@@ -140,6 +142,21 @@ public class ShapeFile
         writer.newLine();
         
         writer.close();
+    }
+    
+    /**
+     * write charset to cpg file
+     * @param charset
+     * @throws IOException
+     */
+    public void writeCPGFile(String charset) throws IOException
+    {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(cpg_file));
+
+        writer.write(charset);
+        writer.newLine();
+        
+        writer.close();        
     }
 
     // ----------------------------------------------------------------------------

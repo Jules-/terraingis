@@ -108,9 +108,9 @@ public class ShapefileDialogExport extends ShapefileDialog
      */
     private String removeSuffix(String name)
     {
-        if(name.endsWith(SUFFIX))
+        if(name.endsWith(MAIN_SUFFIX))
         {
-            name = name.substring(0, name.length()-SUFFIX.length());
+            name = name.substring(0, name.length()-MAIN_SUFFIX.length());
         }
         
         return name;

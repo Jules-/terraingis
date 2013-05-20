@@ -18,8 +18,9 @@ import android.widget.Toast;
 public abstract class ShapefileDialog extends CreateLayerDialog
 {
     // constants =====================================================================================
-    protected static final String SUFFIX = ".shp";
+    protected static final String MAIN_SUFFIX = ".shp";
     protected static final String PROJECTION_SUFFIX = ".qpj";
+    protected static final String CHARSET_SUFFIX = ".cpg";
     
     private static final String TAG_SAVESTATE = "cz.kalcik.vojta.terraingis.ShapefileDialogSaveState";
     private static final String DEFAULT_CHARSET = "UTF-8";

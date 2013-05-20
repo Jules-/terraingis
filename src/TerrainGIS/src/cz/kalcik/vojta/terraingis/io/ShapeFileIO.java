@@ -89,6 +89,7 @@ public class ShapeFileIO
         exportDbf(shapeFile, spatialiteManager, vectorLayer);
         String srsWKT = spatialiteManager.getWKTbySrid(srid);
         shapeFile.writeQPJFile(srsWKT);
+        shapeFile.writeCPGFile(charset);
     }
     // public static methods ==============================================================
     

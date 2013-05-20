@@ -76,7 +76,7 @@ public class ShapefileDialogImport extends ShapefileDialog
         }
         
         String suffix = name.substring(dotIndex);
-        if(!SUFFIX.equals(suffix))
+        if(!MAIN_SUFFIX.equals(suffix))
         {
             throw new RuntimeException();
         }
@@ -84,6 +84,7 @@ public class ShapefileDialogImport extends ShapefileDialog
         mImportData.mNameNoSuffix = name.substring(0, dotIndex);
         data.name = mImportData.mNameNoSuffix;
         checkFilesWithProjection();
+        checkFileWithCharset();
     }
     
     // protected methods ============================================================================
@@ -125,24 +126,8 @@ public class ShapefileDialogImport extends ShapefileDialog
             String text = "";
             try
             {
-                BufferedReader reader = new BufferedReader(new FileReader(file));
-                
-                StringBuilder builder = new StringBuilder();
-                String line;
-                
-                while ((line = reader.readLine()) != null)
-                {
-                    builder.append(line);
-                }
-                
-                reader.close();
-                
-                text = builder.toString().trim();
+                text = readTextFromFile(file);
             }
-            catch (FileNotFoundException e)
-            {
-                return;
-            } 
             catch (IOException e)
             {
                 return;
@@ -157,5 +142,54 @@ public class ShapefileDialogImport extends ShapefileDialog
                 // nothing
             }
         }
+    }
+    
+    /**
+     * check charset in cpg file
+     */
+    private void checkFileWithCharset()
+    {
+        File file = new File(mImportData.mFile.getParent(), mImportData.mNameNoSuffix + CHARSET_SUFFIX);
+        if(file.exists())
+        {
+            String charset = "";
+            
+            try
+            {
+                charset = readTextFromFile(file);
+            }
+            catch (IOException e)
+            {
+                return;
+            }
+            
+            if(!charset.isEmpty())
+            {
+                data.charset = charset;
+            }
+        }        
+    }
+    
+    /**
+     * read text from some file
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    private String readTextFromFile(File file) throws IOException
+    {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        
+        StringBuilder builder = new StringBuilder();
+        String line;
+        
+        while ((line = reader.readLine()) != null)
+        {
+            builder.append(line);
+        }
+        
+        reader.close();
+        
+        return builder.toString().trim();        
     }
 }

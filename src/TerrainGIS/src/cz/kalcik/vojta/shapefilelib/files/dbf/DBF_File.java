@@ -156,7 +156,7 @@ public class DBF_File extends ShapeFileReader
 
             try
             {
-                String DBF_record = new String(string_tmp, "ISO-8859-1");
+                String DBF_record = new String(string_tmp, charset);
                 // System.out.printf("DBF_record = %s\n", DBF_record);
                 int from = 1;
                 int to = 1;

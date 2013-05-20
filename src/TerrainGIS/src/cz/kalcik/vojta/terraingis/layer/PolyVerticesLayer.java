@@ -25,13 +25,13 @@ import cz.kalcik.vojta.terraingis.layer.VectorLayerPaints.PaintType;
  * @author jules
  *
  */
-public abstract class PolyPointsLayer extends VectorLayer
+public abstract class PolyVerticesLayer extends VectorLayer
 {
     protected Paint mSelectedVertexSelectedObjectPaint;
     protected Paint mVertexsSelectedObjectPaint;
     protected Paint mStrokePolygonPaint;
     
-    public PolyPointsLayer(VectorLayerType type, String name, int srid,
+    public PolyVerticesLayer(VectorLayerType type, String name, int srid,
             SpatiaLiteIO spatialite, MapFragment mapFragment) throws Exception
     {
         super(type, name, srid, spatialite, mapFragment);
@@ -47,7 +47,7 @@ public abstract class PolyPointsLayer extends VectorLayer
      * @throws Exception 
      */
     @Override
-    public void draw(Canvas canvas, Envelope rect, boolean drawVertexs)
+    public void draw(Canvas canvas, Envelope rect, boolean drawVertices)
             throws Exception, ParseException
     {
         // saved objects
@@ -82,7 +82,7 @@ public abstract class PolyPointsLayer extends VectorLayer
                 }
 
                 
-                if(drawVertexs || isSelected)
+                if(drawVertices || isSelected)
                 {
                     Drawer.drawVertexsSurfacePx(canvas, points, mVertexsSelectedObjectPaint,
                             VectorLayerPaints.getVertexRadius());                    
