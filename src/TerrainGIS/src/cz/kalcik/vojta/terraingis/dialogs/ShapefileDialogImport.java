@@ -15,6 +15,7 @@ import android.util.Log;
 
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.io.ShapeFileIO;
+import cz.kalcik.vojta.terraingis.io.WKTTransformationReader;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 
 /**
@@ -135,7 +136,11 @@ public class ShapefileDialogImport extends ShapefileDialog
             
             try
             {
-                data.srid = LayerManager.getInstance().getSpatialiteIO().getSridByWKT(text);
+                String name = new WKTTransformationReader(text).getNameCS();
+                if(name != null)
+                {
+                    data.srid = LayerManager.getInstance().getSpatialiteIO().getSridByName(name);
+                }
             }
             catch (jsqlite.Exception e)
             {

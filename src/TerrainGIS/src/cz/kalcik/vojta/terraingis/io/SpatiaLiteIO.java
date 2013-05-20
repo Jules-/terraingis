@@ -570,19 +570,19 @@ public class SpatiaLiteIO
     }
     
     /**
-     * search srid by srs_wkt column
+     * search srid by ref_sys_name column
      * @param wkt
      * @return
      * @throws Exception
      */
-    public int getSridByWKT(String wkt) throws Exception
+    public int getSridByName(String srsName) throws Exception
     {
         int result = -1;
         
         Stmt stmt = db.prepare("SELECT srid FROM spatial_ref_sys " +
-                "WHERE srs_wkt LIKE ?");
+                "WHERE ref_sys_name LIKE ?");
         
-        stmt.bind(1, wkt);
+        stmt.bind(1, srsName);
         
         if(stmt.step())
         {
