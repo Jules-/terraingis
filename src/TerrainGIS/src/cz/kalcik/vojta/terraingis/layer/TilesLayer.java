@@ -57,7 +57,7 @@ public class TilesLayer extends AbstractLayer
         double tilesZoom = Navigator.zoomLevelToMpx(zoomLevel);
         scale = mNavigator.getZoom() / tilesZoom;
         
-        mWorldSize_2 = SphericalMercatorTiles.getMapSize(zoomLevel-1); 
+        mWorldSize_2 = SphericalMercatorTiles.getMapSize(zoomLevel) / 2; 
         
         mNavigator.getPxRectangle(screenRectPx);
         rectRealToTiles(screenRectPx, screenRectTilesPx);
