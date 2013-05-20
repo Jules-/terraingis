@@ -150,37 +150,13 @@ public class DBF_File extends ShapeFileReader
         DBF_records = new String[DBF_number_of_records][num_fields];
         for (int i = 0; i < DBF_number_of_records; i++)
         {
-
-            byte[] string_tmp = new byte[DBF_size_record_bytes];
-            bb.get(string_tmp);
-
-            try
+            bb.position(bb.position()+1);
+            for (int j = 0; j < DBF_fields.length; j++)
             {
-                String DBF_record = new String(string_tmp, charset);
-                // System.out.printf("DBF_record = %s\n", DBF_record);
-                int from = 1;
-                int to = 1;
-                for (int j = 0; j < DBF_fields.length; j++)
-                {
-                    to += DBF_fields[j].getLength();
-                    DBF_records[i][j] = DBF_record.substring(from, to);
-                    // System.out.print(records[i][j]+"|");
-                    from = to;
-                }
-                // System.out.println("");
+                byte[] bytesOfField = new byte[DBF_fields[j].getLength()];
+                bb.get(bytesOfField);
+                DBF_records[i][j] = new String(bytesOfField, charset);
             }
-            catch (UnsupportedEncodingException e)
-            {
-                e.printStackTrace();
-            }
-            catch (StringIndexOutOfBoundsException e)
-            {
-                e.printStackTrace();
-                // System.out.println(e);
-            }
-
-            POS += DBF_size_record_bytes;
-            bb.position(POS);
         }
         if (LOG_ONLOAD_CONTENT)
             printContent();

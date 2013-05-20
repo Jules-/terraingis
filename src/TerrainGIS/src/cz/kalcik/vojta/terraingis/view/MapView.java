@@ -88,6 +88,7 @@ public class MapView extends SurfaceView
     private float mScale;
     private PointF mPivot = new PointF();
     private boolean mMovingSelectedPoint = false;
+    private boolean drawMapFromCache = false;
     
     // static attributes
     
@@ -212,7 +213,8 @@ public class MapView extends SurfaceView
         {            
             canvas.translate(mTouchDiff.x, mTouchDiff.y);
         }
-        else
+        
+        if(!drawMapFromCache)
         {
             mCanvasDrawing.drawColor(Color.WHITE);            
             Drawer.draw(mCanvasDrawing, mMainActivity);
@@ -263,6 +265,7 @@ public class MapView extends SurfaceView
     {      
         if(mGestureDetector.onTouchEvent(e))
         {
+            drawMapFromCache = false;
             mTouchStatus = TouchStatus.IDLE;
             return true;
         }
@@ -273,6 +276,7 @@ public class MapView extends SurfaceView
         if(action == MotionEvent.ACTION_DOWN)
         {
             mTouchStatus = TouchStatus.TOUCH;
+            drawMapFromCache = true;
             
             mTouchPoint.set(e.getX(), e.getY());
             mTouchDiff.set(0, 0);
@@ -284,6 +288,7 @@ public class MapView extends SurfaceView
             changePositionByDiff();
             
             mTouchStatus = TouchStatus.PINCH;
+            drawMapFromCache = true;
             
             mPinchDistance.setStart(e.getX(0), e.getY(0), e.getX(1), e.getY(1));
             mPivot = mPinchDistance.getMiddle();
@@ -324,6 +329,7 @@ public class MapView extends SurfaceView
         else if(action == MotionEvent.ACTION_POINTER_UP)
         {
             mTouchStatus = TouchStatus.IDLE;
+            drawMapFromCache = false;
                 
             changeZoomByScale();
         }
@@ -331,6 +337,7 @@ public class MapView extends SurfaceView
         else if(action == MotionEvent.ACTION_UP)
         {
             mTouchStatus = TouchStatus.IDLE;
+            drawMapFromCache = false;
             
             changePositionByDiff();
         }
@@ -444,6 +451,7 @@ public class MapView extends SurfaceView
                 if(selectedLayer.isNearSelectedVertex(point))
                 {
                     mMovingSelectedPoint = true;
+                    drawMapFromCache = false;
                 }
             }
         }

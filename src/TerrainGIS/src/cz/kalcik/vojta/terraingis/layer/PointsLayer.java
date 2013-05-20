@@ -48,9 +48,7 @@ public class PointsLayer extends VectorLayer
             
             if(isEditedObject(iter))
             {
-                radius = VectorLayerPaints.getPointRadius(PaintType.SELECTED);
-                coordinate = mEditedObject.getVertices().get(0);
-                paint = mNotSavedPaint;
+                continue;
             }
             else if(isSelectedObject(iter))
             {
@@ -66,11 +64,16 @@ public class PointsLayer extends VectorLayer
             }
             
             Drawer.drawCircleM(canvas, paint, coordinate, radius);
+        }
+        
+        // opened object must be out while loop
+        if(hasOpenedEditedObject())
+        {
+            float radius = VectorLayerPaints.getPointRadius(PaintType.SELECTED);
+            Coordinate coordinate = mEditedObject.getVertices().get(0);
             
-            if(isEditedObject(iter))
-            {
-                Drawer.drawCircleM(canvas, mStrokeNotSavedPaint, coordinate, radius);
-            }
+            Drawer.drawCircleM(canvas, mNotSavedPaint, coordinate, radius);            
+            Drawer.drawCircleM(canvas, mStrokeNotSavedPaint, coordinate, radius);
         }
     }
     

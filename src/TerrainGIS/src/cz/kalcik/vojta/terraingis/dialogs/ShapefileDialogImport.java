@@ -108,6 +108,7 @@ public class ShapefileDialogImport extends ShapefileDialog
         {
             ShapeFileIO.getInstance().importShapefile(mImportData.mFile.getParent(), mImportData.mNameNoSuffix, name,
                     charset, Integer.parseInt(sridString), mMainActivity.getMapFragment());
+            mMainActivity.getMapFragment().getMap().invalidate();
         }
         catch (Exception e)
         {
