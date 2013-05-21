@@ -61,7 +61,11 @@ public enum AttributeType
         {
             return TEXT;
         }
-        else if(type == FieldType.N || type == FieldType.L)
+        else if(type == FieldType.N)
+        {
+            return INTEGER;
+        }
+        else if(type == FieldType.L)
         {
             return INTEGER;
         }

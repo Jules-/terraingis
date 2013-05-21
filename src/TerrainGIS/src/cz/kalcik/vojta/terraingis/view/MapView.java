@@ -245,6 +245,11 @@ public class MapView extends SurfaceView
     {
         super.onSizeChanged(w, h, oldw, oldh);
         
+        if(w == 0 || h == 0)
+        {
+            return;
+        }
+        
         mNavigator.setScreen(new Rect(0, 0, w, h));
         
         // zoom to vector layers

@@ -442,7 +442,15 @@ public class SpatiaLiteIO
             }
             else if(type == AttributeType.INTEGER)
             {
-                stmt.bind(bindIndex, Integer.parseInt(values[i]));
+                try
+                {
+                    stmt.bind(bindIndex, Integer.parseInt(values[i]));
+                }
+                // if number is real
+                catch (NumberFormatException e)
+                {
+                    stmt.bind(bindIndex, Math.round(Double.parseDouble(values[i])));
+                }
             }
             else if(type == AttributeType.REAL)
             {
