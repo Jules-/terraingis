@@ -1,14 +1,31 @@
+/**
+ * TerrainGIS 
+ * Android program for mapping
+ * 
+ * Copyright (c) 2013 Vojtech Kalcik - http://vojta.kalcik.cz/
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package cz.kalcik.vojta.terraingis.fragments;
 
 import cz.kalcik.vojta.terraingis.MainActivity;
 import cz.kalcik.vojta.terraingis.R;
 import cz.kalcik.vojta.terraingis.components.ListBackgroundColors;
-import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public abstract class PanelFragment extends Fragment

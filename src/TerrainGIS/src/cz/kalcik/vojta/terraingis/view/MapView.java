@@ -1,3 +1,22 @@
+/**
+ * TerrainGIS 
+ * Android program for mapping
+ * 
+ * Copyright (c) 2013 Vojtech Kalcik - http://vojta.kalcik.cz/
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package cz.kalcik.vojta.terraingis.view;
 
 import java.io.Serializable;
@@ -24,8 +43,6 @@ import cz.kalcik.vojta.terraingis.fragments.MapFragment;
 import cz.kalcik.vojta.terraingis.layer.AbstractLayer;
 import cz.kalcik.vojta.terraingis.layer.LayerManager;
 import cz.kalcik.vojta.terraingis.layer.VectorLayer;
-import cz.kalcik.vojta.terraingis.layer.VectorLayerType;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -35,7 +52,6 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.FloatMath;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -476,7 +492,7 @@ public class MapView extends SurfaceView
         
         public void set(float distanceX, float distanceY)
         {            
-            distance = FloatMath.sqrt(distanceX * distanceX + distanceY * distanceY);
+            distance = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
         }
         
         public void setStart(float x0, float y0, float x1, float y1)
