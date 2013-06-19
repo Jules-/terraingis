@@ -24,9 +24,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.content.Intent;
+import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,6 +53,7 @@ public class MainActivity extends AbstractActivity
     private static final String LOCATION_WORKER_DATA = "LocationWorkerData";
     private static final String MAIN_ACTIVITY_DATA = "MainActivityData";
     private static final String SHOWN_LAYERS = "ShownLayers";
+    private static final int SMALL_WIDTH_BOUNDARY_DPI = 450; // min width for hidding icons in actionbar
     
     public enum ActivityMode {EXPLORE, EDIT};
     public enum AddPointMode {NONE, ANY_POINT, TOPOLOGY_POINT};
@@ -72,6 +75,7 @@ public class MainActivity extends AbstractActivity
     private MenuItem mMenuEdit;
     private MenuItem mMenuAddPoint;
     private MenuItem mMenuTopology;
+    private MenuItem mMenuSettings;
     
     private Timer timer;
     private LocationWorker mLocationWorker;
@@ -270,6 +274,7 @@ public class MainActivity extends AbstractActivity
         mMenuEdit = menu.findItem(R.id.menu_edit);
         mMenuAddPoint = menu.findItem(R.id.menu_add_point);
         mMenuTopology = menu.findItem(R.id.menu_topology);
+        mMenuSettings = menu.findItem(R.id.menu_settings);
         
         isLoadedMenu = true;
         
@@ -343,7 +348,7 @@ public class MainActivity extends AbstractActivity
             }
         }
         // settings
-        else if(R.id.menu_settings == id)
+        else if(mMenuSettings.getItemId() == id)
         {
             Intent i = new Intent(this, SettingsActivity.class);      
             this.startActivity(i);            
@@ -357,7 +362,7 @@ public class MainActivity extends AbstractActivity
         setActionBarIcons();
         mMapFragment.setMapTools();
      
-        return true;
+        return super.onOptionsItemSelected(item);
     }
     
     @Override
@@ -462,32 +467,51 @@ public class MainActivity extends AbstractActivity
      */
     private void setActionBarIcons()
     {
+        // check small display
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int showIcon = (ConvertUnits.px2dp(size.x) <= SMALL_WIDTH_BOUNDARY_DPI)
+                ? MenuItem.SHOW_AS_ACTION_IF_ROOM
+                : MenuItem.SHOW_AS_ACTION_ALWAYS;
+        
         // if menu is not loaded yet
         if(!isLoadedMenu)
         {
             return;
         }
         
+        // settings icon
+        mMenuSettings.setShowAsAction(showIcon);
+        
         // location icons
-        if(mLocationWorker.isRunLocation())
+        boolean isRunGPS = mLocationWorker.isRunLocation();
+        if(isRunGPS)
         {
             mMenuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_gps_on));
-            mMenuShowLocation.setVisible(true);
         }
         else
         {
             mMenuRunLocation.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_gps_off));
-            mMenuShowLocation.setVisible(false);
         }
+        mMenuRunLocation.setChecked(isRunGPS);        
+        mMenuShowLocation.setVisible(isRunGPS);
+        mMenuRunLocation.setShowAsAction(showIcon);
+        mMenuShowLocation.setShowAsAction(showIcon);
         
         // record icon
-        if(data.activityMode == ActivityMode.EDIT)
+        boolean isEditMode = (data.activityMode == ActivityMode.EDIT);
+        mMenuEdit.setChecked(isEditMode);
+        mMenuAddPoint.setVisible(isEditMode);
+        mMenuTopology.setVisible(isEditMode);
+        if(isEditMode)
         {
             mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_on));
             
             // add point icon
-            mMenuAddPoint.setVisible(true);
-            if(data.addPointMode == AddPointMode.ANY_POINT)
+            boolean isAnyPointMode = (data.addPointMode == AddPointMode.ANY_POINT);
+            mMenuAddPoint.setChecked(isAnyPointMode);
+            if(isAnyPointMode)
             {
                 mMenuAddPoint.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_add_point_on));
             }
@@ -497,8 +521,9 @@ public class MainActivity extends AbstractActivity
             }
             
             // topology icon
-            mMenuTopology.setVisible(true);
-            if(data.addPointMode == AddPointMode.TOPOLOGY_POINT)
+            boolean isTopologyMode = (data.addPointMode == AddPointMode.TOPOLOGY_POINT);
+            mMenuTopology.setChecked(isTopologyMode);
+            if(isTopologyMode)
             {
                 mMenuTopology.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_topology_on));
             }
@@ -510,8 +535,6 @@ public class MainActivity extends AbstractActivity
         else
         {
             mMenuEdit.setIcon(this.getResources().getDrawable(R.drawable.ic_menu_edit_off));
-            mMenuAddPoint.setVisible(false);
-            mMenuTopology.setVisible(false);
         }
     }
 
@@ -584,7 +607,6 @@ public class MainActivity extends AbstractActivity
         data.addPointMode = mode;
         mMapFragment.setCoordinatesAddPointM(null);
     }
-    
     // classes =================================================================
     /**
      * task for hidding action bar

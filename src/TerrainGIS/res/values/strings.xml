@@ -45,22 +45,23 @@
     <string name="button_remove">Remove selected</string>
     <string name="button_back">Back</string>
     <string name="button_record_topology_point">Add topology point</string>
-    <!-- icon titles -->
-    <string name="title_edit">on/off editing</string>
-    <string name="title_gps">on/off location service</string>
-    <string name="title_show_gps">show location</string>
-    <string name="title_add_point">on/off inserting points</string>
-    <string name="title_show_attributes">show attribute table</string>
-    <string name="title_show_layers">show layers</string>
-    <string name="title_hide_layer">hide/show layer</string>
-    <string name="title_zoom_layer">zoom to layer</string>
-    <string name="title_add_layer">add layer</string>
-    <string name="title_zoom_object">zoom to object</string>
-    <string name="title_edit_attributes">edit attributes</string>
-    <string name="title_remove_object">remove object</string>
-    <string name="title_hide_panel">hide panel</string>
-    <string name="title_settings">open settings</string>
-    <string name="title_topology">create topology</string>
+    <!-- Actionbar icon titles -->
+    <string name="title_edit">Editing</string>
+    <string name="title_gps">GPS</string>
+    <string name="title_show_gps">Show location</string>
+    <string name="title_add_point">Add points</string>
+    <string name="title_settings">Open settings</string>
+    <string name="title_topology">Create topology</string>
+    <!-- Toolbar panel icon titles -->
+    <string name="title_show_attributes">Show attribute table</string>
+    <string name="title_show_layers">Show layers</string>
+    <string name="title_hide_layer">Hide/show layer</string>
+    <string name="title_zoom_layer">Zoom to layer</string>
+    <string name="title_add_layer">Add layer</string>
+    <string name="title_zoom_object">Zoom to object</string>
+    <string name="title_edit_attributes">Edit attributes</string>
+    <string name="title_remove_object">Remove object</string>
+    <string name="title_hide_panel">Hide panel</string>
     <!-- new layer dialog -->
     <string name="new_layer_message">New layer</string>
     <string name="empty_layer">Empty layer</string>
