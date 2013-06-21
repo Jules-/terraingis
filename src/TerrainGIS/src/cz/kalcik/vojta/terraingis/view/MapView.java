@@ -526,13 +526,13 @@ public class MapView extends SurfaceView
             int size = ConvertUnits.dp2px(Settings.DP_SIZE_SIDE_CLICK);
             ActivityMode mode = mMainActivity.getActivityMode();
             
-            if(mTouchPoint.y <= size)
-            {
-                mMainActivity.showActionBar();
-            }
-            else if(mTouchPoint.x <= size && mMainActivity.isHiddenLayersFragment())
+            if(mTouchPoint.x <= size && mMainActivity.isHiddenLayersFragment())
             {
                 mMainActivity.showPanel();
+            }
+            else if(mTouchPoint.y <= size)
+            {
+                mMainActivity.showActionBar();
             }
             // cursor for add point
             else if(mMainActivity.getAddPointMode() == AddPointMode.ANY_POINT)
