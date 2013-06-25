@@ -293,7 +293,7 @@ public class LayersFragment extends PanelFragment
             }
             else
             {
-                Toast.makeText(mMainActivity, R.string.layer_export_error, Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainActivity, R.string.export_shapefile_error, Toast.LENGTH_LONG).show();
                 return false;
             }
                 

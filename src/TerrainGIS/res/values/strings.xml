@@ -13,11 +13,11 @@
     <string name="find_button_form">Find</string>
     <string name="charset_form">Charset</string>
     <!-- error messages -->
-    <string name="location_fix_error">Location is not fix!</string>
+    <string name="location_fix_error">GPS is not fix!</string>
     <string name="location_error">Can not run location service!</string>
     <string name="name_layer_error">Name of layer can not be empty!</string>
     <string name="name_attribute_error">Name of attribute can not be empty!</string>
-    <string name="name_attribute_same_error">There are same attributes!</string>
+    <string name="name_attribute_same_error">Attributes can not be same!</string>
     <string name="concrete_name_attribute_error">Attribute can not has name %s!</string>
     <string name="name_exist_error">The layer %s exist!</string>
     <string name="tileslayer_remove_error">Can not remove tiles layer!</string>
@@ -25,16 +25,14 @@
     <string name="not_selected_vector_layer">There is not selected any vector layer!</string>
     <string name="not_selected_object">There is not selected any object!</string>
     <string name="not_selected_position">There is not selected any position!</string>
-    <string name="end_object_error">Few points for object!</string>
+    <string name="end_object_error">Few vertices for object!</string>
     <string name="empty_layer_error">Layer %s is empty!</string>
     <string name="device_no_gps_error">Device does not have GPS!</string>
     <string name="srid_empty_error">SRS is empty!</string>
     <string name="charset_empty_error">Charset is empty!</string>
-    <string name="bad_shapefile_error">Bad shapefile name!</string>
-    <string name="import_shapefile_error">Can not import shapefile!</string>
-    <string name="export_shapefile_error">Can not export shapefile!</string>
-    <string name="layer_attribute_table_error">This layer does not have attributes!</string>
-    <string name="layer_export_error">Can not export this layer!</string>
+    <string name="bad_shapefile_error">Bad Shapefile name!</string>
+    <string name="import_shapefile_error">Can not import Shapefile!</string>
+    <string name="export_shapefile_error">Can not export Shapefile!</string>
     <string name="database_error">Problem with using database!</string>
     <!-- map buttons -->
     <string name="button_add_point">Add point</string>
@@ -44,13 +42,13 @@
     <string name="button_record_auto_stop">Stop automatic</string>
     <string name="button_remove">Remove selected</string>
     <string name="button_back">Back</string>
-    <string name="button_record_topology_point">Add topology point</string>
+    <string name="button_record_topology_point">Add topology vertex</string>
     <!-- Actionbar icon titles -->
     <string name="title_edit">Editing</string>
     <string name="title_gps">GPS</string>
     <string name="title_show_gps">Show location</string>
     <string name="title_add_point">Add points</string>
-    <string name="title_settings">Open settings</string>
+    <string name="title_settings">Settings</string>
     <string name="title_topology">Create topology</string>
     <!-- Toolbar panel icon titles -->
     <string name="title_show_attributes">Show attribute table</string>
@@ -82,14 +80,14 @@
     <string name="menu_export_shapefile">Export Shapefile</string>
     <!-- settings -->
     <string name="settings_gps_category">GPS</string>
-    <string name="settings_record_min_distance_summary">Minimal distance of vertex</string>
+    <string name="settings_record_min_distance_summary">Minimal distance of vertices</string>
     <string name="settings_record_min_distance_title">for autorecord, in meters</string>
     <string name="settings_record_min_accuracy_summary">Minimal accuracy of vertex</string>
     <string name="settings_record_min_accuracy_title">for autorecord, in meters</string>
-    <string name="settings_record_min_time_summary">Minimal time GPS</string>
+    <string name="settings_record_min_time_summary">Minimal time between vertices</string>
     <string name="settings_record_min_time_title">save battery, in seconds</string>
     <!-- other -->
-    <string name="confirm_remove_message">Really remove %s layer?</string>
+    <string name="confirm_remove_message">Really remove layer %s?</string>
     <string name="confirm_remove_object_message">Really remove selected object?</string>
     <string name="exit_message">Do you want to exit?</string>
 </resources>

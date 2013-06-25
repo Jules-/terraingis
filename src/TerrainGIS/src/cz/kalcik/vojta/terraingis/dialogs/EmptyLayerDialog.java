@@ -232,7 +232,7 @@ public class EmptyLayerDialog extends CreateLayerDialog
             }
             else if(name.equals(SpatiaLiteIO.ID_COLUMN_NAME))
             {
-                throw new RuntimeException(getString(R.string.concrete_name_attribute_error));
+                throw new RuntimeException(String.format(getString(R.string.concrete_name_attribute_error), SpatiaLiteIO.ID_COLUMN_NAME));
             }
             
             if(names.contains(name))
