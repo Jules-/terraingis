@@ -27,6 +27,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpMultiPoint;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPoint;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolyLine;
+import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolyVertices;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpPolygon;
 import cz.kalcik.vojta.shapefilelib.files.shp.shapeTypes.ShpShape;
 import cz.kalcik.vojta.shapefilelib.shapeFile.ShapeFile;
@@ -43,10 +44,11 @@ class ShapeFileIterator implements Iterator<ShapeFileRecord>
     ShapeFile mFile;
     ShpShape.Type mType;
     double[][] mMultiPoints;
+    double[][][] mMultiPartsVertices;
     int mCount;
     int mIndex = 0;
-    int mSubCount = 0;
-    int mSubIndex = 0;
+    int mCountParts = 0;
+    int mIndexParts = 0;
     
     // public methods ==================================================================
     public ShapeFileIterator(ShapeFile file)
@@ -98,36 +100,30 @@ class ShapeFileIterator implements Iterator<ShapeFileRecord>
         }
         else if(mType.isTypeOfMultiPoint())
         {
-            if(mSubCount == 0)
+            if(mCountParts == 0)
             {
                 ShpMultiPoint shape = mFile.getSHP_shape(mIndex);
-                mSubCount = shape.getNumberOfPoints();
+                mCountParts = shape.getNumberOfPoints();
                 mMultiPoints = shape.getPoints();
             }
-            resultPoints.add(new Coordinate(mMultiPoints[mSubIndex][0], mMultiPoints[mSubIndex][1]));
+            resultPoints.add(new Coordinate(mMultiPoints[mIndexParts][0], mMultiPoints[mIndexParts][1]));
         }
         else if(mType.isTypeOfPolyLine() || mType.isTypeOfPolygon())
         {
             int count = 0;
-            double[][] points = null;
             
-            if(mType.isTypeOfPolyLine())
+            if(mCountParts == 0)
             {
-                ShpPolyLine shape = mFile.getSHP_shape(mIndex);
-                count = shape.getNumberOfPoints();
-                points = shape.getPoints();
+                ShpPolyVertices shape = mFile.getSHP_shape(mIndex);
+                mMultiPartsVertices = shape.getPointsAs3DArray();
+                mCountParts = shape.getNumberOfParts();
             }
-            else if(mType.isTypeOfPolygon())
-            {
-                ShpPolygon shape = mFile.getSHP_shape(mIndex);
-                count = shape.getNumberOfPoints();
-                points = shape.getPoints();
-            }
+            count = mMultiPartsVertices[mIndexParts].length;
                 
                 
             for(int i=0; i < count; i++)
             {
-                resultPoints.add(new Coordinate(points[i][0], points[i][1]));
+                resultPoints.add(new Coordinate(mMultiPartsVertices[mIndexParts][i][0], mMultiPartsVertices[mIndexParts][i][1]));
             }
         }
         
@@ -139,13 +135,13 @@ class ShapeFileIterator implements Iterator<ShapeFileRecord>
      */
     private void incrementIndex()
     {
-        if(mType.isTypeOfMultiPoint())
+        if(!mType.isTypeOfPoint())
         {
-            mSubIndex++;
-            if(mSubIndex >= mSubCount)
+            mIndexParts++;
+            if(mIndexParts >= mCountParts)
             {
-                mSubCount = 0;
-                mSubIndex = 0;
+                mCountParts = 0;
+                mIndexParts = 0;
                 mIndex++;
             }
         }
