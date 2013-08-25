@@ -12,6 +12,8 @@
 !license
 
 !src/
+
+# TerrainGIS ===========================
 !src/TerrainGIS/
 
 !src/TerrainGIS/src/
@@ -20,6 +22,11 @@
 !src/TerrainGIS/res/
 !src/TerrainGIS/res/**/
 
+!src/TerrainGIS/libs/
+!src/TerrainGIS/libs/**/
+!src/TerrainGIS/libs/**/*.so
+
+# drag-sort-listview ===================
 !src/drag-sort-listview/
 
 !src/drag-sort-listview/src/
@@ -28,5 +35,10 @@
 !src/drag-sort-listview/res/
 !src/drag-sort-listview/res/**/
 
+!src/drag-sort-listview/libs/
+!src/drag-sort-listview/libs/**/
+!src/drag-sort-listview/libs/**/*.jar
+
+# drawable =============================
 !drawable/
 !drawable/**/
