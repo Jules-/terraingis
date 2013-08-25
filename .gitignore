@@ -8,24 +8,25 @@
 !project.properties
 !.gitignore
 !makefile
+!readme
+!license
 
 !src/
 !src/TerrainGIS/
+
 !src/TerrainGIS/src/
-!src/TerrainGIS/src/cz/
-!src/TerrainGIS/src/cz/kalcik/
-!src/TerrainGIS/src/cz/kalcik/vojta/
-!src/TerrainGIS/src/cz/kalcik/vojta/*/
-
-!src/TerrainGIS/src/cz/kalcik/vojta/terraingis/*/
-
-!src/TerrainGIS/src/cz/kalcik/vojta/shapefilelib/*/
-!src/TerrainGIS/src/cz/kalcik/vojta/shapefilelib/*/*/
-!src/TerrainGIS/src/cz/kalcik/vojta/shapefilelib/*/*/*/
+!src/TerrainGIS/src/**/
 
 !src/TerrainGIS/res/
-!src/TerrainGIS/res/*/
+!src/TerrainGIS/res/**/
 
-!pomocne/
-!pomocne/drawable/
-!pomocne/drawable/*/
+!src/drag-sort-listview/
+
+!src/drag-sort-listview/src/
+!src/drag-sort-listview/src/**/
+
+!src/drag-sort-listview/res/
+!src/drag-sort-listview/res/**/
+
+!drawable/
+!drawable/**/

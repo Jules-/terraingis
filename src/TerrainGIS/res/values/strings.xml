@@ -15,16 +15,16 @@
     <!-- error messages -->
     <string name="location_fix_error">GPS is not fix!</string>
     <string name="location_error">Can not run location service!</string>
-    <string name="name_layer_error">Name of layer can not be empty!</string>
-    <string name="name_attribute_error">Name of attribute can not be empty!</string>
-    <string name="name_attribute_same_error">Attributes can not be same!</string>
-    <string name="concrete_name_attribute_error">Attribute can not has name %s!</string>
-    <string name="name_exist_error">The layer %s exist!</string>
-    <string name="tileslayer_remove_error">Can not remove tiles layer!</string>
-    <string name="not_selected_layer">There is not selected any layer!</string>
-    <string name="not_selected_vector_layer">There is not selected any vector layer!</string>
-    <string name="not_selected_object">There is not selected any object!</string>
-    <string name="not_selected_position">There is not selected any position!</string>
+    <string name="name_layer_error">Layer name cannot be empty!</string>
+    <string name="name_attribute_error">Attribute name can not be empty!</string>
+    <string name="name_attribute_same_error">Attributes cannot have the same name!</string>
+    <string name="concrete_name_attribute_error">Attribute can not have the name %s!</string>
+    <string name="name_exist_error">The layer %s exists already!</string>
+    <string name="tileslayer_remove_error">Can not remove tile layer!</string>
+    <string name="not_selected_layer">There is no layer selected!</string>
+    <string name="not_selected_vector_layer">There is no vector layer selected!</string>
+    <string name="not_selected_object">There is no object selected!</string>
+    <string name="not_selected_position">There is no position selected!</string>
     <string name="end_object_error">Few vertices for object!</string>
     <string name="empty_layer_error">Layer %s is empty!</string>
     <string name="device_no_gps_error">Device does not have GPS!</string>
@@ -85,7 +85,7 @@
     <string name="settings_record_min_accuracy_summary">Minimal accuracy of vertex</string>
     <string name="settings_record_min_accuracy_title">for autorecord, in meters</string>
     <string name="settings_record_min_time_summary">Minimal time between vertices</string>
-    <string name="settings_record_min_time_title">save battery, in seconds</string>
+    <string name="settings_record_min_time_title">saves battery, in seconds</string>
     <!-- other -->
     <string name="confirm_remove_message">Really remove layer %s?</string>
     <string name="confirm_remove_object_message">Really remove selected object?</string>
