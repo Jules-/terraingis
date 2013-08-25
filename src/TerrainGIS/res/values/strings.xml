@@ -34,6 +34,8 @@
     <string name="import_shapefile_error">Can not import Shapefile!</string>
     <string name="export_shapefile_error">Can not export Shapefile!</string>
     <string name="database_error">Problem with using database!</string>
+    <string name="app_directory_create_error">Can not create application directory!</string>
+    <string name="tilecache_open_error">Can not open tile cache file!</string>
     <!-- map buttons -->
     <string name="button_add_point">Add point</string>
     <string name="button_move_point">Move point</string>

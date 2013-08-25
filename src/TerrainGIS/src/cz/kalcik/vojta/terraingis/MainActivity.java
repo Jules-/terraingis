@@ -19,11 +19,13 @@
  */
 package cz.kalcik.vojta.terraingis;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -231,12 +233,21 @@ public class MainActivity extends AbstractActivity
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+        try
+        {
+            checkAppDirectory();
+        }
+        catch (IOException e)
+        {
+            Toast.makeText(this, R.string.app_directory_create_error, Toast.LENGTH_LONG).show();
+            finish();
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
         ConvertUnits.setDensity(getResources().getDisplayMetrics().density);
-        checkAppDirectory();
-        
+
         getActionBar().setHomeButtonEnabled(true);
         
         mMapLayout = (LinearLayout)findViewById(R.id.map_layout);
@@ -256,7 +267,16 @@ public class MainActivity extends AbstractActivity
         mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         
         // tile cache
-        TileCache.getInstance().open(TILE_CACHE_FILE, getResources(), map);
+
+        try
+        {
+            TileCache.getInstance().open(TILE_CACHE_FILE, getResources(), map);
+        }
+        catch (SQLiteCantOpenDatabaseException e)
+        {
+            Toast.makeText(this, R.string.tilecache_open_error, Toast.LENGTH_LONG).show();
+            finish();
+        }
         
         if(mSettings.isHideActionBar())
         {
@@ -573,11 +593,14 @@ public class MainActivity extends AbstractActivity
     /**
      * make directory of application when it doesn't exist
      */
-    private void checkAppDirectory()
+    private void checkAppDirectory() throws IOException
     {
         if (!APP_DIRECTORY.exists())
         {
-            APP_DIRECTORY.mkdir();
+            if(!APP_DIRECTORY.mkdir())
+            {
+                throw new IOException();
+            }
         }
     }
     

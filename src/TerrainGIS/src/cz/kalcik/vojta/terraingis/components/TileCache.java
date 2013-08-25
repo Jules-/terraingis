@@ -22,6 +22,7 @@ package cz.kalcik.vojta.terraingis.components;
 import java.io.File;
 import java.util.ArrayList;
 
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import cz.kalcik.vojta.terraingis.view.MapView;
 
 import android.content.ContentValues;
@@ -81,6 +82,7 @@ public class TileCache
      * @param file
      */
     public void open(File file, Resources resources, MapView map)
+        throws SQLiteCantOpenDatabaseException
     {
         mResources = resources;
         mMap = map;
