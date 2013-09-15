@@ -218,8 +218,11 @@ public class LocationWorker implements LocationListener
     private void runNetwork()
     {
         // default
-        mCommon.locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 
+        if (mCommon.locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        {
+            mCommon.locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
                 getMinTime(), Settings.LOCATION_MINDIST_DEFAULT, this);
+        }
     }
 
     /**
